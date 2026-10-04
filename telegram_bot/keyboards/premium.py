@@ -95,8 +95,12 @@ def _icon_for_text(text: object) -> str | None:
         return PREMIUM_EMOJI["syriatel"]
     if "sham cash" in lowered or "shamcash" in lowered or "شام كاش" in value:
         return PREMIUM_EMOJI["shamcash"]
-    # The lightning mark is reserved for game charge/withdrawal actions.
-    if ("شحن" in value or "سحب" in value) and ("اللعبة" in value or "ichancy" in lowered):
+    # Lightning is used on bot/game deposits and the iChancy account/games entries.
+    if "شحن" in value or "إيداع" in value:
+        if not any(provider in lowered for provider in ("usdt", "syriatel", "sham cash")) and "شام كاش" not in value:
+            if "اللعبة" in value or "ichancy" in lowered or "البوت" in value:
+                return PREMIUM_EMOJI["ichancy"]
+    if "حساب ichancy" in lowered or "ألعاب ichancy" in lowered:
         return PREMIUM_EMOJI["ichancy"]
     # Meaning wins over a reused visible emoji (e.g. 📨 شحن vs 📨 تواصل).
     if "شحن" in value or "إيداع" in value:

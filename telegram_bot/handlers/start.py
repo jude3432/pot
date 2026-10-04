@@ -107,7 +107,7 @@ async def show_main_menu(message: Message, user_id, edit: bool = False, user_rec
     card_rule = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     text = (
         f"{card_rule}\n"
-        f"{ce('brand', '✨')} <b>أهلاً بك في Jude Robert</b>\n"
+        f"{ce('ichancy', '⚡')} <b>أهلاً بك في Jude Robert</b>\n"
         f"<i>بطاقة حسابك الرقمية — كل معلوماتك في مكان واحد</i>\n"
         f"{card_rule}\n\n"
         f"{ce('balance', '🔷')} <b>رصيد البوت</b>\n"
