@@ -22,9 +22,9 @@ from telegram_bot.miniapp_shortcuts import (  # noqa: E402
 )
 
 EXPECTED = {
-    "deposit": "https://t.me/Joud777Robert_Bot?start=app_deposit",
-    "withdraw": "https://t.me/Joud777Robert_Bot?start=app_withdraw",
-    "gift": "https://t.me/Joud777Robert_Bot?start=app_gift",
+    "deposit": "https://t.me/yegfqgf_bot?start=app_deposit",
+    "withdraw": "https://t.me/yegfqgf_bot?start=app_withdraw",
+    "gift": "https://t.me/yegfqgf_bot?start=app_gift",
 }
 
 

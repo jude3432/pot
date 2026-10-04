@@ -4,7 +4,7 @@ This module deliberately has no Telegram or database imports, so the mapping can
 be simulated without starting the bot or connecting to Neon.
 """
 
-BOT_USERNAME = "Joud777Robert_Bot"
+BOT_USERNAME = "yegfqgf_bot"
 
 ACTION_TO_PAYLOAD = {
     "deposit": "app_deposit",

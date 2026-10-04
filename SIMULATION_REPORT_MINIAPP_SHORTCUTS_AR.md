@@ -6,11 +6,11 @@
 ## ما تم تطبيقه
 
 - زر **شحن** يفتح الرابط الآمن:
-  - `https://t.me/Caesar_Robert_bot?start=app_deposit`
+  - `https://t.me/yegfqgf_bot?start=app_deposit`
 - زر **سحب** يفتح:
-  - `https://t.me/Caesar_Robert_bot?start=app_withdraw`
+  - `https://t.me/yegfqgf_bot?start=app_withdraw`
 - زر **إهداء** يفتح:
-  - `https://t.me/Caesar_Robert_bot?start=app_gift`
+  - `https://t.me/yegfqgf_bot?start=app_gift`
 - زر **إحالات** يبقى داخل Mini App كما كان.
 - تمت إضافة توجيه whitelisted في `/start` للرموز الثلاثة فقط.
 - التوجيه يعيد استخدام مسارات البوت الحالية وFSM الحالي بدل إنشاء منطق مالي جديد.
