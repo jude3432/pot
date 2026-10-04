@@ -1,3 +1,4 @@
+from telegram_bot.keyboards.premium import premium_button
 import logging
 import asyncio
 import time
@@ -137,15 +138,15 @@ async def user_details_callback(callback: CallbackQuery):
 def get_rejection_reason_keyboard(prefix: str, tx_id: int):
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="إيصال غير واضح", callback_data=f"{prefix}|receipt_unclear|{tx_id}"),
-            InlineKeyboardButton(text="المبلغ غير مطابق", callback_data=f"{prefix}|amount_mismatch|{tx_id}")
+            premium_button(text="إيصال غير واضح", callback_data=f"{prefix}|receipt_unclear|{tx_id}"),
+            premium_button(text="المبلغ غير مطابق", callback_data=f"{prefix}|amount_mismatch|{tx_id}")
         ],
         [
-            InlineKeyboardButton(text="التحويل غير موجود", callback_data=f"{prefix}|transfer_missing|{tx_id}"),
-            InlineKeyboardButton(text="بيانات ناقصة", callback_data=f"{prefix}|missing_data|{tx_id}")
+            premium_button(text="التحويل غير موجود", callback_data=f"{prefix}|transfer_missing|{tx_id}"),
+            premium_button(text="بيانات ناقصة", callback_data=f"{prefix}|missing_data|{tx_id}")
         ],
-        [InlineKeyboardButton(text="✍️ سبب مخصص", callback_data=f"{prefix}|custom|{tx_id}")],
-        [InlineKeyboardButton(text="↩️ إلغاء", callback_data="caesar_control_panel")]
+        [premium_button(text="✍️ سبب مخصص", callback_data=f"{prefix}|custom|{tx_id}")],
+        [premium_button(text="↩️ إلغاء", callback_data="caesar_control_panel")]
     ])
 
 
@@ -182,25 +183,25 @@ class AdminStates(StatesGroup):
 
 def get_admin_keyboard():
     keyboard = [
-        [InlineKeyboardButton(text="✨ لوحة التحكم الرئيسية", callback_data="caesar_control_panel")],
+        [premium_button(text="✨ لوحة التحكم الرئيسية", callback_data="caesar_control_panel")],
         [
-            InlineKeyboardButton(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
-            InlineKeyboardButton(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
+            premium_button(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
+            premium_button(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
         ],
-        [InlineKeyboardButton(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
-        [InlineKeyboardButton(text="💹 تعديل أسعار الصرف", callback_data="adm_rates_menu")],
+        [premium_button(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
+        [premium_button(text="💹 تعديل أسعار الصرف", callback_data="adm_rates_menu")],
         [
-            InlineKeyboardButton(text="🏷️ نسبة عمولة السحب", callback_data="adm_comm_menu"),
-            InlineKeyboardButton(text="🗝️ تحديث كوكيز الموقع", callback_data="adm_cookie_menu")
+            premium_button(text="🏷️ نسبة عمولة السحب", callback_data="adm_comm_menu"),
+            premium_button(text="🗝️ تحديث كوكيز الموقع", callback_data="adm_cookie_menu")
         ],
-        [InlineKeyboardButton(text="🕹️ رصيد محفظة الوكيل الفعلي", callback_data="adm_agent_bal")],
-        [InlineKeyboardButton(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses")],
+        [premium_button(text="🕹️ رصيد محفظة الوكيل الفعلي", callback_data="adm_agent_bal")],
+        [premium_button(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses")],
         [
-            InlineKeyboardButton(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
-            InlineKeyboardButton(text="🧧 البونصات والعروض", callback_data="adm_bonus_menu")
+            premium_button(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
+            premium_button(text="🧧 البونصات والعروض", callback_data="adm_bonus_menu")
         ],
-        [InlineKeyboardButton(text="🤝 تفعيل/إيقاف الإحالات", callback_data="adm_referrals_toggle")],
-        [InlineKeyboardButton(text="⛔ إغلاق لوحة التحكم", callback_data="adm_close_panel")]
+        [premium_button(text="🤝 تفعيل/إيقاف الإحالات", callback_data="adm_referrals_toggle")],
+        [premium_button(text="⛔ إغلاق لوحة التحكم", callback_data="adm_close_panel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -209,31 +210,31 @@ def get_admin_dashboard_keyboard(refresh_callback="caesar_control_panel"):
     webapp_url = f"{getattr(settings, 'RENDER_EXTERNAL_URL', 'https://ichancy100.onrender.com')}/dashboard?v=admin-campaigns-v9-20260716"
     from aiogram.types import WebAppInfo
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📈 فتح لوحة التحكم المتقدمة", web_app=WebAppInfo(url=webapp_url))],
+        [premium_button(text="📈 فتح لوحة التحكم المتقدمة", web_app=WebAppInfo(url=webapp_url))],
         [
-            InlineKeyboardButton(text="🔍 إدارة المستخدمين", callback_data="adm_users_menu"),
-            InlineKeyboardButton(text="💹 أسعار الصرف", callback_data="adm_rates_menu")
+            premium_button(text="🔍 إدارة المستخدمين", callback_data="adm_users_menu"),
+            premium_button(text="💹 أسعار الصرف", callback_data="adm_rates_menu")
         ],
         [
-            InlineKeyboardButton(text="🕹️ رصيد الوكيل", callback_data="adm_agent_bal"),
-            InlineKeyboardButton(text="🗝️ الكوكيز", callback_data="adm_cookie_menu")
+            premium_button(text="🕹️ رصيد الوكيل", callback_data="adm_agent_bal"),
+            premium_button(text="🗝️ الكوكيز", callback_data="adm_cookie_menu")
         ],
         [
-            InlineKeyboardButton(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses"),
-            InlineKeyboardButton(text="📈 تحديث السيولة", callback_data="adm_sync_liquidity")
+            premium_button(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses"),
+            premium_button(text="📈 تحديث السيولة", callback_data="adm_sync_liquidity")
         ],
         [
-            InlineKeyboardButton(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
-            InlineKeyboardButton(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
+            premium_button(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
+            premium_button(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
         ],
-        [InlineKeyboardButton(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
+        [premium_button(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
         [
-            InlineKeyboardButton(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
-            InlineKeyboardButton(text="🧧 البونصات", callback_data="adm_bonus_menu")
+            premium_button(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
+            premium_button(text="🧧 البونصات", callback_data="adm_bonus_menu")
         ],
-        [InlineKeyboardButton(text="🤝 الإحالات", callback_data="adm_referrals_toggle")],
-        [InlineKeyboardButton(text="🏅 لوحة المتصدرين الأسبوعية", callback_data="adm_lb_menu")],
-        [InlineKeyboardButton(text="⛔ إغلاق", callback_data="back_to_main_menu")]
+        [premium_button(text="🤝 الإحالات", callback_data="adm_referrals_toggle")],
+        [premium_button(text="🏅 لوحة المتصدرين الأسبوعية", callback_data="adm_lb_menu")],
+        [premium_button(text="⛔ إغلاق", callback_data="back_to_main_menu")]
     ])
 
 
@@ -451,7 +452,7 @@ async def caesar_control_panel(callback: CallbackQuery):
     )
     keyboard = get_admin_dashboard_keyboard(refresh_callback="caesar_control_panel")
     # 🌟 إضافة زر توزيع الكاش باك الأسبوعي
-    keyboard.inline_keyboard.append([InlineKeyboardButton(text="💳 توزيع الكاش باك الأسبوعي", callback_data="adm_trigger_cashback")])
+    keyboard.inline_keyboard.append([premium_button(text="💳 توزيع الكاش باك الأسبوعي", callback_data="adm_trigger_cashback")])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -600,8 +601,8 @@ async def adm_system_probe_callback(callback: CallbackQuery):
         "🔆 <i>تم فحص الاتصال والتزامن وحسابات Jude Robert بسلاسة وبون أي تضخم أو تغيير في الأرصدة الحقيقية!</i>"
     )
     await safe_edit_text(callback.message, report, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔁 إعادة الفحص الآن", callback_data="adm_system_probe")],
-        [InlineKeyboardButton(text="↩️ عودة للوحة التحكم", callback_data="caesar_control_panel")]
+        [premium_button(text="🔁 إعادة الفحص الآن", callback_data="adm_system_probe")],
+        [premium_button(text="↩️ عودة للوحة التحكم", callback_data="caesar_control_panel")]
     ]), parse_mode="HTML")
 
 
@@ -638,8 +639,8 @@ async def adm_reset_all_db_confirm(callback: CallbackQuery):
         "هل أنت متأكد من رغبتك في تصفير مسح جميع الأرصدة، وسجلات الإيداع والسحب، وسجلات الهدايا والحضور والعجلة، وإجمالي الإيداعات ومستويات VIP لجميع المستخدمين في قاعدة البيانات؟\n\n"
         "🛡️ <i>سيتم الاحتفاظ بحسابات وأسماء المستخدمين وربطهم بـ iChancy كما هي بأمان تام، مع إعادة كل الأرصدة والبيانات إلى الصفر!</i>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🚧 نعم، انتقل للتأكيد النهائي", callback_data="adm_reset_all_db_step2")],
-            [InlineKeyboardButton(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
+            [premium_button(text="🚧 نعم، انتقل للتأكيد النهائي", callback_data="adm_reset_all_db_step2")],
+            [premium_button(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -656,8 +657,8 @@ async def adm_reset_all_db_confirm_step2(callback: CallbackQuery):
         "أنت على وشك تنفيذ تصفير كامل ومسح لجميع الجداول المالية والإحصائية في قاعدة البيانات للبدء من الصفر.\n"
         "هل تنفذ أمر التصفير الشامل الآن؟",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="💫 تنفيذ التصفير الشامل الآن (EXECUTE)", callback_data="adm_reset_all_db_confirmed")],
-            [InlineKeyboardButton(text="⛔ تراجع وإلغاء", callback_data="caesar_control_panel")]
+            [premium_button(text="💫 تنفيذ التصفير الشامل الآن (EXECUTE)", callback_data="adm_reset_all_db_confirmed")],
+            [premium_button(text="⛔ تراجع وإلغاء", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -712,7 +713,7 @@ async def adm_reset_all_db_execute(callback: CallbackQuery):
             "🛡️ تم الاحتفاظ بحسابات وأسماء المستخدمين وربطهم بـ iChancy كما هي بأمان.\n\n"
             "<i>النظام الآن مصَفّر بالكامل وجاهز للانطلاق الفعلي بعد انتهاء المرحلة التجريبية!</i>",
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🏡 عودة للوحة التحكم الرئيسية", callback_data="caesar_control_panel")]
+                [premium_button(text="🏡 عودة للوحة التحكم الرئيسية", callback_data="caesar_control_panel")]
             ]),
             parse_mode="HTML"
         )
@@ -732,8 +733,8 @@ async def reset_db_cmd(message: Message):
     await message.answer(
         "🚧 <b>تصفير شامل لكل قاعدة البيانات (إنهاء المرحلة التجريبية)</b>\n\nاضغط للبدء بخطوات التأكيد المزدوج:",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🧹 نعم، صَفّر كل الأرصدة والتاريخ الآن", callback_data="adm_reset_all_db")],
-            [InlineKeyboardButton(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
+            [premium_button(text="🧹 نعم، صَفّر كل الأرصدة والتاريخ الآن", callback_data="adm_reset_all_db")],
+            [premium_button(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -1189,7 +1190,7 @@ async def dep_reject_reason_callback(callback: CallbackQuery, state: FSMContext)
             await callback.bot.send_message(
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص لطلب الإيداع #{tx_id}</b>\n\nأرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[premium_button(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
@@ -1236,7 +1237,7 @@ async def withdraw_reject_reason_callback(callback: CallbackQuery, state: FSMCon
             await callback.bot.send_message(
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص لطلب السحب #{tx_id}</b>\n\nأرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[premium_button(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
@@ -1284,10 +1285,10 @@ async def adm_payment_addresses_callback(callback: CallbackQuery, state: FSMCont
             f"<code>{item['address'] or 'غير محدد'}</code>\n"
             f"📍 المصدر: <b>{source}</b>\n\n"
         )
-        rows.append([InlineKeyboardButton(text=f"🖋️ تعديل {item['label']}", callback_data=f"adm_pay_edit_{item['method']}")])
+        rows.append([premium_button(text=f"🖋️ تعديل {item['label']}", callback_data=f"adm_pay_edit_{item['method']}")])
 
-    rows.append([InlineKeyboardButton(text="🔁 إعادة عنوان لقيمة Render", callback_data="adm_pay_reset_menu")])
-    rows.append([InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")])
+    rows.append([premium_button(text="🔁 إعادة عنوان لقيمة Render", callback_data="adm_pay_reset_menu")])
+    rows.append([premium_button(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1359,8 +1360,8 @@ async def adm_pay_reset_menu_callback(callback: CallbackQuery):
         source = await asyncio.to_thread(repo.get_payment_address_source, method)
         source_text = "لوحة الأدمن" if source == 'database' else "Render أصلاً"
         text += f"{label}: <b>{source_text}</b>\n"
-        rows.append([InlineKeyboardButton(text=f"🔁 {label}", callback_data=f"adm_pay_reset_{method}")])
-    rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_payment_addresses")])
+        rows.append([premium_button(text=f"🔁 {label}", callback_data=f"adm_pay_reset_{method}")])
+    rows.append([premium_button(text="↩️ رجوع", callback_data="adm_payment_addresses")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1381,8 +1382,8 @@ async def adm_pay_reset_callback(callback: CallbackQuery):
         f"✔️ تم إعادة <b>{label}</b> إلى قيمة Render الاحتياطية.\n\n"
         f"القيمة الحالية الآن:\n<code>{fallback or 'غير محددة'}</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="↩️ عناوين الإيداع", callback_data="adm_payment_addresses")],
-            [InlineKeyboardButton(text="✨ لوحة الأدمن", callback_data="back_to_admin_main")]
+            [premium_button(text="↩️ عناوين الإيداع", callback_data="adm_payment_addresses")],
+            [premium_button(text="✨ لوحة الأدمن", callback_data="back_to_admin_main")]
         ]),
         parse_mode="HTML"
     )
@@ -1400,12 +1401,12 @@ async def adm_rates_menu_callback(callback: CallbackQuery):
         f"3️⃣ <b>سعر بيع الدولار (عند السحب):</b><code>{float(bot_settings['usd_sell_rate']):,.2f} ل.س</code>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🖋️ تعديل سعر صرف اللعبة (NSP)", callback_data="edit_rate_game")],
+        [premium_button(text="🖋️ تعديل سعر صرف اللعبة (NSP)", callback_data="edit_rate_game")],
         [
-            InlineKeyboardButton(text="🖋️ تعديل سعر الإيداع (شراء)", callback_data="edit_rate_buy"),
-            InlineKeyboardButton(text="🖋️ تعديل سعر السحب (بيع)", callback_data="edit_rate_sell")
+            premium_button(text="🖋️ تعديل سعر الإيداع (شراء)", callback_data="edit_rate_buy"),
+            premium_button(text="🖋️ تعديل سعر السحب (بيع)", callback_data="edit_rate_sell")
         ],
-        [InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")]
+        [premium_button(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")]
     ])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
@@ -1599,11 +1600,11 @@ async def adm_referrals_toggle_callback(callback: CallbackQuery):
         "العمولة تُضاف فوراً إلى رصيد صاحب الإحالة عند قبول إيداع تابع مؤهل، وتُحسب على مبلغ الإيداع الأساسي فقط."
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
+        [premium_button(
             text="🔻 إيقاف الإحالات" if enabled else "🔹 تفعيل الإحالات",
             callback_data="adm_referrals_disable" if enabled else "adm_referrals_enable"
         )],
-        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
+        [premium_button(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
     ])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
@@ -1645,9 +1646,9 @@ BONUS_PAYMENT_METHOD_LABELS = {
 
 def get_bonus_menu_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⊕ إنشاء عرض بونص", callback_data="bonus_create")],
-        [InlineKeyboardButton(text="🗒️ العروض الحالية", callback_data="bonus_list")],
-        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
+        [premium_button(text="⊕ إنشاء عرض بونص", callback_data="bonus_create")],
+        [premium_button(text="🗒️ العروض الحالية", callback_data="bonus_list")],
+        [premium_button(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
     ])
 
 
@@ -1717,9 +1718,9 @@ async def process_bonus_percent(message: Message, state: FSMContext):
         return
     await state.update_data(bonus_percent=percent)
 
-    rows = [[InlineKeyboardButton(text=label, callback_data=f"bonus_method_{key}")]
+    rows = [[premium_button(text=label, callback_data=f"bonus_method_{key}")]
             for key, label in BONUS_PAYMENT_METHOD_LABELS.items()]
-    rows.append([InlineKeyboardButton(text="⛔ إلغاء", callback_data="adm_bonus_menu")])
+    rows.append([premium_button(text="⛔ إلغاء", callback_data="adm_bonus_menu")])
     await message.answer(
         "💳 اختر طريقة الإيداع التي يطبق عليها البونص:",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1844,8 +1845,8 @@ async def bonus_list_callback(callback: CallbackQuery):
             f"حد أعلى: {float(r.get('max_bonus_syp') or 0):,.0f} SYP\n\n"
         )
         if r.get('is_active'):
-            rows.append([InlineKeyboardButton(text=f"⛔ إيقاف #{r['id']}", callback_data=f"bonus_disable_{r['id']}")])
-    rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_bonus_menu")])
+            rows.append([premium_button(text=f"⛔ إيقاف #{r['id']}", callback_data=f"bonus_disable_{r['id']}")])
+    rows.append([premium_button(text="↩️ رجوع", callback_data="adm_bonus_menu")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1878,9 +1879,9 @@ async def adm_create_bot_gift_callback(callback: CallbackQuery, state: FSMContex
         "💳 <b>كود كاش:</b> يبدأ بـ <code>JUDE-CASH-</code> ويضاف إلى رصيد البوت القابل للسحب.\n\n"
         "ملاحظة: الكود يستخدم مرة واحدة فقط، ولا يتم خصم قيمته من رصيد الأدمن.",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🧧 كود بونص للعب", callback_data="adm_bot_gift_type_bonus")],
-            [InlineKeyboardButton(text="💳 كود كاش قابل للسحب", callback_data="adm_bot_gift_type_cash")],
-            [InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="caesar_control_panel")]
+            [premium_button(text="🧧 كود بونص للعب", callback_data="adm_bot_gift_type_bonus")],
+            [premium_button(text="💳 كود كاش قابل للسحب", callback_data="adm_bot_gift_type_cash")],
+            [premium_button(text="↩️ عودة للوحة الأدمن", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -1904,7 +1905,7 @@ async def adm_bot_gift_type_callback(callback: CallbackQuery, state: FSMContext)
         f"أرسل قيمة الكود بالليرة السورية. مثال: <code>50000</code>\n\n"
         f"سيتم إنشاء كود يبدأ بـ: <code>{prefix}</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="↩️ اختيار نوع آخر", callback_data="adm_create_bot_gift")]
+            [premium_button(text="↩️ اختيار نوع آخر", callback_data="adm_create_bot_gift")]
         ]),
         parse_mode="HTML"
     )
@@ -1953,8 +1954,8 @@ async def process_bot_gift_amount(message: Message, state: FSMContext):
     await message.answer(
         result_text,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🎟️ إنشاء كود آخر", callback_data="adm_create_bot_gift")],
-            [InlineKeyboardButton(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
+            [premium_button(text="🎟️ إنشاء كود آخر", callback_data="adm_create_bot_gift")],
+            [premium_button(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -2020,12 +2021,12 @@ async def process_user_search(message: Message, state: FSMContext):
             f"   🔷 <code>{bal:,} SYP</code>"
             f" | 🕹️ <code>{u.get('ichancy_username') or '—'}</code>\n\n"
         )
-        keyboard_rows.append([InlineKeyboardButton(
+        keyboard_rows.append([premium_button(
             text=f"🖋️ تعديل {uname[:15]} ({bal:,})",
             callback_data=f"setbal_{tid}"
         )])
 
-    keyboard_rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_users_menu")])
+    keyboard_rows.append([premium_button(text="↩️ رجوع", callback_data="adm_users_menu")])
     await message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows), parse_mode="HTML")
 
 
@@ -2094,8 +2095,8 @@ async def process_set_balance(message: Message, state: FSMContext):
         f"🔷 <b>الرصيد القديم:</b> <code>{old_balance:,} SYP</code>\n"
         f"🔷 <b>الرصيد الجديد:</b> <code>{new_balance:,} SYP</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔍 بحث عن مستخدم آخر", callback_data="adm_users_menu")],
-            [InlineKeyboardButton(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
+            [premium_button(text="🔍 بحث عن مستخدم آخر", callback_data="adm_users_menu")],
+            [premium_button(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -2118,15 +2119,15 @@ def get_contest_rejection_reason_keyboard(entry_id: int):
     """قائمة أسباب رفض المشاركة في المسابقة."""
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="📷 صورة غير واضحة", callback_data=f"contest_reject_reason|receipt_unclear|{entry_id}"),
-            InlineKeyboardButton(text="🧷 الرابط غير صحيح", callback_data=f"contest_reject_reason|wrong_link|{entry_id}")
+            premium_button(text="📷 صورة غير واضحة", callback_data=f"contest_reject_reason|receipt_unclear|{entry_id}"),
+            premium_button(text="🧷 الرابط غير صحيح", callback_data=f"contest_reject_reason|wrong_link|{entry_id}")
         ],
         [
-            InlineKeyboardButton(text="⛔ مشاركة مكررة", callback_data=f"contest_reject_reason|duplicate|{entry_id}"),
-            InlineKeyboardButton(text="🖋️ محتوى غير مرتبط", callback_data=f"contest_reject_reason|irrelevant|{entry_id}")
+            premium_button(text="⛔ مشاركة مكررة", callback_data=f"contest_reject_reason|duplicate|{entry_id}"),
+            premium_button(text="🖋️ محتوى غير مرتبط", callback_data=f"contest_reject_reason|irrelevant|{entry_id}")
         ],
-        [InlineKeyboardButton(text="✍️ سبب مخصص (من المحادثة)", callback_data=f"contest_reject_reason|custom|{entry_id}")],
-        [InlineKeyboardButton(text="↩️ إلغاء", callback_data="caesar_control_panel")]
+        [premium_button(text="✍️ سبب مخصص (من المحادثة)", callback_data=f"contest_reject_reason|custom|{entry_id}")],
+        [premium_button(text="↩️ إلغاء", callback_data="caesar_control_panel")]
     ])
 
 def map_contest_rejection_reason(reason_code: str) -> str:
@@ -2279,7 +2280,7 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص للمشاركة #{entry_id}</b>\n\n"
                 "أرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[premium_button(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
@@ -2401,33 +2402,33 @@ def _lb_menu_keyboard():
     weekly_mode = str(feats.get('leaderboard_type') or 'all_time') == 'weekly'
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(
+            premium_button(
                 text="🔻 إيقاف الظهور" if enabled else "🔹 تفعيل الظهور",
                 callback_data="adm_lb_toggle_visible"
             ),
-            InlineKeyboardButton(
+            premium_button(
                 text="🔁 إلغاء الوضع الأسبوعي" if weekly_mode else "🗓️ تفعيل الوضع الأسبوعي",
                 callback_data="adm_lb_toggle_type"
             ),
         ],
         [
-            InlineKeyboardButton(text="🏆 جائزة الأول", callback_data="adm_lb_set_p1"),
-            InlineKeyboardButton(text="🎖️ جائزة الثاني", callback_data="adm_lb_set_p2"),
-            InlineKeyboardButton(text="🏵️ جائزة الثالث", callback_data="adm_lb_set_p3"),
+            premium_button(text="🏆 جائزة الأول", callback_data="adm_lb_set_p1"),
+            premium_button(text="🎖️ جائزة الثاني", callback_data="adm_lb_set_p2"),
+            premium_button(text="🏵️ جائزة الثالث", callback_data="adm_lb_set_p3"),
         ],
         [
-            InlineKeyboardButton(text="🧿 حد التأهل", callback_data="adm_lb_set_min"),
-            InlineKeyboardButton(
+            premium_button(text="🧿 حد التأهل", callback_data="adm_lb_set_min"),
+            premium_button(
                 text="🧠 إيقاف القيد التلقائي" if cfg['auto_credit'] else "🧠 تفعيل القيد التلقائي",
                 callback_data="adm_lb_toggle_autocredit"
             ),
         ],
         [
-            InlineKeyboardButton(text="🔁 تحديث الإحصائيات الآن", callback_data="adm_lb_refresh_now"),
-            InlineKeyboardButton(text="🏅 تسوية الأسبوع الآن", callback_data="adm_lb_settle_now"),
+            premium_button(text="🔁 تحديث الإحصائيات الآن", callback_data="adm_lb_refresh_now"),
+            premium_button(text="🏅 تسوية الأسبوع الآن", callback_data="adm_lb_settle_now"),
         ],
-        [InlineKeyboardButton(text="📃 آخر النتائج", callback_data="adm_lb_history")],
-        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")],
+        [premium_button(text="📃 آخر النتائج", callback_data="adm_lb_history")],
+        [premium_button(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")],
     ])
 
 
@@ -2491,7 +2492,7 @@ async def adm_lb_prompt_value_callback(callback: CallbackQuery, state: FSMContex
         callback.message,
         f"{label}\n\nأرسل القيمة الجديدة بالليرة السورية (رقم صحيح، 0 للإلغاء/بدون):",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⛔ إلغاء", callback_data="adm_lb_menu")]
+            [premium_button(text="⛔ إلغاء", callback_data="adm_lb_menu")]
         ]),
         parse_mode="HTML"
     )
@@ -2596,7 +2597,7 @@ async def adm_lb_history_callback(callback: CallbackQuery):
         callback.message,
         text,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="↩️ قسم المتصدرين", callback_data="adm_lb_menu")]
+            [premium_button(text="↩️ قسم المتصدرين", callback_data="adm_lb_menu")]
         ]),
         parse_mode="HTML"
     )

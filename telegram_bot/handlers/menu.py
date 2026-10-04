@@ -1,3 +1,4 @@
+from telegram_bot.keyboards.premium import premium_button
 import asyncio
 import random
 import string
@@ -124,14 +125,14 @@ async def notify_admins(bot, text, reply_markup=None, parse_mode="HTML"):
 
 def get_support_chat_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔻 إنهاء المحادثة", callback_data="end_support_chat")]
+        [premium_button(text="🔻 إنهاء المحادثة", callback_data="end_support_chat")]
     ])
 
 
 def get_admin_reply_keyboard(user_id):
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="↩️ رد على المستخدم", callback_data=f"reply_user_{user_id}")],
-        [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{user_id}")]
+        [premium_button(text="↩️ رد على المستخدم", callback_data=f"reply_user_{user_id}")],
+        [premium_button(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{user_id}")]
     ])
 
 
@@ -422,10 +423,10 @@ async def start_deposit_flow(target_message, user_id, state: FSMContext, edit=Fa
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🇸🇾 ليرة سورية", callback_data="dep_curr_syp"),
-            InlineKeyboardButton(text="🇺🇸 دولار أمريكي (USD)", callback_data="dep_curr_usd")
+            premium_button(text="🇸🇾 ليرة سورية", callback_data="dep_curr_syp"),
+            premium_button(text="🇺🇸 دولار أمريكي (USD)", callback_data="dep_curr_usd")
         ],
-        [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
+        [premium_button(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
     ])
     await _deliver_flow_message(
         target_message,
@@ -475,10 +476,10 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
     if not has_usd_deposits_approved(telegram_id):
         await state.update_data(withdraw_currency='syp')
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
-            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
-            [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
+            [premium_button(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
+            [premium_button(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
+            [premium_button(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
+            [premium_button(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
         ])
         await _deliver_flow_message(
             target_message,
@@ -494,10 +495,10 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🇸🇾 ليرة سورية", callback_data="wit_curr_syp"),
-            InlineKeyboardButton(text="🇺🇸 دولار أمريكي (USD)", callback_data="wit_curr_usd")
+            premium_button(text="🇸🇾 ليرة سورية", callback_data="wit_curr_syp"),
+            premium_button(text="🇺🇸 دولار أمريكي (USD)", callback_data="wit_curr_usd")
         ],
-        [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
+        [premium_button(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
     ])
     bot_settings = await asyncio.to_thread(repo.get_bot_settings)
     usd_sell_rate = float(bot_settings['usd_sell_rate'])
@@ -1174,8 +1175,8 @@ async def process_ichancy_password(message: Message, state: FSMContext):
                 f"🔖 <b>معرف اللاعب:</b><code>{player_id}</code>"
             )
             keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🧭️ خيارات الحساب", callback_data="ichancy_menu")],
-                [InlineKeyboardButton(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")]
+                [premium_button(text="🧭️ خيارات الحساب", callback_data="ichancy_menu")],
+                [premium_button(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")]
             ])
             await message.answer(success_text, reply_markup=keyboard, parse_mode="HTML")
             await send_log_message(
@@ -1235,19 +1236,19 @@ async def process_deposit_currency(callback: CallbackQuery, state: FSMContext):
 
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="dep_gate_syriatel")],
-            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="dep_gate_mtn")],
-            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="dep_gate_sham_syp")],
-            [InlineKeyboardButton(text="↩️ عودة", callback_data="deposit_bot")]
+            [premium_button(text="🔹 Syriatel Cash", callback_data="dep_gate_syriatel")],
+            [premium_button(text="🔸 MTN Cash", callback_data="dep_gate_mtn")],
+            [premium_button(text="📲 Sham Cash (SYP)", callback_data="dep_gate_sham_syp")],
+            [premium_button(text="↩️ عودة", callback_data="deposit_bot")]
         ])
         await callback.message.edit_text("🇸🇾 <b>يرجى اختيار وسيلة الإيداع بالليرة السورية الجديدة:</b>", reply_markup=keyboard, parse_mode="HTML")
     else:
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📲 Sham Cash (USD)", callback_data="dep_gate_sham_usd")],
-            [InlineKeyboardButton(text="🪙 USDT - Polygon", callback_data="dep_gate_usdt_polygon")],
-            [InlineKeyboardButton(text="🪙 USDT - TRC20", callback_data="dep_gate_usdt_trc")],
-            [InlineKeyboardButton(text="🪙 USDT - BEP20", callback_data="dep_gate_usdt_bep")],
-            [InlineKeyboardButton(text="↩️ عودة", callback_data="deposit_bot")]
+            [premium_button(text="📲 Sham Cash (USD)", callback_data="dep_gate_sham_usd")],
+            [premium_button(text="🪙 USDT - Polygon", callback_data="dep_gate_usdt_polygon")],
+            [premium_button(text="🪙 USDT - TRC20", callback_data="dep_gate_usdt_trc")],
+            [premium_button(text="🪙 USDT - BEP20", callback_data="dep_gate_usdt_bep")],
+            [premium_button(text="↩️ عودة", callback_data="deposit_bot")]
         ])
         await callback.message.edit_text("🇺🇸 <b>يرجى اختيار وسيلة الإيداع بالدولار الأمريكي:</b>", reply_markup=keyboard, parse_mode="HTML")
 
@@ -1479,7 +1480,7 @@ async def process_deposit_amount(message: Message, state: FSMContext):
         )
 
         confirm_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⛔ إلغاء العملية والعودة للقائمة", callback_data="back_to_main_menu")]
+            [premium_button(text="⛔ إلغاء العملية والعودة للقائمة", callback_data="back_to_main_menu")]
         ])
         await message.reply(confirmation_text, reply_markup=confirm_keyboard, parse_mode="HTML")
 
@@ -1556,8 +1557,8 @@ async def process_deposit_proof(message: Message, state: FSMContext):
     )
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔹 تأكيد وإرسال الطلب", callback_data="confirm_my_deposit")],
-        [InlineKeyboardButton(text="⛔ إلغاء الطلب", callback_data="back_to_main_menu")]
+        [premium_button(text="🔹 تأكيد وإرسال الطلب", callback_data="confirm_my_deposit")],
+        [premium_button(text="⛔ إلغاء الطلب", callback_data="back_to_main_menu")]
     ])
 
     if photo_id:
@@ -1762,11 +1763,11 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
             copy_dep_data = f"copy_amt_{dep_new}"
         admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [
-                InlineKeyboardButton(text="✔️ قبول", callback_data=f"approve_dep_{tx_id}"),
-                InlineKeyboardButton(text="⛔ رفض", callback_data=f"reject_dep_{tx_id}")
+                premium_button(text="✔️ قبول", callback_data=f"approve_dep_{tx_id}"),
+                premium_button(text="⛔ رفض", callback_data=f"reject_dep_{tx_id}")
             ],
-            [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
-            [InlineKeyboardButton(text=copy_button_label, callback_data=copy_dep_data)]
+            [premium_button(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
+            [premium_button(text=copy_button_label, callback_data=copy_dep_data)]
         ])
 
         # طلبات سيرياتيل يمكن إرسالها لقناة خاصة إن تم ضبطها من لوحة المشرف/البيئة
@@ -1824,18 +1825,18 @@ async def process_withdraw_currency(callback: CallbackQuery, state: FSMContext):
 
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
-            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
-            [InlineKeyboardButton(text="↩️ القائمة", callback_data="withdraw_bot")]
+            [premium_button(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
+            [premium_button(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
+            [premium_button(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
+            [premium_button(text="↩️ القائمة", callback_data="withdraw_bot")]
         ])
         await callback.message.edit_text("🇸🇾 <b>اختر وسيلة سحب الليرة السورية:</b>", reply_markup=keyboard, parse_mode="HTML")
     else:
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📲 Sham Cash (USD)", callback_data="wit_gate_sham_usd")],
-            [InlineKeyboardButton(text="🪙 USDT - TRC20", callback_data="wit_gate_usdt_trc")],
-            [InlineKeyboardButton(text="🪙 USDT - BEP20", callback_data="wit_gate_usdt_bep")],
-            [InlineKeyboardButton(text="↩️ القائمة", callback_data="withdraw_bot")]
+            [premium_button(text="📲 Sham Cash (USD)", callback_data="wit_gate_sham_usd")],
+            [premium_button(text="🪙 USDT - TRC20", callback_data="wit_gate_usdt_trc")],
+            [premium_button(text="🪙 USDT - BEP20", callback_data="wit_gate_usdt_bep")],
+            [premium_button(text="↩️ القائمة", callback_data="withdraw_bot")]
         ])
         await callback.message.edit_text("🇺🇸 <b>اختر وسيلة سحب الدولار الأمريكي:</b>", reply_markup=keyboard, parse_mode="HTML")
 
@@ -1979,8 +1980,8 @@ async def process_withdraw_amount(message: Message, state: FSMContext):
     )
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✔️ تأكيد السحب", callback_data="confirm_my_withdraw")],
-        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="cancel_my_withdraw")]
+        [premium_button(text="✔️ تأكيد السحب", callback_data="confirm_my_withdraw")],
+        [premium_button(text="⛔ إلغاء", callback_data="cancel_my_withdraw")]
     ])
 
     await message.answer(confirm_msg, reply_markup=keyboard, parse_mode="HTML")
@@ -2104,11 +2105,11 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
         copy_wd_data = f"copy_amt_{net_new}"
     admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="✔️ تم التحويل", callback_data=f"approve_withdraw_{tx_id}"),
-            InlineKeyboardButton(text="⛔ رفض", callback_data=f"reject_withdraw_{tx_id}")
+            premium_button(text="✔️ تم التحويل", callback_data=f"approve_withdraw_{tx_id}"),
+            premium_button(text="⛔ رفض", callback_data=f"reject_withdraw_{tx_id}")
         ],
-        [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
-        [InlineKeyboardButton(text=copy_wd_label, callback_data=copy_wd_data)]
+        [premium_button(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
+        [premium_button(text=copy_wd_label, callback_data=copy_wd_data)]
     ])
 
     target_chat = settings.WITHDRAWAL_CHANNEL_ID if settings.WITHDRAWAL_CHANNEL_ID else None
@@ -2327,9 +2328,9 @@ async def process_admin_reply_to_user(message: Message, state: FSMContext):
 @router.callback_query(F.data == "contact_us")
 async def contact_us_callback(callback: CallbackQuery):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🗂️ رسالة للإدارة", callback_data="message_admin")],
-        [InlineKeyboardButton(text="☎️ فتح الدعم", url="https://t.me/Mega77_Support")],
-        [InlineKeyboardButton(text="↩️ رجوع", callback_data="back_to_main_menu")]
+        [premium_button(text="🗂️ رسالة للإدارة", callback_data="message_admin")],
+        [premium_button(text="☎️ فتح الدعم", url="https://t.me/Mega77_Support")],
+        [premium_button(text="↩️ رجوع", callback_data="back_to_main_menu")]
     ])
     await safe_edit_text(
         callback.message,
@@ -2485,10 +2486,10 @@ async def process_contest_proof(message: Message, state: FSMContext):
             # أزرار القبول/الرفض
             admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="✔️ قبول المشاركة", callback_data=f"approve_contest_{entry_id}"),
-                    InlineKeyboardButton(text="⛔ رفض المشاركة", callback_data=f"reject_contest_{entry_id}")
+                    premium_button(text="✔️ قبول المشاركة", callback_data=f"approve_contest_{entry_id}"),
+                    premium_button(text="⛔ رفض المشاركة", callback_data=f"reject_contest_{entry_id}")
                 ],
-                [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{message.from_user.id}")]
+                [premium_button(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{message.from_user.id}")]
             ])
 
             try:
@@ -2594,8 +2595,8 @@ async def offers_menu_callback(callback: CallbackQuery):
 async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
     """🌟 (Update 18) لوحة المتصدرين الأسبوعية حسب دوران المراهنات في iChancy."""
     back_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔁 تحديث العرض", callback_data="weekly_leaderboard_menu")],
-        [InlineKeyboardButton(text="🏡 العودة للقائمة الرئيسية", callback_data="back_to_main_menu")],
+        [premium_button(text="🔁 تحديث العرض", callback_data="weekly_leaderboard_menu")],
+        [premium_button(text="🏡 العودة للقائمة الرئيسية", callback_data="back_to_main_menu")],
     ])
     try:
         feats = await asyncio.to_thread(repo.get_user_features_settings)
@@ -2919,8 +2920,8 @@ async def process_game_deposit_amount(message: Message, state: FSMContext):
         f"🚧 <b>بونص اللعب يُستخدم داخل اللعبة، وعند السحب يُخصم البونص النشط أولاً.</b>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✔️ تأكيد الشحن", callback_data="confirm_game_deposit")],
-        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="back_to_main_menu")]
+        [premium_button(text="✔️ تأكيد الشحن", callback_data="confirm_game_deposit")],
+        [premium_button(text="⛔ إلغاء", callback_data="back_to_main_menu")]
     ])
     await message.answer(confirm_text, reply_markup=keyboard, parse_mode="HTML")
     await state.set_state(BotStates.confirming_game_deposit)
@@ -3109,8 +3110,8 @@ async def process_game_withdraw_amount(message: Message, state: FSMContext):
         f"🚧 <b>بونص اللعب النشط غير قابل للسحب نقداً ويُخصم أولاً.</b>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✔️ تأكيد السحب", callback_data="confirm_game_withdraw")],
-        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="back_to_main_menu")]
+        [premium_button(text="✔️ تأكيد السحب", callback_data="confirm_game_withdraw")],
+        [premium_button(text="⛔ إلغاء", callback_data="back_to_main_menu")]
     ])
     await message.answer(confirm_text, reply_markup=keyboard, parse_mode="HTML")
     await state.set_state(BotStates.confirming_game_withdraw)
@@ -3228,8 +3229,8 @@ async def referral_menu_callback(callback: CallbackQuery):
     )
     rows = []
     if total_earnings > 0:
-        rows.append([InlineKeyboardButton(text="💳 تحويل أرباح الإحالات إلى رصيد البوت للسحب", callback_data="transfer_affiliate_balance")])
-    rows.append([InlineKeyboardButton(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")])
+        rows.append([premium_button(text="💳 تحويل أرباح الإحالات إلى رصيد البوت للسحب", callback_data="transfer_affiliate_balance")])
+    rows.append([premium_button(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 

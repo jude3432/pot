@@ -1,4 +1,4 @@
-aiogram>=3.0.0
+aiogram>=3.26.0
 requests[socks]==2.32.4
 beautifulsoup4==4.13.4
 cloudscraper==1.2.71

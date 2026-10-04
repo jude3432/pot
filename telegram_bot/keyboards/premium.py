@@ -1,0 +1,108 @@
+"""Telegram Custom Emoji icons for buttons.
+
+The IDs come from the supplied NewsEmoji/FinanceEmoji collections.  Telegram
+renders these through ``icon_custom_emoji_id``; the wrapper falls back to a
+regular button when running against an older aiogram release or an ineligible
+bot account, so keyboard actions never break.
+"""
+from __future__ import annotations
+import re
+from aiogram.types import InlineKeyboardButton
+
+# Curated semantic choices. Finance IDs are preferred for money actions;
+# NewsEmoji IDs are used for navigation/status/admin actions.
+PREMIUM_EMOJI = {
+    "brand": "5438496463044752972",       # ⭐
+    "home": "5416041192905265756",        # 🏠
+    "back": "5416117059207572332",        # ➡️
+    "settings": "5341715473882955310",    # ⚙️
+    "admin": "5341715473882955310",       # ⚙️
+    "balance": "5287231198098117669",     # 💰 Finance
+    "wallet": "5445221832074483553",      # 💼 Finance
+    "deposit": "5445355530111437729",    # 📤 Finance
+    "withdraw": "5443127283898405358",   # 📥 Finance
+    "payment": "5445353829304387411",    # 💳 Finance
+    "success": "5206607081334906820",    # ✔️
+    "cancel": "5260293700088511294",     # ⛔
+    "error": "5210952531676504517",       # ❌
+    "warning": "5447644880824181073",    # ⚠️
+    "info": "5334544901428229844",       # ℹ️
+    "gift": "5294167145079395967",       # 🛍 Finance
+    "bonus": "5427168083074628963",      # 💎
+    "game": "5361741454685256344",       # 🎮
+    "account": "5332724926216428039",    # 📇 Finance
+    "referrals": "5271837459783638319",  # ↔️ Finance
+    "leaderboard": "5440539497383087970",# 🥇
+    "contest": "5461151367559141950",    # 🎉
+    "support": "5443038326535759644",    # 💬
+    "contact": "5253742260054409879",    # ✉️
+    "guide": "5222444124698853913",      # 📖
+    "website": "5447410659077661506",    # 🌐
+    "download": "5406745015365943482",   # 🔽
+    "confirm": "5206607081334906820",    # ✔️
+    "loading": "5386367538735104399",    # 🕐
+    "security": "5197288647275071607",   # 🔒 Finance
+    "maintenance": "5341715473882955310",# ⚙️
+    "search": "5231012545799666522",     # 🔍
+    "document": "5444856076954520455",   # 🧾 Finance
+    "prediction": "5310278924616356636", # 🎯 Finance
+    "history": "5274055917766202507",    # 📅 Finance
+}
+
+# Prefixes are intentionally explicit: the visible emoji remains in the
+# label as a fallback and the premium icon is rendered before the label.
+PREFIX_TO_ICON = {
+    "✔": "success", "✅": "success", "⛔": "cancel", "❌": "error",
+    "⚠": "warning", "❗": "warning", "ℹ": "info", "💰": "balance",
+    "💵": "balance", "💲": "balance", "💳": "payment", "📤": "deposit",
+    "📥": "withdraw", "🔽": "withdraw", "⬇": "withdraw", "🔼": "deposit",
+    "⬆": "deposit", "🪙": "balance", "💼": "wallet", "🧧": "gift",
+    "🎁": "gift", "💎": "bonus", "🎮": "game", "🕹": "game", "👾": "game",
+    "👤": "account", "📇": "account", "🧭": "account", "🤝": "referrals",
+    "🪙": "balance", "🏆": "leaderboard", "🥇": "leaderboard", "🏅": "leaderboard",
+    "🎉": "contest", "✨": "contest", "💬": "support", "📨": "contact",
+    "✉": "contact", "📖": "guide", "📚": "guide", "🌐": "website",
+    "🔗": "website", "📲": "download", "⚙": "settings", "🔧": "settings",
+    "🔒": "security", "🔐": "security", "🛡": "security", "🔍": "search",
+    "🧾": "document", "🎯": "prediction", "📅": "history", "🗓": "history",
+    "🏠": "home", "🏡": "home", "↩": "back", "➡": "back", "🔄": "loading",
+    "⏳": "loading", "🕒": "loading", "🕐": "loading", "🧪": "maintenance",
+}
+
+# Longest-first avoids matching a short prefix inside a compound emoji.
+_PREFIXES = sorted(PREFIX_TO_ICON, key=len, reverse=True)
+def _icon_for_text(text: object) -> str | None:
+    value = str(text or "")
+    # Meaning wins over a reused visible emoji (e.g. 📨 شحن vs 📨 تواصل).
+    if "شحن" in value or "إيداع" in value:
+        return PREMIUM_EMOJI["deposit"]
+    if "سحب" in value:
+        return PREMIUM_EMOJI["withdraw"]
+    if "إحالة" in value or "الإحالات" in value:
+        return PREMIUM_EMOJI["referrals"]
+    if "سجل" in value or "تاريخ" in value:
+        return PREMIUM_EMOJI["history"]
+    if "دعم" in value:
+        return PREMIUM_EMOJI["support"]
+    if "تواصل" in value or "رسالة" in value:
+        return PREMIUM_EMOJI["contact"]
+    for prefix in _PREFIXES:
+        if value.lstrip().startswith(prefix):
+            return PREMIUM_EMOJI[PREFIX_TO_ICON[prefix]]
+    lowered = value.lower()
+    if any(x in lowered for x in ("تأكيد", "موافق", "اعتماد", "إرسال")):
+        return PREMIUM_EMOJI["confirm"]
+    if any(x in value for x in ("إلغاء", "رفض", "إغلاق")):
+        return PREMIUM_EMOJI["cancel"]
+    return None
+
+def premium_button(*, text: str, **kwargs):
+    """Build a button with a premium icon when Telegram/aiogram supports it."""
+    icon_id = kwargs.pop("icon_custom_emoji_id", None) or _icon_for_text(text)
+    if icon_id:
+        try:
+            return InlineKeyboardButton(text=text, icon_custom_emoji_id=icon_id, **kwargs)
+        except (TypeError, ValueError):
+            # Older aiogram or an API model without Bot API 9.4 support.
+            pass
+    return InlineKeyboardButton(text=text, **kwargs)

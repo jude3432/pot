@@ -1,3 +1,4 @@
+from telegram_bot.keyboards.premium import premium_button
 import asyncio
 import logging
 from aiogram import Router, F
@@ -120,7 +121,7 @@ async def reject_terms_callback(callback: CallbackQuery):
         "للمحاولة مجدداً اضغط على /start",
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(text="🔁 المحاولة مجدداً", callback_data="show_terms_only")
+            premium_button(text="🔁 المحاولة مجدداً", callback_data="show_terms_only")
         ]])
     )
     await callback.answer()
@@ -198,8 +199,8 @@ async def cmd_cancel(message: Message, state: FSMContext):
 async def cmd_delete(message: Message):
     """حذف الحساب مع تأكيد."""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text="🧹 نعم، احذف حسابي نهائياً", callback_data="delete_confirm"),
-        InlineKeyboardButton(text="⛔ إلغاء", callback_data="delete_cancel"),
+        premium_button(text="🧹 نعم، احذف حسابي نهائياً", callback_data="delete_confirm"),
+        premium_button(text="⛔ إلغاء", callback_data="delete_cancel"),
     ]])
     await message.answer(
         "🚧 <b>هل أنت متأكد من حذف حسابك؟</b>\n\n"
