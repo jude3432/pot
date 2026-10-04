@@ -27,11 +27,7 @@ def get_guides_url():
 
 def get_main_menu_keyboard(is_admin=False):
     keyboard = []
-
-    # 🌟 (Update 10) الزر العريض المبهر: Mini App للمستخدم
-    keyboard.append([
-        premium_button(text="◈ لوحة Jude Robert", web_app=WebAppInfo(url=get_user_app_url()))
-    ])
+    # User Mini App access is temporarily hidden until its display issue is fixed.
     if is_admin:
         keyboard.append([
             premium_button(text="🛠️ لوحة تحكم الإدارة", callback_data="admin_panel")
