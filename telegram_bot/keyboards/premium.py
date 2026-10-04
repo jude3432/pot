@@ -49,8 +49,8 @@ PREMIUM_EMOJI = {
     "history": "5274055917766202507",    # 📅 Finance
 }
 
-# Prefixes are intentionally explicit: the visible emoji remains in the
-# label as a fallback and the premium icon is rendered before the label.
+# Prefixes are intentionally explicit. When Telegram accepts the premium
+# icon, the matching legacy glyph is removed from the label to avoid doubles.
 PREFIX_TO_ICON = {
     "✔": "success", "✅": "success", "⛔": "cancel", "❌": "error",
     "⚠": "warning", "❗": "warning", "ℹ": "info", "💰": "balance",
@@ -67,6 +67,8 @@ PREFIX_TO_ICON = {
     "🧾": "document", "🎯": "prediction", "📅": "history", "🗓": "history",
     "🏠": "home", "🏡": "home", "↩": "back", "➡": "back", "🔄": "loading",
     "⏳": "loading", "🕒": "loading", "🕐": "loading", "🧪": "maintenance",
+    "🎟": "gift", "🗂": "guide", "📌": "info", "🔻": "withdraw", "🔁": "loading",
+    "🧑‍💼": "account", "🛠": "settings", "◈": "brand",
 }
 
 # Longest-first avoids matching a short prefix inside a compound emoji.
@@ -96,12 +98,25 @@ def _icon_for_text(text: object) -> str | None:
         return PREMIUM_EMOJI["cancel"]
     return None
 
+def _remove_icon_prefix(text: str) -> str:
+    """Remove only the mapped leading glyph, including variation selectors."""
+    value = text.lstrip()
+    for prefix in _PREFIXES:
+        if value.startswith(prefix):
+            rest = value[len(prefix):].lstrip("\ufe0f\u200d\u20e3")
+            return rest.lstrip()
+    return text
+
 def premium_button(*, text: str, **kwargs):
     """Build a button with a premium icon when Telegram/aiogram supports it."""
     icon_id = kwargs.pop("icon_custom_emoji_id", None) or _icon_for_text(text)
     if icon_id:
         try:
-            return InlineKeyboardButton(text=text, icon_custom_emoji_id=icon_id, **kwargs)
+            return InlineKeyboardButton(
+                text=_remove_icon_prefix(str(text)),
+                icon_custom_emoji_id=icon_id,
+                **kwargs,
+            )
         except (TypeError, ValueError):
             # Older aiogram or an API model without Bot API 9.4 support.
             pass
