@@ -1,10 +1,14 @@
 import asyncio
+import logging
 import time
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from typing import Callable, Dict, Any, Awaitable
 import database.repository as repo
 from config import settings
+from telegram_bot.keyboards.premium import premium_button, PREMIUM_EMOJI
+
+logger = logging.getLogger(__name__)
 
 
 # 🛠️ إصلاح: قائمة الأدمن ليتجاوزوا فحص الشروط
@@ -16,6 +20,8 @@ ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", setting
 # فلا يوجد أي تأخير على من وافق للتو، والحذف يُبطل الكاش صراحةً.
 _TERMS_TTL = 60.0
 _terms_accepted_cache = {}  # telegram_id -> expires_at
+_SUBSCRIPTION_TTL = 45.0
+_subscription_cache = {}  # telegram_id -> expires_at
 
 
 def invalidate_terms_cache(telegram_id=None):
@@ -28,6 +34,55 @@ def invalidate_terms_cache(telegram_id=None):
 
 def _is_admin(user_id) -> bool:
     return str(user_id) in ADMIN_IDS
+
+
+def invalidate_subscription_cache(telegram_id=None):
+    if telegram_id is None:
+        _subscription_cache.clear()
+    else:
+        _subscription_cache.pop(str(telegram_id), None)
+
+
+async def is_force_subscribed(bot, telegram_id) -> bool:
+    chat_id = str(getattr(settings, 'FORCE_SUBSCRIPTION_CHAT_ID', '') or '').strip()
+    if not chat_id:
+        return True
+    tid = str(telegram_id)
+    if _subscription_cache.get(tid, 0) > time.time():
+        return True
+    try:
+        member = await bot.get_chat_member(chat_id=chat_id, user_id=int(tid))
+        status = str(member.status)
+        subscribed = status in {'creator', 'administrator', 'member'} or (
+            status == 'restricted' and bool(getattr(member, 'is_member', False))
+        )
+        if subscribed:
+            _subscription_cache[tid] = time.time() + _SUBSCRIPTION_TTL
+        return subscribed
+    except Exception:
+        logger.exception('Force-subscription membership check failed for chat %s', chat_id)
+        return False
+
+
+def get_force_subscription_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [premium_button(
+            text='📢 اشترك بالقناة الآن',
+            url=getattr(settings, 'FORCE_SUBSCRIPTION_INVITE_URL', 'https://t.me/+0WYPXoqqbj1hNWI0'),
+        )],
+        [premium_button(text='✅ تحقق من الاشتراك', callback_data='force_sub_check')],
+    ])
+
+
+def get_force_subscription_text() -> str:
+    return (
+        f'<tg-emoji emoji-id="{PREMIUM_EMOJI["security"]}">🔒</tg-emoji> '
+        '<b>الاشتراك بالقناة مطلوب</b>\n\n'
+        'للاستفادة من خدمات <b>Jude Robert</b>، اشترك بالقناة الرسمية أولاً.\n'
+        'بعد الاشتراك اضغط على زر التحقق ليتم تفعيل البوت لحسابك.\n\n'
+        f'<tg-emoji emoji-id="{PREMIUM_EMOJI["info"]}">ℹ️</tg-emoji> '
+        '<i>إذا اشتركت ولم يتم التحقق مباشرة، انتظر ثوانٍ ثم اضغط التحقق مرة أخرى.</i>'
+    )
 
 
 def get_terms_text() -> str:
@@ -57,6 +112,21 @@ class TermsCheckMiddleware(BaseMiddleware):
         # (ضروري لأن أزرار الموافقة/الرفض تُنقر من داخل القنوات)
         if _is_admin(user.id):
             return await handler(event, data)
+
+        # Force subscription is checked before terms and database work.
+        # The verification callback itself must reach its handler.
+        if getattr(settings, 'FORCE_SUBSCRIPTION_CHAT_ID', '').strip():
+            if not (isinstance(event, CallbackQuery) and event.data == 'force_sub_check'):
+                bot = data.get('bot') or getattr(event, 'bot', None)
+                if bot and not await is_force_subscribed(bot, user.id):
+                    prompt = get_force_subscription_text()
+                    keyboard = get_force_subscription_keyboard()
+                    if isinstance(event, Message):
+                        await event.answer(prompt, reply_markup=keyboard, parse_mode='HTML')
+                    elif isinstance(event, CallbackQuery):
+                        await event.message.answer(prompt, reply_markup=keyboard, parse_mode='HTML')
+                        await event.answer('اشترك بالقناة أولاً ثم اضغط تحقق.', show_alert=True)
+                    return
 
         telegram_id = str(user.id)
         username = user.username
@@ -88,7 +158,8 @@ class TermsCheckMiddleware(BaseMiddleware):
                 'show_terms_only',
                 'delete_confirm',
                 'delete_cancel',
-                'back_to_main_menu'
+                'back_to_main_menu',
+                'force_sub_check'
             ]:
                 is_bypass = True
 

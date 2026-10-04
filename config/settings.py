@@ -20,6 +20,13 @@ LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
 # 🆕 قناة المسابقات والتوقعات
 CONTEST_CHANNEL_ID = os.getenv('CONTEST_CHANNEL_ID')
 
+# الاشتراك الإجباري بالقناة. القنوات الخاصة تحتاج Chat ID رقمي للفحص عبر Bot API.
+FORCE_SUBSCRIPTION_CHAT_ID = os.getenv('FORCE_SUBSCRIPTION_CHAT_ID', '').strip()
+FORCE_SUBSCRIPTION_INVITE_URL = os.getenv(
+    'FORCE_SUBSCRIPTION_INVITE_URL',
+    'https://t.me/+0WYPXoqqbj1hNWI0'
+).strip()
+
 # 🆕 إعدادات التقرير المالي اليومي
 # ملاحظة: Render يستخدم UTC (غرينتش)
 # الساعة 5 صباحاً UTC = الساعة 8 صباحاً بتوقيت سوريا (UTC+3)
@@ -97,6 +104,9 @@ def validate_config():
     # 🆕 جديد - تحذير للـ Log Channel (اختياري)
     if not LOG_CHANNEL_ID:
         print("⚠️ WARNING: LOG_CHANNEL_ID not set - logging disabled")
+
+    if not FORCE_SUBSCRIPTION_CHAT_ID:
+        print("⚠️ WARNING: FORCE_SUBSCRIPTION_CHAT_ID not set - force subscription disabled")
     
     # 🆕 جديد - تحذير لأسعار الصرف
     if not EXCHANGE_RATE_BUY or not EXCHANGE_RATE_SELL:

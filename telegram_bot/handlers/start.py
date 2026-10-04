@@ -14,7 +14,11 @@ from telegram_bot.keyboards.inline import (
     get_main_menu_keyboard,
     get_terms_keyboard,
 )
-from telegram_bot.middlewares.terms_check import get_terms_text
+from telegram_bot.middlewares.terms_check import (
+    get_terms_text,
+    is_force_subscribed,
+    invalidate_subscription_cache,
+)
 from telegram_bot.miniapp_shortcuts import resolve_miniapp_shortcut
 
 router = Router()
@@ -209,6 +213,27 @@ async def show_terms_only_callback(callback: CallbackQuery):
     terms_text = get_terms_text()
     await callback.message.edit_text(terms_text, reply_markup=get_terms_keyboard(), parse_mode="HTML")
     await callback.answer()
+
+
+@router.callback_query(F.data == "force_sub_check")
+async def force_subscription_check_callback(callback: CallbackQuery):
+    """التحقق من الاشتراك ثم عرض الشروط أو القائمة الرئيسية."""
+    telegram_id = str(callback.from_user.id)
+    invalidate_subscription_cache(telegram_id)
+    if not await is_force_subscribed(callback.bot, telegram_id):
+        await callback.answer("لم يتم العثور على اشتراكك بعد. اشترك ثم حاول مرة أخرى.", show_alert=True)
+        return
+
+    user = await asyncio.to_thread(repo.get_user, telegram_id)
+    if user and user.get('terms_accepted'):
+        await show_main_menu(callback.message, telegram_id, edit=True, user_record=user)
+    else:
+        await callback.message.edit_text(
+            get_terms_text(),
+            reply_markup=get_terms_keyboard(),
+            parse_mode='HTML',
+        )
+    await callback.answer("✅ تم التحقق من اشتراكك بنجاح")
 
 
 # ================================================================
