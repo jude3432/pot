@@ -34,11 +34,15 @@ def get_main_menu_keyboard(is_admin=False):
         ])
 
     keyboard.extend([
-        [premium_button(text="🧭 حساب iChancy", callback_data="ichancy_menu")],
         [
-            premium_button(text="📨 شحن رصيد", callback_data="deposit_bot"),
-            premium_button(text="📬 سحب رصيد", callback_data="withdraw_bot")
+            premium_button(text="📤 سحب من اللعبة", callback_data="withdraw_game_acc"),
+            premium_button(text="📥 شحن اللعبة", callback_data="deposit_game_acc")
         ],
+        [
+            premium_button(text="📤 سحب من البوت", callback_data="withdraw_bot"),
+            premium_button(text="📥 شحن البوت", callback_data="deposit_bot")
+        ],
+        [premium_button(text="🧭 حساب iChancy", callback_data="ichancy_menu")],
         [
             premium_button(text="🧧 إهداء رصيد", callback_data="gift_send"),
             premium_button(text="🎟️ كود هدية", callback_data="gift_redeem")
@@ -81,8 +85,8 @@ def get_ichancy_submenu(has_account=False):
         ])
     else:
         keyboard.append([
-            premium_button(text="📨 شحن حساب اللعبة", callback_data="deposit_game_acc"),
-            premium_button(text="📬 سحب من حساب اللعبة", callback_data="withdraw_game_acc")
+            premium_button(text="📥 شحن اللعبة", callback_data="deposit_game_acc"),
+            premium_button(text="📤 سحب من اللعبة", callback_data="withdraw_game_acc")
         ])
 
     keyboard.append([

@@ -353,10 +353,13 @@ async def require_ichancy_registered(callback: CallbackQuery) -> bool:
     if not user or not user.get('player_id'):
         await safe_edit_text(
             callback.message,
-            "✨ <b>Jude Robert جديد في اللعبة!</b>\n\n"
-            "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
-            "توجه إلى قسم 🧭️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
-            reply_markup=get_user_menu_keyboard(callback.from_user.id),
+            "✨ <b>اربط حساب iChancy أولاً</b>\n\n"
+            "حتى تتمكن من شحن أو سحب رصيد اللعبة، يجب إنشاء حساب iChancy وربطه بالبوت.\n"
+            "اضغط الزر التالي للبدء مباشرة:",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [premium_button(text="🌟 إنشاء حساب iChancy", callback_data="create_ichancy_account")],
+                [premium_button(text="🏡 العودة للقائمة الرئيسية", callback_data="back_to_main_menu")],
+            ]),
             parse_mode="HTML"
         )
         await safe_answer_callback(callback)
