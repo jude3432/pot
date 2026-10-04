@@ -67,6 +67,7 @@ async def _unused_verify(*args, **kwargs):
     raise AssertionError("Syriatel API must not run while opening a shortcut")
 
 fake_syriatel.verify_incoming_deposit = _unused_verify
+fake_syriatel.verify_shamcash_deposit = _unused_verify
 sys.modules["integrations.syriatel_cash"] = fake_syriatel
 
 from telegram_bot.handlers import menu, start  # noqa: E402

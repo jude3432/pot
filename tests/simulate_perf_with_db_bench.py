@@ -239,11 +239,11 @@ repo.get_button_link('games_url')
 repo.get_button_link('games_url')
 repo.get_button_link('website_url')
 repo.get_button_link('games_url')
-check("4 قراءات روابط أزرار = استعلامان فقط (كاش 5 دقائق)", _qcount['n'] == 2, str(_qcount['n']))
+check("بناء القائمة لا ينفذ قراءات قاعدة بيانات متزامنة", _qcount['n'] == 0, str(_qcount['n']))
 _qcount['n'] = 0
 repo.set_button_link('games_url', 'https://ichancy100.com/games')
 repo.get_button_link('games_url')
-check("تعديل الرابط يكسر كاشه", _qcount['n'] == 2, str(_qcount['n']))
+check("تعديل الرابط يحدث الكاش مباشرة بلا قراءة إضافية", _qcount['n'] == 1, str(_qcount['n']))
 
 print("=" * 66)
 print("🧪 [6] ميدلوير الشروط: حدث حقيقي لكامل الرحلة")

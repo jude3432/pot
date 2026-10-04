@@ -146,6 +146,7 @@ class DatabaseManager:
         cursor = None
         result = None
         retry_count = 0
+        started_at = time.perf_counter()
         while retry_count < 3:
             conn = None
             cursor = None
@@ -178,6 +179,7 @@ class DatabaseManager:
                     cursor.close()
                 if conn:
                     cls.put_connection(conn)
+        cls._log_slow_query(query, started_at)
         return result
 
     @classmethod
@@ -186,6 +188,7 @@ class DatabaseManager:
         cursor = None
         result = None
         retry_count = 0
+        started_at = time.perf_counter()
         while retry_count < 3:
             conn = None
             cursor = None
@@ -219,7 +222,18 @@ class DatabaseManager:
                     cursor.close()
                 if conn:
                     cls.put_connection(conn)
+        cls._log_slow_query(query, started_at)
         return result
+
+    @classmethod
+    def _log_slow_query(cls, query, started_at):
+        elapsed_ms = (time.perf_counter() - started_at) * 1000
+        threshold_ms = max(0, int(getattr(settings, 'SLOW_DB_QUERY_LOG_MS', 500) or 0))
+        if elapsed_ms < threshold_ms:
+            return
+        # Log only the SQL shape, never parameter values that may contain PII.
+        query_label = " ".join(str(query).strip().split()[:5])
+        logger.warning("Slow database query: %.1f ms (%s)", elapsed_ms, query_label)
 
     @classmethod
     def create_tables(cls):

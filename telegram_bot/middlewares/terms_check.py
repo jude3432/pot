@@ -20,8 +20,12 @@ ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", setting
 # فلا يوجد أي تأخير على من وافق للتو، والحذف يُبطل الكاش صراحةً.
 _TERMS_TTL = 60.0
 _terms_accepted_cache = {}  # telegram_id -> expires_at
-_SUBSCRIPTION_TTL = 45.0
-_subscription_cache = {}  # telegram_id -> expires_at
+_SUBSCRIPTION_TTL = max(30, int(getattr(settings, 'FORCE_SUBSCRIPTION_CACHE_TTL_SECONDS', 300)))
+_SUBSCRIPTION_NEGATIVE_TTL = max(
+    0,
+    int(getattr(settings, 'FORCE_SUBSCRIPTION_NEGATIVE_CACHE_TTL_SECONDS', 8)),
+)
+_subscription_cache = {}  # telegram_id -> (subscribed, expires_at)
 
 
 def invalidate_terms_cache(telegram_id=None):
@@ -48,7 +52,14 @@ async def is_force_subscribed(bot, telegram_id) -> bool:
     if not chat_id:
         return True
     tid = str(telegram_id)
-    if _subscription_cache.get(tid, 0) > time.time():
+    now = time.time()
+    cached = _subscription_cache.get(tid)
+    if isinstance(cached, tuple):
+        subscribed, expires_at = cached
+        if expires_at > now:
+            return bool(subscribed)
+    elif cached and cached > now:
+        # Backward compatibility with a cache entry made before this deploy.
         return True
     try:
         member = await bot.get_chat_member(chat_id=chat_id, user_id=int(tid))
@@ -56,8 +67,9 @@ async def is_force_subscribed(bot, telegram_id) -> bool:
         subscribed = status in {'creator', 'administrator', 'member'} or (
             status == 'restricted' and bool(getattr(member, 'is_member', False))
         )
-        if subscribed:
-            _subscription_cache[tid] = time.time() + _SUBSCRIPTION_TTL
+        ttl = _SUBSCRIPTION_TTL if subscribed else _SUBSCRIPTION_NEGATIVE_TTL
+        if ttl:
+            _subscription_cache[tid] = (subscribed, time.time() + ttl)
         return subscribed
     except Exception:
         logger.exception('Force-subscription membership check failed for chat %s', chat_id)

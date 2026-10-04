@@ -34,20 +34,41 @@ class IChancyClient:
         # The official API authenticates with Bearer tokens. Never retain or
         # send browser cookies, including cookies returned by an API response.
         self.session.cookies.clear()
+        # requests.Session is not thread-safe. Keep a small keep-alive session
+        # per worker thread so unrelated API calls can run concurrently without
+        # sharing mutable cookie jars.
+        self._session_local = threading.local()
         self._load_official_tokens_from_db()
+
+    def _request_session(self):
+        """Return a per-thread HTTP session with the configured transport."""
+        local = getattr(self, "_session_local", None)
+        if local is None:
+            # Keep compatibility with lightweight test clients built via __new__.
+            return self.session
+
+        session = getattr(local, "session", None)
+        if session is None:
+            session = requests.Session()
+            session.headers.update(self.session.headers)
+            session.proxies.update(self.session.proxies)
+            session.trust_env = self.session.trust_env
+            local.session = session
+        return session
 
     def _post_json_without_cookies(self, url, payload, headers=None, timeout=30):
         """POST JSON without ever sending or retaining a session cookie."""
-        self.session.cookies.clear()
+        session = self._request_session()
+        session.cookies.clear()
         try:
-            return self.session.post(
+            return session.post(
                 url,
                 json=payload,
                 headers=headers,
                 timeout=timeout,
             )
         finally:
-            self.session.cookies.clear()
+            session.cookies.clear()
 
     @staticmethod
     def _extract_balance_from_result(result_data):
@@ -253,34 +274,54 @@ class IChancyClient:
             path = f"{self.OFFICIAL_API_PREFIX}{path}"
         url = f"{str(self._official_api_base_url or self.BASE_URL).rstrip('/')}{path}"
         operation = operation or endpoint
-        with self._official_lock:
-            if not self._official_access_token or time.time() >= self._official_access_token_expires_at:
-                if not self._official_refresh() and not self._official_sign_in():
-                    if self._official_last_auth_error:
-                        return {"status": False, "result": False, "notification": [{"content": self._official_last_auth_error}]}
-                    return None
-            for attempt in range(2):
-                try:
-                    response = self._post_json_without_cookies(
-                        url,
-                        payload,
-                        headers={"Authorization": f"Bearer {self._official_access_token}", "Content-Type": "application/json"},
-                        timeout=45,
-                    )
-                    data = self._response_json(response, operation)
-                    invalid = response.status_code == 401 or (
-                        isinstance(data, dict)
-                        and data.get("result") == "ex"
-                    )
-                    if invalid and attempt == 0:
-                        if self._official_refresh() or self._official_sign_in():
-                            continue
-                    if data is None:
+        for attempt in range(2):
+            # Only serialize token refresh/sign-in. Holding this lock through
+            # the network request made every customer's iChancy request wait
+            # behind every other customer's request.
+            with self._official_lock:
+                if not self._official_access_token or time.time() >= self._official_access_token_expires_at:
+                    if not self._official_refresh() and not self._official_sign_in():
+                        if self._official_last_auth_error:
+                            return {
+                                "status": False,
+                                "result": False,
+                                "notification": [{"content": self._official_last_auth_error}],
+                            }
                         return None
-                    return data
-                except requests.RequestException as exc:
-                    logger.error("%s network error: %s", operation, exc)
+                access_token = self._official_access_token
+
+            try:
+                response = self._post_json_without_cookies(
+                    url,
+                    payload,
+                    headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+                    timeout=45,
+                )
+                data = self._response_json(response, operation)
+                invalid = response.status_code == 401 or (
+                    isinstance(data, dict)
+                    and data.get("result") == "ex"
+                )
+                if invalid and attempt == 0:
+                    with self._official_lock:
+                        # Another in-flight request may already have rotated
+                        # the token. Reuse it instead of refreshing again.
+                        if (
+                            self._official_access_token != access_token
+                            and self._official_access_token
+                            and time.time() < self._official_access_token_expires_at
+                        ):
+                            refreshed = True
+                        else:
+                            refreshed = self._official_refresh() or self._official_sign_in()
+                    if refreshed:
+                        continue
+                if data is None:
                     return None
+                return data
+            except requests.RequestException as exc:
+                logger.error("%s network error: %s", operation, exc)
+                return None
         return None
 
     def _official_player_id(self, target_username):
@@ -670,6 +711,30 @@ class IChancyClient:
     async def get_all_players_stats_bulk(self, field_name='totalBet', max_pages=40, page_size=500):
         return await asyncio.to_thread(self._get_all_players_stats_bulk, field_name, max_pages, page_size)
 
+    async def _verify_transfer_balance(self, player_id, before_balance, amount, direction):
+        """Verify a transfer immediately, retrying only after a short backoff."""
+        if before_balance is None:
+            return False, None
+
+        attempts = max(1, int(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_ATTEMPTS', 2) or 2))
+        delay = max(0.0, float(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_DELAY_SECONDS', 0.25) or 0.0))
+        last_balance = None
+        for attempt in range(attempts):
+            # The former implementation slept before its first read, adding a
+            # full second even when iChancy had already applied the transfer.
+            if attempt:
+                await asyncio.sleep(delay)
+            last_balance = await self.get_player_balance(player_id)
+            if last_balance is None:
+                continue
+            if direction == "deposit":
+                verified = int(last_balance) >= int(before_balance) + int(amount)
+            else:
+                verified = int(last_balance) <= max(0, int(before_balance) - int(amount))
+            if verified:
+                return True, last_balance
+        return False, last_balance
+
     # ================================================================
     # 🆕 دوال الـ API القياسية (تعيد dict بـ success/message)
     # لكي تتوافق مع ما تتوقعه معالجات الإيداع/السحب التلقائي في اللعبة
@@ -683,13 +748,11 @@ class IChancyClient:
             if not ok:
                 return {'success': False, 'message': 'فشل الإيداع في حساب اللاعب (لم يؤكد الـ API العملية).'}
             if getattr(settings, 'VERIFY_ICHANCY_TRANSFER', True):
-                attempts = int(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_ATTEMPTS', 3) or 3)
-                delay = float(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_DELAY_SECONDS', 1.0) or 1.0)
-                for _ in range(max(1, attempts)):
-                    await asyncio.sleep(delay)
-                    after_balance = await self.get_player_balance(player_id)
-                    if before_balance is not None and after_balance is not None and int(after_balance) >= int(before_balance) + int(amount):
-                        return {'success': True, 'message': 'تم الإيداع وتحقق الرصيد بنجاح.', 'player_id': player_id, 'amount': amount, 'before_balance': before_balance, 'after_balance': after_balance}
+                verified, after_balance = await self._verify_transfer_balance(
+                    player_id, before_balance, amount, "deposit"
+                )
+                if verified:
+                    return {'success': True, 'message': 'تم الإيداع وتحقق الرصيد بنجاح.', 'player_id': player_id, 'amount': amount, 'before_balance': before_balance, 'after_balance': after_balance}
                 return {'success': False, 'uncertain': True, 'message': f'أرسل API نتيجة نجاح، لكن لم يتم تأكيد زيادة رصيد اللاعب بعد التحقق. قبل={before_balance}'}
             return {'success': True, 'message': 'تم الإيداع في حساب اللاعب بنجاح.', 'player_id': player_id, 'amount': amount}
         except Exception as e:
@@ -704,13 +767,11 @@ class IChancyClient:
             if not ok:
                 return {'success': False, 'message': 'فشل السحب من حساب اللاعب (لم يؤكد الـ API العملية).'}
             if getattr(settings, 'VERIFY_ICHANCY_TRANSFER', True):
-                attempts = int(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_ATTEMPTS', 3) or 3)
-                delay = float(getattr(settings, 'ICHANCY_TRANSFER_VERIFY_DELAY_SECONDS', 1.0) or 1.0)
-                for _ in range(max(1, attempts)):
-                    await asyncio.sleep(delay)
-                    after_balance = await self.get_player_balance(player_id)
-                    if before_balance is not None and after_balance is not None and int(after_balance) <= max(0, int(before_balance) - int(amount)):
-                        return {'success': True, 'message': 'تم السحب وتحقق الرصيد بنجاح.', 'player_id': player_id, 'amount': amount, 'before_balance': before_balance, 'after_balance': after_balance}
+                verified, after_balance = await self._verify_transfer_balance(
+                    player_id, before_balance, amount, "withdraw"
+                )
+                if verified:
+                    return {'success': True, 'message': 'تم السحب وتحقق الرصيد بنجاح.', 'player_id': player_id, 'amount': amount, 'before_balance': before_balance, 'after_balance': after_balance}
                 return {'success': False, 'uncertain': True, 'message': f'أرسل API نتيجة نجاح، لكن لم يتم تأكيد انخفاض رصيد اللاعب بعد التحقق. قبل={before_balance}'}
             return {'success': True, 'message': 'تم السحب من حساب اللاعب بنجاح.', 'player_id': player_id, 'amount': amount}
         except Exception as e:

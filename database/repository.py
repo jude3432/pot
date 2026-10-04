@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import secrets
+import time
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation
 from psycopg2.extras import Json
@@ -859,7 +861,7 @@ def reserve_game_deposit_atomic(telegram_id, amount, player_id):
             DatabaseManager.put_connection(conn)
 
 
-def confirm_reserved_game_deposit(tx_id):
+def confirm_reserved_game_deposit(tx_id, game_balance_credit=None):
     """تأكيد شحن اللعبة بعد نجاح API، وتفعيل البونص المرفق كبونص نشط داخل اللعبة."""
     conn = None
     cursor = None
@@ -876,23 +878,50 @@ def confirm_reserved_game_deposit(tx_id):
             return False
         user_telegram_id, status, bonus_amount, cashback_amount, checkin_amount = row
         if status != 'pending':
+            cursor.execute(
+                "SELECT bot_balance, game_balance, game_bonus_amount FROM users WHERE telegram_id = %s",
+                (str(user_telegram_id),)
+            )
+            user_after = cursor.fetchone()
             conn.rollback()
-            return True
+            if not user_after:
+                return {'success': False, 'reason': 'user_not_found'}
+            return {
+                'success': True,
+                'already_processed': True,
+                'bot_balance': int(user_after[0] or 0),
+                'game_balance': int(user_after[1] or 0),
+                'game_bonus_amount': int(user_after[2] or 0),
+            }
         bonus_int = int(float(bonus_amount or 0))
         cashback_int = int(float(cashback_amount or 0))
         checkin_int = int(float(checkin_amount or 0))
         active_bonus_to_add = bonus_int + cashback_int + checkin_int
-        if active_bonus_to_add > 0:
-            cursor.execute(
-                "UPDATE users SET game_bonus_amount = COALESCE(game_bonus_amount, 0) + %s WHERE telegram_id = %s",
-                (active_bonus_to_add, str(user_telegram_id))
-            )
+        cursor.execute(
+            """
+            UPDATE users
+            SET game_bonus_amount = COALESCE(game_bonus_amount, 0) + %s,
+                game_balance = COALESCE(game_balance, 0) + %s
+            WHERE telegram_id = %s
+            RETURNING bot_balance, game_balance, game_bonus_amount
+            """,
+            (active_bonus_to_add, int(game_balance_credit or 0), str(user_telegram_id))
+        )
+        user_after = cursor.fetchone()
+        if not user_after:
+            conn.rollback()
+            return {'success': False, 'reason': 'user_not_found'}
         cursor.execute(
             "UPDATE transactions SET status = 'completed', reviewed_at = CURRENT_TIMESTAMP WHERE id = %s",
             (int(tx_id),)
         )
         conn.commit()
-        return True
+        return {
+            'success': True,
+            'bot_balance': int(user_after[0] or 0),
+            'game_balance': int(user_after[1] or 0),
+            'game_bonus_amount': int(user_after[2] or 0),
+        }
     except Exception as e:
         if conn:
             conn.rollback()
@@ -1041,10 +1070,16 @@ def settle_game_withdraw_with_active_bonus(telegram_id, withdraw_amount, tx_id=N
         cash_to_credit = max(0, amount_int - consumed_bonus)
         remaining_bonus = max(0, active_bonus - consumed_bonus)
         cursor.execute(
-            "UPDATE users SET bot_balance = bot_balance + %s, game_bonus_amount = %s WHERE telegram_id = %s RETURNING bot_balance",
-            (cash_to_credit, remaining_bonus, tid)
+            """UPDATE users
+               SET bot_balance = bot_balance + %s,
+                   game_bonus_amount = %s,
+                   game_balance = GREATEST(COALESCE(game_balance, 0) - %s, 0)
+               WHERE telegram_id = %s
+               RETURNING bot_balance, game_balance, game_bonus_amount""",
+            (cash_to_credit, remaining_bonus, amount_int, tid)
         )
-        new_balance = int(cursor.fetchone()[0] or 0)
+        updated_user = cursor.fetchone()
+        new_balance = int(updated_user[0] or 0)
         if tx_id:
             cursor.execute(
                 """UPDATE transactions
@@ -1064,6 +1099,8 @@ def settle_game_withdraw_with_active_bonus(telegram_id, withdraw_amount, tx_id=N
             'cash_credited': cash_to_credit,
             'old_balance': old_balance,
             'new_balance': new_balance,
+            'new_game_balance': int(updated_user[1] or 0),
+            'game_bonus_amount': int(updated_user[2] or 0),
         }
     except Exception as e:
         if conn:
@@ -2140,7 +2177,7 @@ def credit_affiliate_weekly_commission(referrer_id, referred_id, activity, perce
 
 async def process_weekly_affiliate_commissions(bot=None):
     """صرف عمولات الإحالات الأسبوعية على أساس خسارة المحالين في اللعبة."""
-    rows = DatabaseManager.execute_query_dict(
+    rows = await asyncio.to_thread(DatabaseManager.execute_query_dict,
         """SELECT r.referrer_telegram_id, r.referred_telegram_id, u.player_id
            FROM referrals r
            JOIN users u ON u.telegram_id = r.referred_telegram_id
@@ -2156,27 +2193,37 @@ async def process_weekly_affiliate_commissions(bot=None):
     for row in rows:
         referrer_id = str(row.get('referrer_telegram_id'))
         referred_id = str(row.get('referred_telegram_id'))
-        active_count = get_active_referrals_count(referrer_id)
-        pct = get_affiliate_percent_by_active_count(active_count)
+        active_count = await asyncio.to_thread(get_active_referrals_count, referrer_id)
+        pct = await asyncio.to_thread(get_affiliate_percent_by_active_count, active_count)
         if pct <= 0:
             continue
         live_balance = None
         try:
             pid = row.get('player_id')
             if pid:
-                raw_bal = await ichancy_api_client.get_player_balance(pid)
+                raw_bal = await asyncio.to_thread(ichancy_api_client.get_player_balance, pid)
                 if raw_bal is not None:
                     live_balance = int(raw_bal)
                 else:
-                    live_balance = get_user_game_balance(referred_id)
+                    live_balance = await asyncio.to_thread(get_user_game_balance, referred_id)
         except Exception as e:
             logger.warning(f"affiliate: failed live balance for {referred_id}: {e}")
-            live_balance = get_user_game_balance(referred_id)
-        activity = get_user_weekly_game_activity(referred_id, current_game_balance=live_balance)
+            live_balance = await asyncio.to_thread(get_user_game_balance, referred_id)
+        activity = await asyncio.to_thread(
+            get_user_weekly_game_activity,
+            referred_id,
+            current_game_balance=live_balance,
+        )
         checked += 1
         if int(activity.get('net_loss') or 0) <= 0:
             continue
-        res = credit_affiliate_weekly_commission(referrer_id, referred_id, activity, pct)
+        res = await asyncio.to_thread(
+            credit_affiliate_weekly_commission,
+            referrer_id,
+            referred_id,
+            activity,
+            pct,
+        )
         if res.get('ok'):
             paid_count += 1
             total_loss += int(res.get('net_loss') or 0)
@@ -2571,10 +2618,10 @@ def get_button_link_fallback(key):
     return mapping.get(key, '')
 
 
-# 🆕 (Update 20 / Perf) كاش روابط أزرار القائمة الرئيسية:
-# القائمة كانت تنفذ 4 SELECTs عند كل بناء (لكل /start ولكل "عودة للقائمة").
-_BUTTON_LINK_TTL = 300.0  # 5 دقائق
-_button_link_cache = {}   # key -> [expires_at, url]
+# Cache button links so keyboard construction never performs synchronous
+# database I/O on the Telegram event loop. Refreshes happen in a worker thread.
+_BUTTON_LINK_TTL = 300.0
+_button_link_cache = {}  # key -> (expires_at, url, source)
 
 
 def invalidate_button_link_cache(key=None):
@@ -2584,34 +2631,43 @@ def invalidate_button_link_cache(key=None):
         _button_link_cache.pop(key, None)
 
 
+def refresh_button_link_cache():
+    """Load all admin-configurable links with one query for background refresh."""
+    keys = tuple(BUTTON_LINK_LABELS)
+    placeholders = ", ".join(["%s"] * len(keys))
+    rows = DatabaseManager.execute_query_dict(
+        f"SELECT payment_method, address FROM payment_settings WHERE payment_method IN ({placeholders})",
+        keys,
+        fetch='all'
+    ) or []
+    database_links = {
+        str(row.get('payment_method')): str(row.get('address') or '').strip()
+        for row in rows
+        if row.get('payment_method') and row.get('address')
+    }
+    expires_at = time.monotonic() + _BUTTON_LINK_TTL
+    for key in keys:
+        address = database_links.get(key)
+        url = address or get_button_link_fallback(key)
+        source = 'database' if address else 'render'
+        _button_link_cache[key] = (expires_at, url, source)
+    return len(database_links)
+
+
 def get_button_link(key):
-    import time as _t
-    now = _t.time()
     hit = _button_link_cache.get(key)
-    if hit and hit[0] > now:
-        return hit[1]
-    row = DatabaseManager.execute_query_dict(
-        "SELECT address FROM payment_settings WHERE payment_method = %s",
-        (key,),
-        fetch='one'
-    )
-    url = row['address'] if row and row.get('address') else get_button_link_fallback(key)
-    _button_link_cache[key] = [now + _BUTTON_LINK_TTL, url]
-    return url
+    # Serve the last known value even when stale; the background refresher
+    # updates it without blocking the update handler.
+    return hit[1] if hit else get_button_link_fallback(key)
 
 
 def get_button_link_source(key):
-    row = DatabaseManager.execute_query_dict(
-        "SELECT address FROM payment_settings WHERE payment_method = %s",
-        (key,),
-        fetch='one'
-    )
-    if row and row.get('address'):
-        return 'database'
-    return 'render'
+    hit = _button_link_cache.get(key)
+    return hit[2] if hit else 'render'
 
 
 def get_all_button_links():
+    refresh_button_link_cache()
     return [
         {
             'key': key,
@@ -2627,6 +2683,7 @@ def get_all_button_links():
 def set_button_link(key, url, updated_by=None):
     if key not in BUTTON_LINK_LABELS:
         return False
+    url = url.strip()
     DatabaseManager.execute_query(
         """
         INSERT INTO payment_settings (payment_method, address, updated_by, updated_at)
@@ -2636,9 +2693,9 @@ def set_button_link(key, url, updated_by=None):
                       updated_by = EXCLUDED.updated_by,
                       updated_at = CURRENT_TIMESTAMP
         """,
-        (key, url.strip(), str(updated_by) if updated_by else None)
+        (key, url, str(updated_by) if updated_by else None)
     )
-    invalidate_button_link_cache(key)
+    _button_link_cache[key] = (time.monotonic() + _BUTTON_LINK_TTL, url, 'database')
     return True
 
 
@@ -2649,7 +2706,11 @@ def reset_button_link(key):
         "DELETE FROM payment_settings WHERE payment_method = %s",
         (key,)
     )
-    invalidate_button_link_cache(key)
+    _button_link_cache[key] = (
+        time.monotonic() + _BUTTON_LINK_TTL,
+        get_button_link_fallback(key),
+        'render',
+    )
     return True
 PAYMENT_METHOD_LABELS = {
     'syriatel': '🟢 سيريتل كاش',
@@ -4385,12 +4446,12 @@ def process_weekly_cashback_for_user(telegram_id, current_game_balance=None):
 
 async def process_all_weekly_cashbacks(bot=None):
     """معالجة الكاش باك لجميع المستخدمين المؤهلين (تُستدعى أسبوعياً)."""
-    settings = get_cashback_settings()
+    settings = await asyncio.to_thread(get_cashback_settings)
     if not settings.get('cashback_enabled', True):
         return {'processed': 0, 'skipped': 'disabled'}
 
     # جلب كل المستخدمين الذين لديهم نشاط في اللعبة هذا الأسبوع
-    rows = DatabaseManager.execute_query_dict(
+    rows = await asyncio.to_thread(DatabaseManager.execute_query_dict,
         """SELECT DISTINCT t.user_telegram_id FROM transactions t
            WHERE t.type IN ('deposit_to_game', 'withdraw_from_game')
            AND t.status IN ('completed', 'approved')
@@ -4410,18 +4471,22 @@ async def process_all_weekly_cashbacks(bot=None):
         # جلب الرصيد الحيّ في اللعبة (إن أمكن) لحساب الخسارة الحقيقية
         live_balance = None
         try:
-            u = get_user(tid)
+            u = await asyncio.to_thread(get_user, tid)
             pid = u.get('player_id') if u else None
             if pid:
-                raw_bal = await ichancy_api_client.get_player_balance(pid)
+                raw_bal = await asyncio.to_thread(ichancy_api_client.get_player_balance, pid)
                 if raw_bal is not None:
                     live_balance = int(raw_bal)
                 else:
-                    live_balance = get_user_game_balance(tid)
+                    live_balance = await asyncio.to_thread(get_user_game_balance, tid)
         except Exception as e:
             logger.warning(f"cashback: failed to fetch live balance for {tid}: {e}")
-            live_balance = get_user_game_balance(tid)
-        result = process_weekly_cashback_for_user(tid, current_game_balance=live_balance)
+            live_balance = await asyncio.to_thread(get_user_game_balance, tid)
+        result = await asyncio.to_thread(
+            process_weekly_cashback_for_user,
+            tid,
+            current_game_balance=live_balance,
+        )
         if result.get('ok'):
             processed += 1
             total_paid += result['cashback']

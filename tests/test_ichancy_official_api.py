@@ -1,8 +1,9 @@
 import json
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 import unittest
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import requests
 from ichancy_api.client import IChancyClient
@@ -143,6 +144,71 @@ class OfficialApiAuthenticationTests(unittest.TestCase):
             },
             "official player search",
         )
+
+
+    def test_independent_official_requests_are_not_serialized_by_network_wait(self):
+        client = client_with_mock_session()
+        rendezvous = threading.Barrier(2)
+
+        def wait_for_other_request(*args, **kwargs):
+            rendezvous.wait(timeout=2)
+            return api_response(200, {"status": True, "result": 1})
+
+        client._post_json_without_cookies = Mock(side_effect=wait_for_other_request)
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            requests = [
+                executor.submit(client._official_request, "/test", {"n": n}, f"test {n}")
+                for n in range(2)
+            ]
+            results = [request.result(timeout=3) for request in requests]
+
+        self.assertEqual([result["result"] for result in results], [1, 1])
+
+    def test_worker_threads_get_separate_http_sessions(self):
+        client = client_with_mock_session()
+        client.session = requests.Session()
+        client._session_local = threading.local()
+        rendezvous = threading.Barrier(2)
+
+        def session_for_worker(_):
+            session = client._request_session()
+            rendezvous.wait(timeout=2)
+            return session
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            sessions = list(executor.map(session_for_worker, range(2)))
+
+        self.assertIsNot(sessions[0], sessions[1])
+        self.assertEqual(sessions[0].headers["User-Agent"], sessions[1].headers["User-Agent"])
+
+    def test_transfer_verification_checks_immediately_then_uses_short_retry(self):
+        client = IChancyClient.__new__(IChancyClient)
+        client.get_player_balance = AsyncMock(side_effect=[100, 125])
+
+        async def run_check():
+            with patch("ichancy_api.client.settings.ICHANCY_TRANSFER_VERIFY_ATTEMPTS", 2), \
+                    patch("ichancy_api.client.settings.ICHANCY_TRANSFER_VERIFY_DELAY_SECONDS", 0.25), \
+                    patch("ichancy_api.client.asyncio.sleep", new_callable=AsyncMock) as sleep:
+                verified, balance = await client._verify_transfer_balance("123", 100, 25, "deposit")
+                self.assertTrue(verified)
+                self.assertEqual(balance, 125)
+                sleep.assert_awaited_once_with(0.25)
+
+        import asyncio
+        asyncio.run(run_check())
+
+    def test_transfer_verification_does_not_poll_without_baseline(self):
+        client = IChancyClient.__new__(IChancyClient)
+        client.get_player_balance = AsyncMock()
+
+        async def run_check():
+            verified, balance = await client._verify_transfer_balance("123", None, 25, "deposit")
+            self.assertFalse(verified)
+            self.assertIsNone(balance)
+            client.get_player_balance.assert_not_awaited()
+
+        import asyncio
+        asyncio.run(run_check())
 
 
 if __name__ == "__main__":
