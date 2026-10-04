@@ -208,7 +208,7 @@ Start Command: python telegram_bot/main.py
 وأضف متغير:
 
 ```env
-RENDER_EXTERNAL_URL=https://pot-production-e465.up.railway.app
+RENDER_EXTERNAL_URL=https://your-service-name.onrender.com
 ```
 
 ---

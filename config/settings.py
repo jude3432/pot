@@ -44,7 +44,7 @@ ROBERT_VIP_LOGIN_URL = os.getenv('ROBERT_VIP_LOGIN_URL', 'https://robert.vip/log
 ROBERT_VIP_BET_URL = os.getenv('ROBERT_VIP_BET_URL', 'https://robert.vip/dashboard/bet-with-robert')
 ROBERT_VIP_PREDICTIONS_URL = os.getenv('ROBERT_VIP_PREDICTIONS_URL', 'https://robert.vip/dashboard/prediction-packages')
 
-RENDER_EXTERNAL_URL = os.getenv('RENDER_EXTERNAL_URL', 'https://pot-production-e465.up.railway.app')
+RENDER_EXTERNAL_URL = os.getenv('RENDER_EXTERNAL_URL', 'https://ichancy100.onrender.com')
 
 # Database Configuration
 DATABASE_URL = os.getenv('DATABASE_URL')

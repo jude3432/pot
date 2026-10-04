@@ -51,13 +51,13 @@ Start Command: python telegram_bot/main.py
 Render سيعطيك رابطاً مثل:
 
 ```text
-https://pot-production-e465.up.railway.app
+https://your-service-name.onrender.com
 ```
 
 ضعه في متغير البيئة:
 
 ```env
-RENDER_EXTERNAL_URL=https://pot-production-e465.up.railway.app
+RENDER_EXTERNAL_URL=https://your-service-name.onrender.com
 ```
 
 ---
