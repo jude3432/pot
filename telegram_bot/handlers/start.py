@@ -48,21 +48,28 @@ async def send_log_message(bot, text, parse_mode="HTML"):
 # ================================================================
 # 🔹 دالة موحّدة لعرض القائمة الرئيسية الكاملة (15 زراً)
 # ================================================================
-async def show_main_menu(message: Message, user_id, edit: bool = False):
+async def show_main_menu(message: Message, user_id, edit: bool = False, user_record=None):
     """تعرض بطاقة الحساب الحية والقائمة الرئيسية الكاملة."""
-    user = await asyncio.to_thread(repo.get_user, str(user_id))
+    if user_record is None:
+        user, history_rows = await asyncio.gather(
+            asyncio.to_thread(repo.get_user, str(user_id)),
+            asyncio.to_thread(repo.get_user_transactions_history, str(user_id), 1),
+        )
+    else:
+        user = user_record
+        try:
+            history_rows = await asyncio.to_thread(repo.get_user_transactions_history, str(user_id), 1)
+        except Exception as exc:
+            logger.warning("Could not load last operation for welcome card: %s", exc)
+            history_rows = []
     bot_balance = int(user['bot_balance']) if user and user.get('bot_balance') is not None else 0
-    game_balance = await asyncio.to_thread(repo.get_user_game_balance, str(user_id)) if user else 0
+    # game_balance is already returned in the users row; avoid a second get_user query.
+    game_balance = int(user.get('game_balance') or 0) if user else 0
     bot_balance_new_str = format_new(bot_balance)
     telegram_username = str((user or {}).get('telegram_username') or '').strip()
     ichancy_username = str((user or {}).get('ichancy_username') or '').strip()
     player_id = str((user or {}).get('player_id') or '').strip()
-    try:
-        history = await asyncio.to_thread(repo.get_user_transactions_history, str(user_id), 1)
-        last = history[0] if history else None
-    except Exception as exc:
-        logger.warning("Could not load last operation for welcome card: %s", exc)
-        last = None
+    last = history_rows[0] if history_rows else None
 
     type_labels = {
         'deposit_bot': 'شحن رصيد البوت',
@@ -208,7 +215,7 @@ async def show_terms_only_callback(callback: CallbackQuery):
 # ✔️ أمر /start — يعرض القائمة الرئيسية دائماً
 # ================================================================
 @router.message(Command("start"))
-async def cmd_start(message: Message, state: FSMContext, command: CommandObject):
+async def cmd_start(message: Message, state: FSMContext, command: CommandObject, terms_user=None):
     """معالج أمر البدء — يعرض القائمة الرئيسية دائماً."""
     await state.clear()
     user_id = message.from_user.id
@@ -226,8 +233,8 @@ async def cmd_start(message: Message, state: FSMContext, command: CommandObject)
         if referrer_id and referrer_id != telegram_id:
             await asyncio.to_thread(repo.add_referral, referrer_id, telegram_id)
 
-    # إنشاء المستخدم احتياطياً (الـ middleware يفعل ذلك لكن للتأكيد)
-    user = await asyncio.to_thread(repo.get_user, telegram_id)
+    # Reuse the middleware record when available to avoid a duplicate query.
+    user = terms_user or await asyncio.to_thread(repo.get_user, telegram_id)
     if not user:
         await asyncio.to_thread(repo.create_user, telegram_id, message.from_user.username)
         user = await asyncio.to_thread(repo.get_user, telegram_id)
@@ -243,7 +250,7 @@ async def cmd_start(message: Message, state: FSMContext, command: CommandObject)
         await open_miniapp_shortcut_flow(message, user_id, state, shortcut_action)
         return
 
-    await show_main_menu(message, user_id)
+    await show_main_menu(message, user_id, user_record=user)
 
 
 # ================================================================

@@ -107,4 +107,7 @@ class TermsCheckMiddleware(BaseMiddleware):
         if db_user and db_user.get('terms_accepted'):
             _terms_accepted_cache[telegram_id] = time.time() + _TERMS_TTL
 
+        # Pass the already-fetched record to handlers to avoid a duplicate
+        # database round-trip on /start and other first interactions.
+        data['terms_user'] = db_user
         return await handler(event, data)
