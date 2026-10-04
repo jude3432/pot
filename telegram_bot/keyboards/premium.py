@@ -116,16 +116,29 @@ def _remove_icon_prefix(text: str) -> str:
     return text
 
 def _button_style(text: object, kwargs: dict) -> str | None:
-    """Use Telegram's native button colors for deposit/withdraw actions."""
+    """Apply a cohesive Telegram-native palette by action semantics."""
     if kwargs.get("style"):
         return None
     value = str(text or "")
     callback = str(kwargs.get("callback_data") or "").lower()
-    if any(word in value for word in ("شحن", "إيداع")) or "deposit" in callback:
+    if any(word in value for word in ("شحن", "إيداع", "تأكيد", "موافق", "إنشاء", "إهداء")):
         return "success"
-    if "سحب" in value or "withdraw" in callback:
+    if any(word in value for word in ("سحب", "إلغاء", "رفض", "حذف", "إغلاق")):
         return "danger"
-    return None
+    if "deposit" in callback or any(word in callback for word in ("accept", "confirm", "create", "gift_send")):
+        return "success"
+    if "withdraw" in callback or any(word in callback for word in ("cancel", "reject", "delete", "close")):
+        return "danger"
+    if any(word in value for word in (
+        "حساب", "لوحة", "إحالات", "السجل", "رسالة", "تواصل", "الشروط",
+        "الشروحات", "مسابقات", "ألعاب", "العروض", "المتصدرون", "بطاقات",
+        "الموقع", "تحميل", "Facebook", "دعم", "معلومات", "عودة", "بحث",
+    )) or any(word in callback for word in (
+        "menu", "account", "history", "referral", "contact", "support", "guide",
+        "contest", "game", "offer", "leaderboard", "prediction", "website", "back",
+    )):
+        return "primary"
+    return "default"
 
 def premium_button(*, text: str, **kwargs):
     """Build a button with a premium icon when Telegram/aiogram supports it."""
