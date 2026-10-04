@@ -63,7 +63,7 @@ PREFIX_TO_ICON = {
     "✔": "success", "✅": "success", "⛔": "cancel", "❌": "error",
     "⚠": "warning", "❗": "warning", "ℹ": "info", "💰": "balance",
     "💵": "balance", "💲": "balance", "💳": "payment", "📤": "deposit",
-    "📥": "withdraw", "🔽": "withdraw", "⬇": "withdraw", "🔼": "deposit",
+    "📥": "withdraw", "📬": "withdraw", "🔽": "withdraw", "⬇": "withdraw", "🔼": "deposit",
     "⬆": "deposit", "🪙": "balance", "💼": "wallet", "🧧": "gift",
     "🎁": "gift", "💎": "bonus", "🎮": "game", "🕹": "game", "👾": "game",
     "👤": "account", "📇": "account", "🧭": "account", "🤝": "referrals",
@@ -115,10 +115,25 @@ def _remove_icon_prefix(text: str) -> str:
             return rest.lstrip()
     return text
 
+def _button_style(text: object, kwargs: dict) -> str | None:
+    """Use Telegram's native button colors for deposit/withdraw actions."""
+    if kwargs.get("style"):
+        return None
+    value = str(text or "")
+    callback = str(kwargs.get("callback_data") or "").lower()
+    if any(word in value for word in ("شحن", "إيداع")) or "deposit" in callback:
+        return "success"
+    if "سحب" in value or "withdraw" in callback:
+        return "danger"
+    return None
+
 def premium_button(*, text: str, **kwargs):
     """Build a button with a premium icon when Telegram/aiogram supports it."""
     requested_icon = kwargs.pop("icon_custom_emoji_id", None) or _icon_for_text(text)
     icon_id = requested_icon if CUSTOM_EMOJI_BUTTONS_ENABLED else None
+    style = _button_style(text, kwargs)
+    if style:
+        kwargs["style"] = style
     if icon_id:
         try:
             return InlineKeyboardButton(
@@ -128,5 +143,11 @@ def premium_button(*, text: str, **kwargs):
             )
         except (TypeError, ValueError):
             # Older aiogram or an API model without Bot API 9.4 support.
+            kwargs.pop("style", None)
             pass
-    return InlineKeyboardButton(text=text, **kwargs)
+    try:
+        return InlineKeyboardButton(text=text, **kwargs)
+    except (TypeError, ValueError):
+        # Preserve action compatibility if style is unsupported by an older model.
+        kwargs.pop("style", None)
+        return InlineKeyboardButton(text=text, **kwargs)
