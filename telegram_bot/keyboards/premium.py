@@ -37,7 +37,11 @@ PREMIUM_EMOJI = {
     "info": "5334544901428229844",       # ℹ️
     "gift": "5294167145079395967",       # 🛍 Finance
     "bonus": "5427168083074628963",      # 💎
-    "game": "5361741454685256344",       # 🎮
+    "game": "5949437596621872513",       # ⚡ iChancy
+    "ichancy": "5949437596621872513",    # ⚡ iChancy
+    "usdt": "5949309318833642148",       # USDT
+    "syriatel": "5949764774345579077",   # Syriatel Cash
+    "shamcash": "5949793056705224493",   # ShamCash
     "account": "5332724926216428039",    # 📇 Finance
     "referrals": "5271837459783638319",  # ↔️ Finance
     "leaderboard": "5440539497383087970",# 🥇
@@ -83,6 +87,17 @@ PREFIX_TO_ICON = {
 _PREFIXES = sorted(PREFIX_TO_ICON, key=len, reverse=True)
 def _icon_for_text(text: object) -> str | None:
     value = str(text or "")
+    lowered = value.lower()
+    # Supplied payment icons take priority over generic deposit/withdraw icons.
+    if "usdt" in lowered:
+        return PREMIUM_EMOJI["usdt"]
+    if "syriatel" in lowered or "سيريتل" in value:
+        return PREMIUM_EMOJI["syriatel"]
+    if "sham cash" in lowered or "shamcash" in lowered or "شام كاش" in value:
+        return PREMIUM_EMOJI["shamcash"]
+    # The iChancy lightning mark is used consistently on every game label.
+    if "ichancy" in lowered or "اللعبة" in value or "حساب اللعبة" in value:
+        return PREMIUM_EMOJI["ichancy"]
     # Meaning wins over a reused visible emoji (e.g. 📨 شحن vs 📨 تواصل).
     if "شحن" in value or "إيداع" in value:
         return PREMIUM_EMOJI["deposit"]
@@ -99,7 +114,6 @@ def _icon_for_text(text: object) -> str | None:
     for prefix in _PREFIXES:
         if value.lstrip().startswith(prefix):
             return PREMIUM_EMOJI[PREFIX_TO_ICON[prefix]]
-    lowered = value.lower()
     if any(x in lowered for x in ("تأكيد", "موافق", "اعتماد", "إرسال")):
         return PREMIUM_EMOJI["confirm"]
     if any(x in value for x in ("إلغاء", "رفض", "إغلاق")):
