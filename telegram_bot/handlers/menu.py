@@ -660,8 +660,7 @@ async def deposit_to_player_game(
         # 🔐 الخطوة 2: iChancy يستقبل الوحدات القديمة؛ مبالغ البوت هنا جديدة.
         api_total_to_game = new_to_old(total_to_game)
         logger.info(f"📬 Calling API depositToPlayer: player_id={player_id}, cash_new={cash_amount}, total_old={api_total_to_game}")
-        deposit_result = await asyncio.to_thread(
-            ichancy_api_client.deposit_to_player,
+        deposit_result = await ichancy_api_client.deposit_to_player(
             player_id=player_id,
             amount=api_total_to_game
         )
@@ -799,8 +798,7 @@ async def withdraw_from_player_game(
 
         # 🔐 الخطوة 2: استدعاء iChancy API
         logger.info(f"📨 Calling API withdrawFromPlayer: player_id={player_id}, amount_nsp={int(amount_nsp)}")
-        withdraw_result = await asyncio.to_thread(
-            ichancy_api_client.withdraw_from_player,
+        withdraw_result = await ichancy_api_client.withdraw_from_player(
             player_id=player_id,
             amount=int(amount_nsp)
         )
@@ -1100,7 +1098,7 @@ async def ichancy_menu_callback(callback: CallbackQuery):
 
     if user.get('ichancy_username'):
         player_id = user.get('player_id')
-        api_balance = await asyncio.to_thread(ichancy_api_client.get_player_balance, player_id)
+        api_balance = await ichancy_api_client.get_player_balance(player_id)
         if api_balance is not None:
             display_balance = int(api_balance)
             await asyncio.to_thread(repo.update_user_game_balance, telegram_id, display_balance)
@@ -1134,7 +1132,7 @@ async def create_ichancy_account_callback(callback: CallbackQuery, state: FSMCon
 
 async def _warm_ichancy_session():
     try:
-        await asyncio.to_thread(ichancy_api_client.login_agent)
+        await ichancy_api_client.login_agent()
     except asyncio.CancelledError:
         raise
     except Exception:
@@ -1162,7 +1160,7 @@ async def process_ichancy_password(message: Message, state: FSMContext):
     email = f"{username}@gmail.com"
     await message.answer("⏳ جاري تسجيل حسابك الفوري عبر iChancy API...")
 
-    result = await asyncio.to_thread(ichancy_api_client.register_account, username, password, email)
+    result = await ichancy_api_client.register_account(username, password, email)
 
     retry_count = 0
     error_text = str(result.get('error', '')).lower() if isinstance(result, dict) else ''
@@ -1178,7 +1176,7 @@ async def process_ichancy_password(message: Message, state: FSMContext):
         random_suffix = ''.join(random.choices(string.digits, k=5))
         username = f"{data.get('ichancy_username')}{random_suffix}"
         email = f"{username}@gmail.com"
-        result = await asyncio.to_thread(ichancy_api_client.register_account, username, password, email)
+        result = await ichancy_api_client.register_account(username, password, email)
         error_text = str(result.get('error', '')).lower() if isinstance(result, dict) else ''
         retryable_registration_error = any(
             marker in error_text
@@ -1194,7 +1192,7 @@ async def process_ichancy_password(message: Message, state: FSMContext):
 
             async def sync_player_id_later():
                 try:
-                    synced_player_id = await asyncio.to_thread(ichancy_api_client.get_player_id, username)
+                    synced_player_id = await ichancy_api_client.get_player_id(username)
                     if synced_player_id:
                         await asyncio.to_thread(repo.update_user_ichancy_details, telegram_id, username, password, email, synced_player_id
                         )
@@ -3061,7 +3059,7 @@ async def withdraw_game_acc_callback(callback: CallbackQuery, state: FSMContext)
 
     # جلب رصيد اللعبة الفعلي مرة واحدة فقط، ثم استخدامه خلال نفس العملية لتقليل البطء.
     await safe_edit_text(callback.message, "⏳ <b>جاري جلب رصيدك الفعلي في اللعبة...</b>", parse_mode="HTML")
-    api_balance = await asyncio.to_thread(ichancy_api_client.get_player_balance, user['player_id'])
+    api_balance = await ichancy_api_client.get_player_balance(user['player_id'])
     if api_balance is not None:
         game_balance = int(api_balance)
         await asyncio.to_thread(repo.update_user_game_balance, telegram_id, game_balance)

@@ -401,7 +401,7 @@ async def _gather_dashboard_stats():
     bot_settings = await asyncio.to_thread(repo.get_bot_settings)
     if int(bot_settings.get('agent_balance', 0) or 0) == 0:
         try:
-            live_bal = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+            live_bal = await ichancy_api_client.get_admin_balance()
             if live_bal is not None:
                 await asyncio.to_thread(repo.update_bot_settings, agent_balance=int(live_bal))
                 bot_settings = await asyncio.to_thread(repo.get_bot_settings)
@@ -409,7 +409,7 @@ async def _gather_dashboard_stats():
             pass
     return {
         'bot_settings': bot_settings,
-        'is_ichancy_api_alive': await asyncio.to_thread(ichancy_api_client.check_session_validity),
+        'is_ichancy_api_alive': await ichancy_api_client.check_session_validity(),
         'total_bot_balance': await get_total_bot_balance(),
         'pending': await asyncio.to_thread(repo.get_pending_requests),
         'recent': await asyncio.to_thread(repo.get_all_transactions, 10),
@@ -478,7 +478,7 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
                 tid, pid = player['telegram_id'], player['player_id']
                 try:
                     # جلب الرصيد وتحديثه في قاعدة البيانات
-                    balance = await asyncio.to_thread(ichancy_api_client.get_player_balance, pid)
+                    balance = await ichancy_api_client.get_player_balance(pid)
                     if balance is not None:
                         await asyncio.to_thread(repo.update_user_game_balance, tid, balance)
                 except Exception as e:
@@ -492,7 +492,7 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
         # 📈 حساب الإجماليات للتقرير
         bot_liquidity = await asyncio.to_thread(repo.get_total_bot_balances)
         game_liquidity = await asyncio.to_thread(repo.get_total_game_balances)
-        agent_wallet = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+        agent_wallet = await ichancy_api_client.get_admin_balance()
         
         # حساب المؤشرات المالية
         net_liabilities = bot_liquidity + game_liquidity
@@ -546,7 +546,7 @@ async def adm_system_probe_callback(callback: CallbackQuery):
     session_ok = False
     api_latency = 0
     try:
-        session_ok = await asyncio.to_thread(ichancy_api_client.check_session_validity)
+        session_ok = await ichancy_api_client.check_session_validity()
         api_latency = round((time.perf_counter() - t1) * 1000, 1)
     except Exception as e:
         logger.warning(f"Probe API error: {e}")
@@ -1505,7 +1505,7 @@ async def adm_agent_bal_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     await safe_edit_text(callback.message, "⏳ جاري جلب رصيد محفظة الوكيل من الداشبورد...")
-    balance = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+    balance = await ichancy_api_client.get_admin_balance()
     if balance is not None:
         await asyncio.to_thread(repo.update_bot_settings, agent_balance=int(balance))
         await safe_edit_text(

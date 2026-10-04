@@ -163,24 +163,24 @@ async def official_api_watchdog_task(bot: Bot):
                 logger.error(f"Watchdog webhook check error: {e}")
 
             logger.info("🔍 Watchdog: checking official API token validity...")
-            is_valid = await asyncio.to_thread(ichancy_api_client.check_session_validity)
+            is_valid = await ichancy_api_client.check_session_validity()
             _ICHANCY_API_STATUS_CACHE['alive'] = bool(is_valid)
             _ICHANCY_API_STATUS_CACHE['checked_at'] = time.time()
             if not is_valid:
                 logger.warning("⛔ Watchdog: official API auth failed. Attempting token recovery...")
-                success = await asyncio.to_thread(ichancy_api_client.login_agent)
+                success = await ichancy_api_client.login_agent()
                 _ICHANCY_API_STATUS_CACHE['alive'] = bool(success)
                 _ICHANCY_API_STATUS_CACHE['checked_at'] = time.time()
                 if success:
                     logger.info("✔️ Watchdog: official API tokens recovered.")
-                    admin_balance = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+                    admin_balance = await ichancy_api_client.get_admin_balance()
                     if admin_balance is not None and _should_update_agent_balance_cache(admin_balance):
                         await asyncio.to_thread(repo.update_bot_settings, agent_balance=admin_balance)
                 else:
                     logger.error("⛔ Watchdog: automatic token recovery failed.")
             else:
                 logger.info("🔹 Watchdog: official API auth healthy.")
-                admin_balance = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+                admin_balance = await ichancy_api_client.get_admin_balance()
                 if admin_balance is not None:
                     if _should_update_agent_balance_cache(admin_balance):
                         await asyncio.to_thread(repo.update_bot_settings, agent_balance=admin_balance)
@@ -457,8 +457,7 @@ async def refresh_turnover_leaderboard():
             return 0
         bot_settings = await asyncio.to_thread(repo.get_bot_settings)
         field_name = str(bot_settings.get('turnover_field_name') or 'totalBet')
-        bulk = await asyncio.to_thread(
-            ichancy_api_client.get_all_players_stats_bulk,
+        bulk = await ichancy_api_client.get_all_players_stats_bulk(
             field_name=field_name,
         )
         if not bulk:
@@ -1204,7 +1203,7 @@ async def admin_settings_get_handler(request):
         agent_bal = int(bot_settings.get('agent_balance', 0) or 0)
         if agent_bal == 0 or (time.time() - last_agent_balance_db_update_ts > 120):
             try:
-                live_bal = await asyncio.to_thread(ichancy_api_client.get_admin_balance)
+                live_bal = await ichancy_api_client.get_admin_balance()
                 if live_bal is not None:
                     agent_bal = int(live_bal)
                     await asyncio.to_thread(repo.update_bot_settings, agent_balance=agent_bal)
@@ -1544,8 +1543,7 @@ async def admin_agent_finance_handler(request):
         from_date = payload.get('from') or default_from.strftime('%Y/%m/%d %H:%M:%S')
         to_date = payload.get('to') or now.strftime('%Y/%m/%d %H:%M:%S')
         limit = min(int(payload.get('limit') or 1000), 1000)
-        raw = await asyncio.to_thread(
-            ichancy_api_client.get_agent_transaction_list,
+        raw = await ichancy_api_client.get_agent_transaction_list(
             from_date,
             to_date,
             limit=limit,
@@ -1592,8 +1590,7 @@ async def admin_agent_finance_handler(request):
                 p['current_balance'] = int(matched_user.get('game_balance') or 0)
                 p['balance_source'] = 'cached'
             else:
-                current_balance = await asyncio.to_thread(
-                    ichancy_api_client.get_player_balance,
+                current_balance = await ichancy_api_client.get_player_balance(
                     matched_user.get('player_id'),
                 )
                 if current_balance is not None:
@@ -1709,7 +1706,7 @@ async def admin_health_handler(request):
 
     # iChancy official API token session
     try:
-        is_valid = await asyncio.to_thread(ichancy_api_client.check_session_validity)
+        is_valid = await ichancy_api_client.check_session_validity()
         checks['ichancy'] = {
             'ok': bool(is_valid),
             'message': 'رموز API نشطة والتجديد تلقائي.' if is_valid else 'تعذّر تجديد الرمز؛ تحقق من بيانات دخول الوكيل وصلاحياته.',
@@ -1722,8 +1719,7 @@ async def admin_health_handler(request):
         now = datetime.now()
         from_date = (now - timedelta(days=1)).strftime('%Y/%m/%d %H:%M:%S')
         to_date = now.strftime('%Y/%m/%d %H:%M:%S')
-        raw = await asyncio.to_thread(
-            ichancy_api_client.get_agent_transaction_list,
+        raw = await ichancy_api_client.get_agent_transaction_list(
             from_date,
             to_date,
             limit=1,
@@ -1995,8 +1991,7 @@ async def admin_users_handler(request):
             user = await asyncio.to_thread(repo.get_user, telegram_id)
             if not user or not user.get('player_id'):
                 return web.json_response({'error': 'المستخدم غير مرتبط بحساب iChancy'}, status=400)
-            balance = await asyncio.to_thread(
-                ichancy_api_client.get_player_balance,
+            balance = await ichancy_api_client.get_player_balance(
                 user.get('player_id'),
             )
             if balance is not None:
