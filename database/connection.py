@@ -357,7 +357,6 @@ class DatabaseManager:
             usd_buy_rate NUMERIC(15, 2) DEFAULT 14000,
             usd_sell_rate NUMERIC(15, 2) DEFAULT 15000,
             withdraw_commission NUMERIC(5, 2) DEFAULT 10,
-            ichancy_cookie TEXT,
             agent_balance BIGINT DEFAULT 0,
             game_min_deposit_syp BIGINT DEFAULT 20000,
             agent_revenue_percent NUMERIC(7, 2) DEFAULT 30,
@@ -610,7 +609,6 @@ class DatabaseManager:
         """
 
         alter_settings_agent_balance = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS agent_balance BIGINT DEFAULT 0;"
-        alter_settings_cookie_update = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS last_cookie_update TIMESTAMP WITH TIME ZONE;"
         alter_settings_referrals_enabled = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS referrals_enabled BOOLEAN DEFAULT TRUE;"
         alter_settings_game_min_deposit = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS game_min_deposit_syp BIGINT DEFAULT 20000;"
         alter_settings_agent_revenue = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS agent_revenue_percent NUMERIC(7, 2) DEFAULT 30;"
@@ -805,7 +803,6 @@ class DatabaseManager:
             # يجب إنشاء جدول إعدادات الميزات قبل أي ALTER عليه
             user_features_settings_table,
             alter_settings_agent_balance,
-            alter_settings_cookie_update,
             alter_settings_referrals_enabled,
             alter_settings_game_min_deposit,
             alter_settings_agent_revenue,

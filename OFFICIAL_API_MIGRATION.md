@@ -1,32 +1,40 @@
-# iChancy Official Agent API Migration
+# iChancy Official Agent API
 
-تمت إضافة تكامل API الرسمي إلى `ichancy_api/client.py` مع الحفاظ على التكامل القديم وعدم حذف أي وظيفة.
+The bot now uses the official Bearer-token API only. It does not read, store, send, or request browser cookies, and the manual cookie controls have been removed from both admin dashboards.
 
-## السلوك الحالي
+## Authentication and token rotation
 
-يستخدم البوت API الرسمي أولًا للعمليات الموثقة: تسجيل دخول الوكيل، تجديد التوكن، إنشاء اللاعب، البحث عن Player ID، جلب الرصيد، الإيداع للاعب، والسحب من اللاعب. يعتمد ذلك على `accessToken` و`refreshToken` بدل Cookie، مع تدوير Refresh Token كما يطلب توثيق iChancy.
+- `AGENT_USERNAME` and `AGENT_PASSWORD` are used for the official `signIn` endpoint.
+- Access and refresh tokens are persisted in `bot_settings` (`ichancy_access_token`, `ichancy_refresh_token`, `ichancy_access_token_expires_at`).
+- The access token is renewed shortly before its documented one-hour expiry. The refresh token is rotated on successful refresh; if refresh is expired or rejected, the client signs in again automatically.
+- API calls send `Authorization: Bearer <accessToken>`. Session cookies are cleared before and after every HTTP request.
+- Existing `ichancy_cookie` / `last_cookie_update` columns on already-deployed databases are not read, written, or dropped. They are inert compatibility data; the application no longer uses them.
 
-تبقى الواجهات القديمة المعتمدة على Cookie متاحة تلقائيًا فقط عندما لا يمكن الوصول إلى API الرسمي أو عندما تكون العملية غير مغطاة في التوثيق. لذلك لم تتم إزالة خيار تحديث Cookie من لوحة الأدمن، كما بقيت وظائف رصيد محفظة الوكيل وتقارير الحركات والإحصائيات على مساراتها الحالية لأنها غير موثقة في ملف API المرفق.
+## Migrated operations
 
-## أسماء المتغيرات
+Documented official endpoints are used for player registration and search, player balance, player deposits and withdrawals, and agent wallet balances. Financial operations do not fall back to legacy cookie endpoints after an API or authentication error.
 
-لم يتم تغيير أو حذف أي متغير موجود. ما زالت الإعدادات الأساسية هي:
+The supplied API PDF does not describe agent transaction history or player statistics/turnover. To preserve those existing app features, the current client still calls their existing routes with the official Bearer token and without cookies:
+
+- `/global/api/Agent/getAgentTransactionList`
+- `/global/api/Statistics/getPlayersStatisticsPro`
+
+These two routes need validation against supplementary iChancy documentation or a live agent account. If they do not accept Bearer-token authentication, those reports/turnover features will need documented official replacements; they will not silently revert to cookies.
+
+## Deployment configuration
+
+Keep these existing environment variables configured:
 
 - `AGENT_USERNAME`
 - `AGENT_PASSWORD`
 - `PARENT_ID`
 - `AGENT_ID`
 - `ICHANCY_AGENT_BASE_URL`
-- `USER_AGENT`
 
-يتم تخزين التوكنات الدوارة داخليًا في `bot_settings` عبر الأعمدة الجديدة `ichancy_access_token` و`ichancy_refresh_token` و`ichancy_access_token_expires_at`. ينشئ التطبيق هذه الأعمدة تلقائيًا عند التشغيل إذا كانت غير موجودة، كما أن وجودها لا يؤثر على الأعمدة أو الإعدادات القديمة.
+The API base URL is the configured agent host. Credentials are never sent to fallback domains.
 
-## المتطلبات قبل النشر
+## Verification and security
 
-يجب أن تكون `AGENT_USERNAME` و`AGENT_PASSWORD` صحيحتين، وأن تكون `PARENT_ID` هو Parent/Affiliate ID الفعلي المسموح له بإنشاء اللاعبين والتحويلات. يجب أيضًا أن تكون عملة الحساب مدعومة؛ التكامل يرسل `NSP` في عمليات الإيداع والسحب بما يتوافق مع إعدادات المشروع الحالية.
+Automated tests cover token refresh and rotation, Bearer headers, cookie-free requests, documented endpoint payloads, and registration error handling. A live iChancy transaction test still requires deployment credentials and should be done with a controlled test account.
 
-## التحقق والأمان
-
-يتعامل العميل مع ردود JSON الفارغة أو غير الصالحة دون إظهار `JSONDecodeError` للمستخدم، ويسجل حالة HTTP وسبب الخطأ بشكل مختصر. كما يعالج حالات `401` و`result: "ex"` بالتجديد أولًا، ويتجنب تسجيل الدخول الرسمي المتكرر لأن iChancy يبطل زوج التوكنات السابق عند كل تسجيل دخول جديد.
-
-لا يجب وضع Cookie أو كلمات المرور أو Tokens داخل Git. يجب حفظها في Environment Variables أو قاعدة البيانات بصلاحيات محدودة، وتدوير أي سر تم نشره أو مشاركته خارج Render.
+Never commit credentials or tokens. The previously pasted GitHub access token should be revoked and replaced; it was not used by this migration.

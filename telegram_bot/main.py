@@ -63,7 +63,7 @@ ensure_webhook_task = None
 daily_report_task = None
 leaderboard_task = None
 routers_registered = False
-last_cookie_warning_sent = None  # 🌟 يمنع تكرار تنبيه الكوكيز
+last_ichancy_auth_warning_sent = None
 SERVER_START_TS = time.time()
 ROBERT_VIP_API_BASE = "https://api.robert.vip/api/v1"
 ROBERT_PUBLIC_CACHE = {'data': None, 'expires_at': 0.0, 'updated_at': 0.0}
@@ -143,10 +143,10 @@ def _should_update_agent_balance_cache(new_balance):
     return False
 
 
-async def cookie_watchdog_task(bot: Bot):
-    """فحص دوري للويبهوك وجلسة iChancy مع إعدادات مخففة للخطة المجانية."""
+async def official_api_watchdog_task(bot: Bot):
+    """Check the webhook and official iChancy API token session periodically."""
     interval = max(300, int(getattr(settings, 'WATCHDOG_INTERVAL_SECONDS', 1800) or 1800))
-    logger.info(f"🍪 Watchdog started (interval: {interval} sec).")
+    logger.info(f"🔐 Official API watchdog started (interval: {interval} sec).")
     while True:
         try:
             admin_balance = None
@@ -160,26 +160,24 @@ async def cookie_watchdog_task(bot: Bot):
             except Exception as e:
                 logger.error(f"Watchdog webhook check error: {e}")
 
-            logger.info("🔍 Watchdog: checking session validity...")
+            logger.info("🔍 Watchdog: checking official API token validity...")
             is_valid = await ichancy_api_client.check_session_validity()
-            # 🌟 (Update 20 / Perf) يُحدِّث كاش حالة الجلسة لخدمته للوحات دون شبكة داخل الطلب
-            _COOKIE_STATUS_CACHE['alive'] = bool(is_valid)
-            _COOKIE_STATUS_CACHE['checked_at'] = time.time()
+            _ICHANCY_API_STATUS_CACHE['alive'] = bool(is_valid)
+            _ICHANCY_API_STATUS_CACHE['checked_at'] = time.time()
             if not is_valid:
-                logger.warning("⛔ Watchdog: session DEAD! Attempting auto-login...")
+                logger.warning("⛔ Watchdog: official API auth failed. Attempting token recovery...")
                 success = await ichancy_api_client.login_agent()
-                _COOKIE_STATUS_CACHE['alive'] = bool(success)
-                _COOKIE_STATUS_CACHE['checked_at'] = time.time()
+                _ICHANCY_API_STATUS_CACHE['alive'] = bool(success)
+                _ICHANCY_API_STATUS_CACHE['checked_at'] = time.time()
                 if success:
-                    logger.info("✔️ Watchdog: session refreshed!")
-                    await asyncio.to_thread(repo.update_cookie_timestamp)
+                    logger.info("✔️ Watchdog: official API tokens recovered.")
                     admin_balance = await ichancy_api_client.get_admin_balance()
                     if admin_balance is not None and _should_update_agent_balance_cache(admin_balance):
                         await asyncio.to_thread(repo.update_bot_settings, agent_balance=admin_balance)
                 else:
-                    logger.error("⛔ Watchdog: auto-login failed!")
+                    logger.error("⛔ Watchdog: automatic token recovery failed.")
             else:
-                logger.info("🔹 Watchdog: session healthy.")
+                logger.info("🔹 Watchdog: official API auth healthy.")
                 admin_balance = await ichancy_api_client.get_admin_balance()
                 if admin_balance is not None:
                     if _should_update_agent_balance_cache(admin_balance):
@@ -195,22 +193,21 @@ async def cookie_watchdog_task(bot: Bot):
             else:
                 logger.info("Skipping periodic agent balance alert: no valid live balance was fetched.")
 
-            # تنبيه ذكي: لا نطلب تحديث الكوكيز طالما الجلسة نشطة، حتى لو عمرها طويل.
-            global last_cookie_warning_sent
+            global last_ichancy_auth_warning_sent
             if not is_valid:
                 warning_bucket = int(time.time() // 1800)  # كل 30 دقيقة كحد أقصى عند التعطل فقط
-                if last_cookie_warning_sent != warning_bucket:
-                    last_cookie_warning_sent = warning_bucket
+                if last_ichancy_auth_warning_sent != warning_bucket:
+                    last_ichancy_auth_warning_sent = warning_bucket
                     admin_ids = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
                     warn_text = (
-                        "🔻 <b>جلسة iChancy غير نشطة</b>\n\n"
-                        "فشل فحص الجلسة أو التجديد التلقائي. إذا توقفت العمليات، حدّث الكوكيز من لوحة الأدمن."
+                        "🔻 <b>تعذّر توثيق iChancy API</b>\n\n"
+                        "فشل تجديد الرمز تلقائياً. تحقّق من بيانات AGENT_USERNAME وAGENT_PASSWORD وصلاحيات الوكيل."
                     )
                     for admin_id in admin_ids:
                         try:
                             await bot.send_message(chat_id=admin_id, text=warn_text, parse_mode="HTML")
                         except Exception as e:
-                            logger.warning(f"Cookie failure notification failed for {admin_id}: {e}")
+                            logger.warning(f"API auth failure notification failed for {admin_id}: {e}")
 
             # ⏳ إغلاق الاتصالات الخاملة بـ Neon بعد 3 دقائق من الخمول للسماح للنظام بالسكون وتوفير الحساب المجاني
             if hasattr(DatabaseManager, 'close_idle_pool_if_needed'):
@@ -768,9 +765,9 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
 
     if getattr(settings, 'WATCHDOG_ENABLED', True):
         if watchdog_task is None or watchdog_task.done():
-            watchdog_task = asyncio.create_task(cookie_watchdog_task(bot))
+            watchdog_task = asyncio.create_task(official_api_watchdog_task(bot))
     else:
-        logger.warning("🍪 Watchdog disabled by WATCHDOG_ENABLED=false (Neon free optimization).")
+        logger.warning("🔐 Watchdog disabled by WATCHDOG_ENABLED=false (Neon free optimization).")
 
     if ensure_webhook_task is None or ensure_webhook_task.done():
         ensure_webhook_task = asyncio.create_task(ensure_webhook(bot))
@@ -897,7 +894,7 @@ def _is_admin(init_data_raw):
 # ================================================================
 _DASHBOARD_CACHE = {'data': None, 'expires_at': 0.0}
 DASHBOARD_CACHE_TTL = 30.0
-_COOKIE_STATUS_CACHE = {'alive': None, 'checked_at': 0.0}
+_ICHANCY_API_STATUS_CACHE = {'alive': None, 'checked_at': 0.0}
 _BOT_USERNAME_CACHE = {'username': None}
 _TOTAL_BALANCE_MEMO = {'value': 0, 'expires_at': 0.0}
 
@@ -1060,8 +1057,7 @@ def _collect_dashboard_payload_sync():
         'min_withdraw_syp': int(bot_settings.get('min_withdraw_syp') or 25000),
         'min_withdraw_usd': int(bot_settings.get('min_withdraw_usd') or 10),
         'syp_version': str(bot_settings.get('syp_version') or 'old'),
-        'is_cookie_alive': None,  # تُحقن من الكاش في المعالج
-        'cookie_age_minutes': repo.get_cookie_age_minutes(),
+        'is_ichancy_api_alive': None,  # injected from the watchdog cache
         'pending_deposits': pending_deposits,
         'pending_withdraws': pending_withdraws,
         'recent_transactions': recent_transactions,
@@ -1107,11 +1103,11 @@ async def dashboard_api_handler(request):
         logger.error(f"Dashboard API error: {e}", exc_info=True)
         return web.json_response({'error': 'خطأ داخلي'}, status=500)
 
-    # حالة جلسة iChancy من كاش الـ watchdog (يحدّث كل 30 دقيقة) — صفر شبكة داخل مسار الطلب
-    data['is_cookie_alive'] = _COOKIE_STATUS_CACHE['alive']
-    data['cookie_checked_at'] = (
-        time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(_COOKIE_STATUS_CACHE['checked_at']))
-        if _COOKIE_STATUS_CACHE['checked_at'] else None
+    # Cached official API auth status; dashboard requests do not trigger extra network calls.
+    data['is_ichancy_api_alive'] = _ICHANCY_API_STATUS_CACHE['alive']
+    data['ichancy_api_checked_at'] = (
+        time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(_ICHANCY_API_STATUS_CACHE['checked_at']))
+        if _ICHANCY_API_STATUS_CACHE['checked_at'] else None
     )
 
     _DASHBOARD_CACHE['data'] = data
@@ -1680,15 +1676,12 @@ async def admin_health_handler(request):
     except Exception as e:
         checks['webhook'] = {'ok': False, 'error': str(e)[:300]}
 
-    # iChancy session
+    # iChancy official API token session
     try:
         is_valid = await ichancy_api_client.check_session_validity()
-        cookie_age = await asyncio.to_thread(repo.get_cookie_age_minutes)
         checks['ichancy'] = {
             'ok': bool(is_valid),
-            'cookie_age_minutes': cookie_age,
-            'cookie_age_text': '—' if cookie_age is None else _format_uptime(cookie_age * 60),
-            'message': 'الجلسة نشطة، لا يلزم تحديث الكوكيز طالما العمليات تعمل.' if is_valid else 'الجلسة غير نشطة، قد تحتاج تحديث الكوكيز.',
+            'message': 'رموز API نشطة والتجديد تلقائي.' if is_valid else 'تعذّر تجديد الرمز؛ تحقق من بيانات دخول الوكيل وصلاحياته.',
         }
     except Exception as e:
         checks['ichancy'] = {'ok': False, 'error': str(e)[:300]}

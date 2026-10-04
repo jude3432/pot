@@ -187,13 +187,13 @@ EXPECTED_DASH_KEYS = {
  'total_users','new_users_today','today_tx_count','approved_volume','total_bot_balance','agent_balance',
  'agent_balance_alert_threshold','usd_buy_rate','usd_sell_rate','exchange_rate','withdraw_commission',
  'game_min_deposit_syp','agent_revenue_percent','min_deposit_syp','min_deposit_usd','min_withdraw_syp',
- 'min_withdraw_usd','syp_version','is_cookie_alive','cookie_age_minutes','pending_deposits','pending_withdraws',
+ 'min_withdraw_usd','syp_version','is_ichancy_api_alive','pending_deposits','pending_withdraws',
  'recent_transactions','today_deposits','today_withdraws','today_game_deposits','today_bonus_paid',
  'estimated_burn','estimated_revenue','net_profit','chart_labels','chart_deposits','chart_withdraws',
  'chart_burn_rev','chart_comm_rev','wheel_stats','cashback_stats','checkin_stats','inactive_users',
  'agent_balance_alert','pending_count','open_support_count','oldest_pending','service_gates','active_cashier_profile'
 }
-check("مفاتيح لوحة الأدمن لم تتغير (لن يكسر واجهة JS)", set(d1.keys()) - {'cookie_checked_at'} == EXPECTED_DASH_KEYS,
+check("مفاتيح لوحة الأدمن متوافقة مع حالة API الرسمية", set(d1.keys()) - {'ichancy_api_checked_at'} == EXPECTED_DASH_KEYS,
       str(set(d1.keys()) ^ EXPECTED_DASH_KEYS)[:160])
 check("ضربة الكاش بلا أي استعلام DB", n2 == 0)
 check("تسريع الكاش أكبر من 10×", t1 / max(t2, 0.05) > 10, f"{t1:.0f}ms vs {t2:.2f}ms")

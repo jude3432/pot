@@ -1881,7 +1881,7 @@ def get_bot_settings():
     return settings_dict
 
 
-def update_bot_settings(exchange_rate=None, usd_buy_rate=None, usd_sell_rate=None, withdraw_commission=None, ichancy_cookie=None, agent_balance=None, referrals_enabled=None, game_min_deposit_syp=None, agent_revenue_percent=None, min_deposit_syp=None, min_deposit_usd=None, min_withdraw_syp=None, min_withdraw_usd=None, syp_version=None, bonus_rollover_multiplier=None, turnover_field_name=None, game_bonus_enabled=None, game_bonus_apply_percent=None, syriatel_auto_mode=None, syriatel_auto_channel_id=None, shamcash_auto_mode=None, shamcash_auto_channel_id=None, agent_balance_alert_threshold=None):
+def update_bot_settings(exchange_rate=None, usd_buy_rate=None, usd_sell_rate=None, withdraw_commission=None, agent_balance=None, referrals_enabled=None, game_min_deposit_syp=None, agent_revenue_percent=None, min_deposit_syp=None, min_deposit_usd=None, min_withdraw_syp=None, min_withdraw_usd=None, syp_version=None, bonus_rollover_multiplier=None, turnover_field_name=None, game_bonus_enabled=None, game_bonus_apply_percent=None, syriatel_auto_mode=None, syriatel_auto_channel_id=None, shamcash_auto_mode=None, shamcash_auto_channel_id=None, agent_balance_alert_threshold=None):
     settings_dict = get_bot_settings()
     if not settings_dict:
         DatabaseManager.execute_query("INSERT INTO bot_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;")
@@ -1891,7 +1891,6 @@ def update_bot_settings(exchange_rate=None, usd_buy_rate=None, usd_sell_rate=Non
     new_usd_buy_rate = usd_buy_rate if usd_buy_rate is not None else settings_dict['usd_buy_rate']
     new_usd_sell_rate = usd_sell_rate if usd_sell_rate is not None else settings_dict['usd_sell_rate']
     new_withdraw_commission = withdraw_commission if withdraw_commission is not None else settings_dict['withdraw_commission']
-    new_cookie = ichancy_cookie if ichancy_cookie is not None else settings_dict['ichancy_cookie']
     new_agent_balance = agent_balance if agent_balance is not None else settings_dict.get('agent_balance', 0)
     new_referrals_enabled = referrals_enabled if referrals_enabled is not None else settings_dict.get('referrals_enabled', True)
     new_game_min_deposit_syp = game_min_deposit_syp if game_min_deposit_syp is not None else settings_dict.get('game_min_deposit_syp', 20000)
@@ -1913,7 +1912,7 @@ def update_bot_settings(exchange_rate=None, usd_buy_rate=None, usd_sell_rate=Non
 
     query = """
     UPDATE bot_settings
-    SET exchange_rate = %s, usd_buy_rate = %s, usd_sell_rate = %s, withdraw_commission = %s, ichancy_cookie = %s, agent_balance = %s, referrals_enabled = %s, game_min_deposit_syp = %s, agent_revenue_percent = %s, min_deposit_syp = %s, min_deposit_usd = %s, min_withdraw_syp = %s, min_withdraw_usd = %s, syp_version = %s, bonus_rollover_multiplier = %s, turnover_field_name = %s, game_bonus_enabled = %s, game_bonus_apply_percent = %s, syriatel_auto_mode = %s, syriatel_auto_channel_id = %s, shamcash_auto_mode = %s, shamcash_auto_channel_id = %s, agent_balance_alert_threshold = %s
+    SET exchange_rate = %s, usd_buy_rate = %s, usd_sell_rate = %s, withdraw_commission = %s, agent_balance = %s, referrals_enabled = %s, game_min_deposit_syp = %s, agent_revenue_percent = %s, min_deposit_syp = %s, min_deposit_usd = %s, min_withdraw_syp = %s, min_withdraw_usd = %s, syp_version = %s, bonus_rollover_multiplier = %s, turnover_field_name = %s, game_bonus_enabled = %s, game_bonus_apply_percent = %s, syriatel_auto_mode = %s, syriatel_auto_channel_id = %s, shamcash_auto_mode = %s, shamcash_auto_channel_id = %s, agent_balance_alert_threshold = %s
     WHERE id = 1
     """
     DatabaseManager.execute_query(
@@ -1923,7 +1922,6 @@ def update_bot_settings(exchange_rate=None, usd_buy_rate=None, usd_sell_rate=Non
             float(new_usd_buy_rate),
             float(new_usd_sell_rate),
             float(new_withdraw_commission),
-            new_cookie,
             int(new_agent_balance),
             bool(new_referrals_enabled),
             int(new_game_min_deposit_syp),
@@ -2487,23 +2485,6 @@ def get_transactions_volume(status='approved'):
         (status,), fetch='one'
     )
     return int(float(result[0])) if result else 0
-
-
-def update_cookie_timestamp():
-    """تسجيل وقت آخر تحديث للكوكيز."""
-    DatabaseManager.execute_query(
-        "UPDATE bot_settings SET last_cookie_update = CURRENT_TIMESTAMP WHERE id = 1"
-    )
-
-
-def get_cookie_age_minutes():
-    """عمر آخر تحديث للكوكيز بالدقائق (None إذا لم يُحدّث أبداً)."""
-    result = DatabaseManager.execute_query_dict(
-        "SELECT EXTRACT(EPOCH FROM (NOW() - last_cookie_update))/60 AS age_minutes "
-        "FROM bot_settings WHERE id = 1 AND last_cookie_update IS NOT NULL",
-        fetch='one'
-    )
-    return int(result['age_minutes']) if result and result['age_minutes'] is not None else None
 
 
 def search_user(query):

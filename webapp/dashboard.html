@@ -238,8 +238,6 @@
   .field{margin-bottom:12px}
   .field label{font-size:12px;color:var(--hint);font-weight:800}
   .hint{font-size:11px;color:var(--hint);margin-top:4px;line-height:1.5}
-  .cookie-status{display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:14px}
-  .cookie-status.ok{color:var(--green)}.cookie-status.bad{color:var(--red)}.cookie-status.warn{color:var(--orange)}
 
   /* ===== التنبيهات ===== */
   .loader{text-align:center;padding:60px 20px;color:var(--hint)}
@@ -469,15 +467,9 @@ async function loadDashboard(){
 }
 
 function renderDashboard(d){
-  const cookieAge=d.cookie_age_minutes;
-  let cookieAgeText='—';let cookieClass='ok';
-  if(cookieAge===null){cookieClass='warn';cookieAgeText='لم يُحدّث بعد'}
-  else if(cookieAge<60)cookieAgeText=cookieAge+' دقيقة';
-  else if(cookieAge<1440)cookieAgeText=Math.floor(cookieAge/60)+' ساعة';
-  else{cookieAgeText=Math.floor(cookieAge/1440)+' يوم';cookieClass='warn'}
-  
-  const cookieStatus=d.is_cookie_alive?'🔹 نشطة':'🔻 منتهية';
-  const cookieStatusClass=d.is_cookie_alive?(cookieAge!==null&&cookieAge>=720?'warn':'ok'):'bad';
+  const ichancyApiAlive=Boolean(d.is_ichancy_api_alive);
+  const ichancyApiStatus=ichancyApiAlive?'🔹 متصل':'🔻 غير متصل';
+  const ichancyApiStatusClass=ichancyApiAlive?'ok':'bad';
   
   updateAlertsBar(d);
   
@@ -490,8 +482,8 @@ function renderDashboard(d){
   if(d.agent_balance_alert){
     alertsHtml+=`<div class="alert-chip warning"><span>🚧</span><span>رصيد الكاشيرة منخفض</span></div>`;
   }
-  if(!d.is_cookie_alive){
-    alertsHtml+=`<div class="alert-chip danger"><span>🍪</span><span>جلسة iChancy منتهية</span></div>`;
+  if(!ichancyApiAlive){
+    alertsHtml+=`<div class="alert-chip danger"><span>🔐</span><span>توثيق iChancy API غير متصل</span></div>`;
   }
   if(d.inactive_users>0){
     alertsHtml+=`<div class="alert-chip" onclick="showTab('broadcast')"><span>⏳</span><span>${fmt(d.inactive_users)} مستخدم خامل</span></div>`;
@@ -514,7 +506,7 @@ function renderDashboard(d){
         <button class="ops-card ops-dep" onclick="showTab('requests')"><div class="ops-top"><span class="ops-icon">📨</span><span class="ops-value">${d.pending_deposits?.length||0}</span></div><div class="ops-label">إيداعات معلقة</div><div class="ops-sub">اضغط للفرز والمراجعة</div></button>
         <button class="ops-card ops-wit" onclick="showTab('requests')"><div class="ops-top"><span class="ops-icon">📬</span><span class="ops-value">${d.pending_withdraws?.length||0}</span></div><div class="ops-label">سحوبات معلقة</div><div class="ops-sub">الأولوية للأقدم</div></button>
         <button class="ops-card ops-support" onclick="showTab('support')"><div class="ops-top"><span class="ops-icon">📨</span><span class="ops-value">${d.open_support_count||0}</span></div><div class="ops-label">تذاكر مفتوحة</div><div class="ops-sub">مركز الدعم</div></button>
-        <button class="ops-card ops-system" onclick="showTab('health')"><div class="ops-top"><span class="ops-icon">🧪</span><span class="ops-value">${d.is_cookie_alive?'✓':'!'}</span></div><div class="ops-label">النظام ${d.is_cookie_alive?'سليم':'يحتاج فحصًا'}</div><div class="ops-sub">الكاشير: ${activeCashier}</div></button>
+        <button class="ops-card ops-system" onclick="showTab('health')"><div class="ops-top"><span class="ops-icon">🧪</span><span class="ops-value">${ichancyApiAlive?'✓':'!'}</span></div><div class="ops-label">النظام ${ichancyApiAlive?'سليم':'يحتاج فحصًا'}</div><div class="ops-sub">الكاشير: ${activeCashier}</div></button>
       </div>
       <div class="oldest-request">⏱️ أقدم طلب: <b>${oldestText}</b></div>
     </div>
@@ -549,11 +541,11 @@ function renderDashboard(d){
     <div class="card">
       <div class="card-title"><span>🧪 حالة النظام</span><span class="see-all" onclick="showTab('health')">تفاصيل →</span></div>
       <div class="status-bar">
-        <div class="status-item"><div class="dot ${cookieStatusClass}"></div><span>🍪 ${cookieStatus}</span></div>
+        <div class="status-item"><div class="dot ${ichancyApiStatusClass}"></div><span>🔐 API: ${ichancyApiStatus}</span></div>
         <div class="status-item"><div class="dot ok"></div><span>🗄️ Neon</span></div>
         <div class="status-item"><div class="dot ok"></div><span>🧭 Webhook</span></div>
       </div>
-      <div class="row" style="margin-top:8px"><span class="label">🕐 آخر تحديث للجلسة</span><span class="value">${cookieAgeText}</span></div>
+      <div class="row" style="margin-top:8px"><span class="label">🔄 تجديد رموز الدخول</span><span class="value">تلقائي</span></div>
     </div>
     
     <!-- 🪙 الأرصدة -->
@@ -977,7 +969,7 @@ function renderHealth(d,neon,render){const wh=d.webhook||{},db=d.database||{},sr
 ${neonCard(neon)}
 ${renderRenderCard(render)}
 <div class="card"><div class="card-title">🧭 Telegram Webhook</div><div class="row"><span class="label">الحالة</span><span>${okBadge(wh.ok)}</span></div><div class="row"><span class="label">Pending</span><span class="value">${wh.pending_update_count??'—'}</span></div></div>
-<div class="card"><div class="card-title">🕹️ iChancy</div><div class="row"><span class="label">الجلسة</span><span>${okBadge(ich.ok)}</span></div><div class="row"><span class="label">عمر الكوكيز</span><span class="value">${ich.cookie_age_text||'—'}</span></div></div>
+<div class="card"><div class="card-title">🕹️ iChancy API</div><div class="row"><span class="label">اتصال الرموز الرسمية</span><span>${okBadge(ich.ok)}</span></div><div class="row"><span class="label">التجديد</span><span class="value">${ich.message||'تلقائي'}</span></div></div>
 <div class="card"><div class="card-title">📈 أرقام سريعة</div><div class="row"><span class="label">🧑‍🤝‍🧑 المستخدمون</span><span class="value">${fmt(st.total_users)}</span></div><div class="row"><span class="label">⏳ الطلبات المعلقة</span><span class="value">${fmt(st.pending_requests)}</span></div><div class="row"><span class="label">🔁 معاملات اليوم</span><span class="value">${fmt(st.today_tx)}</span></div></div>
 <button class="btn outline" onclick="showTab('more')">↩️ رجوع</button>`}
 
