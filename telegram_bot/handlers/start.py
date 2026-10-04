@@ -93,11 +93,12 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
     account_line = html.escape(f"@{telegram_username}" if telegram_username else "بدون اسم مستخدم")
     ichancy_line = html.escape(ichancy_username if ichancy_username else "غير مربوط")
     player_line = html.escape(player_id if player_id else "غير متوفر")
+    card_rule = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     text = (
-        f"╭━━━━━━━━━━━━━━━━━━━━╮\n"
+        f"{card_rule}\n"
         f"{ce('brand', '✨')} <b>أهلاً بك في Jude Robert</b>\n"
         f"<i>بطاقة حسابك الرقمية — كل معلوماتك في مكان واحد</i>\n"
-        f"╰━━━━━━━━━━━━━━━━━━━━╯\n\n"
+        f"{card_rule}\n\n"
         f"{ce('balance', '🔷')} <b>رصيد البوت</b>\n"
         f"   <code>{bot_balance:,} ل.س</code>  <i>({bot_balance_new_str} ل.س جديدة)</i>\n\n"
         f"{ce('game', '🕹️')} <b>رصيد اللعبة — iChancy</b>\n"
@@ -108,7 +109,8 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
         f"{ce('account', '🔗')} <b>اسم حساب iChancy:</b> <code>{ichancy_line}</code>\n\n"
         f"{ce('history', '🕘')} <b>آخر عملية</b>\n"
         f"   <i>{html.escape(last_operation)}</i>\n\n"
-        f"{ce('website', '🌐')} <b>اختر الخدمة المطلوبة من الأزرار بالأسفل</b>"
+        f"{ce('website', '🌐')} <b>اختر الخدمة المطلوبة من الأزرار بالأسفل</b>\n"
+        f"{card_rule}"
     )
 
     keyboard = get_user_menu_keyboard(user_id)
