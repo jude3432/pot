@@ -62,7 +62,7 @@ ensure_webhook_task = None
 daily_report_task = None
 leaderboard_task = None
 routers_registered = False
-last_cookie_warning_sent = None  # 🆕 يمنع تكرار تنبيه الكوكيز
+last_cookie_warning_sent = None  # 🌟 يمنع تكرار تنبيه الكوكيز
 SERVER_START_TS = time.time()
 ROBERT_VIP_API_BASE = "https://api.robert.vip/api/v1"
 ROBERT_PUBLIC_CACHE = {'data': None, 'expires_at': 0.0, 'updated_at': 0.0}
@@ -152,42 +152,42 @@ async def cookie_watchdog_task(bot: Bot):
             try:
                 webhook_info = await bot.get_webhook_info()
                 if not webhook_info.url:
-                    logger.warning("⚠️ Watchdog: Webhook is missing! Re-setting...")
+                    logger.warning("🚧 Watchdog: Webhook is missing! Re-setting...")
                     await bot.delete_webhook(drop_pending_updates=True)
                     await bot.set_webhook(WEBHOOK_URL)
-                    logger.info("✅ Watchdog: Webhook re-set.")
+                    logger.info("✔️ Watchdog: Webhook re-set.")
             except Exception as e:
                 logger.error(f"Watchdog webhook check error: {e}")
 
             logger.info("🔍 Watchdog: checking session validity...")
             is_valid = await ichancy_api_client.check_session_validity()
-            # 🆕 (Update 20 / Perf) يُحدِّث كاش حالة الجلسة لخدمته للوحات دون شبكة داخل الطلب
+            # 🌟 (Update 20 / Perf) يُحدِّث كاش حالة الجلسة لخدمته للوحات دون شبكة داخل الطلب
             _COOKIE_STATUS_CACHE['alive'] = bool(is_valid)
             _COOKIE_STATUS_CACHE['checked_at'] = time.time()
             if not is_valid:
-                logger.warning("💀 Watchdog: session DEAD! Attempting auto-login...")
+                logger.warning("⛔ Watchdog: session DEAD! Attempting auto-login...")
                 success = await ichancy_api_client.login_agent()
                 _COOKIE_STATUS_CACHE['alive'] = bool(success)
                 _COOKIE_STATUS_CACHE['checked_at'] = time.time()
                 if success:
-                    logger.info("✅ Watchdog: session refreshed!")
+                    logger.info("✔️ Watchdog: session refreshed!")
                     await asyncio.to_thread(repo.update_cookie_timestamp)
                     admin_balance = await ichancy_api_client.get_admin_balance()
                     if admin_balance is not None and _should_update_agent_balance_cache(admin_balance):
                         await asyncio.to_thread(repo.update_bot_settings, agent_balance=admin_balance)
                 else:
-                    logger.error("❌ Watchdog: auto-login failed!")
+                    logger.error("⛔ Watchdog: auto-login failed!")
             else:
-                logger.info("🟢 Watchdog: session healthy.")
+                logger.info("🔹 Watchdog: session healthy.")
                 admin_balance = await ichancy_api_client.get_admin_balance()
                 if admin_balance is not None:
                     if _should_update_agent_balance_cache(admin_balance):
                         await asyncio.to_thread(repo.update_bot_settings, agent_balance=admin_balance)
-                        logger.info(f"💰 Watchdog: cached agent balance = {admin_balance:,} NSP")
+                        logger.info(f"🪙 Watchdog: cached agent balance = {admin_balance:,} NSP")
                     else:
-                        logger.info(f"💰 Watchdog: agent balance unchanged/skipped DB write = {admin_balance:,} NSP")
+                        logger.info(f"🪙 Watchdog: agent balance unchanged/skipped DB write = {admin_balance:,} NSP")
 
-            # 🆕 فحص رصيد الكاشيرة فقط إذا حصلنا على قراءة صالحة من iChancy.
+            # 🌟 فحص رصيد الكاشيرة فقط إذا حصلنا على قراءة صالحة من iChancy.
             # هذا يمنع إطلاق تنبيه كاذب إذا انتهت الجلسة أو رجع API برد فارغ.
             if admin_balance is not None:
                 await check_agent_balance_periodic(bot)
@@ -202,7 +202,7 @@ async def cookie_watchdog_task(bot: Bot):
                     last_cookie_warning_sent = warning_bucket
                     admin_ids = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
                     warn_text = (
-                        "🔴 <b>جلسة iChancy غير نشطة</b>\n\n"
+                        "🔻 <b>جلسة iChancy غير نشطة</b>\n\n"
                         "فشل فحص الجلسة أو التجديد التلقائي. إذا توقفت العمليات، حدّث الكوكيز من لوحة الأدمن."
                     )
                     for admin_id in admin_ids:
@@ -211,14 +211,14 @@ async def cookie_watchdog_task(bot: Bot):
                         except Exception as e:
                             logger.warning(f"Cookie failure notification failed for {admin_id}: {e}")
 
-            # 💤 إغلاق الاتصالات الخاملة بـ Neon بعد 3 دقائق من الخمول للسماح للنظام بالسكون وتوفير الحساب المجاني
+            # ⏳ إغلاق الاتصالات الخاملة بـ Neon بعد 3 دقائق من الخمول للسماح للنظام بالسكون وتوفير الحساب المجاني
             if hasattr(DatabaseManager, 'close_idle_pool_if_needed'):
                 await asyncio.to_thread(DatabaseManager.close_idle_pool_if_needed, idle_seconds=180)
         except asyncio.CancelledError:
-            logger.info("🛑 Watchdog task cancelled.")
+            logger.info("⛔ Watchdog task cancelled.")
             raise
         except Exception as e:
-            logger.error(f"⚠️ Watchdog error: {e}")
+            logger.error(f"🚧 Watchdog error: {e}")
 
         await asyncio.sleep(interval)
 
@@ -229,21 +229,21 @@ async def ensure_webhook(bot: Bot):
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await bot.set_webhook(WEBHOOK_URL)
-        logger.info(f"🌐 Initial webhook set to {WEBHOOK_URL}")
+        logger.info(f"🧭 Initial webhook set to {WEBHOOK_URL}")
         webhook_info = await bot.get_webhook_info()
         if webhook_info.url == WEBHOOK_URL:
-            logger.info("✅ Initial webhook verified.")
+            logger.info("✔️ Initial webhook verified.")
         else:
-            logger.warning(f"⚠️ Initial webhook URL mismatch: {webhook_info.url}")
+            logger.warning(f"🚧 Initial webhook URL mismatch: {webhook_info.url}")
     except asyncio.CancelledError:
-        logger.info("🛑 Initial webhook task cancelled.")
+        logger.info("⛔ Initial webhook task cancelled.")
         raise
     except Exception as e:
-        logger.error(f"❌ Initial webhook attempt failed: {e}")
+        logger.error(f"⛔ Initial webhook attempt failed: {e}")
 
 
 # ================================================================
-# 🆕 التقرير المالي اليومي + تنبيه رصيد الكاشيرة
+# 🌟 التقرير المالي اليومي + تنبيه رصيد الكاشيرة
 # ================================================================
 
 async def generate_daily_report(bot: Bot):
@@ -297,37 +297,37 @@ async def generate_daily_report(bot: Bot):
         # بناء التقرير
         report_text = (
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📊 <b>التقرير المالي اليومي</b>\n"
-            f"📅 {datetime.now().strftime('%Y-%m-%d')}\n"
+            "📈 <b>التقرير المالي اليومي</b>\n"
+            f"🗓️ {datetime.now().strftime('%Y-%m-%d')}\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
 
-            "👥 <b>══ المستخدمين ══</b>\n"
-            f"├─ 📊 إجمالي المسجلين: <code>{total_users:,}</code>\n"
-            f"└─ 🆕 جدد اليوم: <code>{new_users_today}</code>\n\n"
+            "🧑‍🤝‍🧑 <b>══ المستخدمين ══</b>\n"
+            f"├─ 📈 إجمالي المسجلين: <code>{total_users:,}</code>\n"
+            f"└─ 🌟 جدد اليوم: <code>{new_users_today}</code>\n\n"
 
-            "💰 <b>══ الإيداعات اليوم ══</b>\n"
-            f"├─ 📥 عدد الطلبات: <code>{deposits_today.get('count', 0) if deposits_today else 0}</code>\n"
-            f"└─ 💵 إجمالي المبالغ: <code>{deposit_total:,.0f} SYP</code>\n\n"
+            "🪙 <b>══ الإيداعات اليوم ══</b>\n"
+            f"├─ 📨 عدد الطلبات: <code>{deposits_today.get('count', 0) if deposits_today else 0}</code>\n"
+            f"└─ 💳 إجمالي المبالغ: <code>{deposit_total:,.0f} SYP</code>\n\n"
 
-            "📤 <b>══ السحوبات اليوم ══</b>\n"
-            f"├─ 📤 عدد الطلبات: <code>{withdrawals_today.get('count', 0) if withdrawals_today else 0}</code>\n"
-            f"└─ 💵 إجمالي المبالغ: <code>{withdraw_total:,.0f} SYP</code>\n\n"
+            "📬 <b>══ السحوبات اليوم ══</b>\n"
+            f"├─ 📬 عدد الطلبات: <code>{withdrawals_today.get('count', 0) if withdrawals_today else 0}</code>\n"
+            f"└─ 💳 إجمالي المبالغ: <code>{withdraw_total:,.0f} SYP</code>\n\n"
 
             "📈 <b>══ صافي الحركة ══</b>\n"
-            f"├─ 💰 صافي اليوم: <code>{net_profit:,.0f} SYP</code>\n"
-            f"{'├─ ✅ ربح' if net_profit > 0 else '├─ ❌ خسارة'}: <code>{abs(net_profit):,.0f} SYP</code>\n"
-            f"└─ 🔄 معاملات اليوم: <code>{today_tx_count}</code>\n\n"
+            f"├─ 🪙 صافي اليوم: <code>{net_profit:,.0f} SYP</code>\n"
+            f"{'├─ ✔️ ربح' if net_profit > 0 else '├─ ⛔ خسارة'}: <code>{abs(net_profit):,.0f} SYP</code>\n"
+            f"└─ 🔁 معاملات اليوم: <code>{today_tx_count}</code>\n\n"
 
-            "💎 <b>══ الأرصدة ══</b>\n"
-            f"├─ 🏦 رصيد البوت (المستخدمين): <code>{total_bot_balance:,} SYP</code>\n"
-            f"└─ 🎮 رصيد الكاشيرة: <code>{agent_balance:,} NSP</code>\n\n"
+            "🔷 <b>══ الأرصدة ══</b>\n"
+            f"├─ 🏛️ رصيد البوت (المستخدمين): <code>{total_bot_balance:,} SYP</code>\n"
+            f"└─ 🕹️ رصيد الكاشيرة: <code>{agent_balance:,} NSP</code>\n\n"
 
             "⏳ <b>══ الطلبات المعلقة ══</b>\n"
-            f"├─ 📥 إيداعات معلقة: <code>{pending_deposits.get('count', 0) if pending_deposits else 0}</code>\n"
-            f"└─ 📤 سحوبات معلقة: <code>{pending_withdrawals.get('count', 0) if pending_withdrawals else 0}</code>\n\n"
+            f"├─ 📨 إيداعات معلقة: <code>{pending_deposits.get('count', 0) if pending_deposits else 0}</code>\n"
+            f"└─ 📬 سحوبات معلقة: <code>{pending_withdrawals.get('count', 0) if pending_withdrawals else 0}</code>\n\n"
 
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "👑 <i>Jude Robert - التقرير التلقائي</i>\n"
+            "✨ <i>Jude Robert - التقرير التلقائي</i>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -335,7 +335,7 @@ async def generate_daily_report(bot: Bot):
         for admin_id in admin_ids:
             try:
                 await bot.send_message(chat_id=admin_id, text=report_text, parse_mode="HTML")
-                logger.info(f"✅ Daily report sent to admin {admin_id}")
+                logger.info(f"✔️ Daily report sent to admin {admin_id}")
             except Exception as e:
                 logger.warning(f"Failed to send daily report to {admin_id}: {e}")
 
@@ -348,7 +348,7 @@ async def generate_daily_report(bot: Bot):
                 logger.warning(f"Failed to send daily report to log channel: {e}")
 
     except Exception as e:
-        logger.error(f"❌ Daily report generation error: {e}", exc_info=True)
+        logger.error(f"⛔ Daily report generation error: {e}", exc_info=True)
 
 
 async def check_agent_balance_and_alert(bot: Bot):
@@ -363,24 +363,24 @@ async def check_agent_balance_and_alert(bot: Bot):
 
             alert_text = (
                 "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                "⚠️ <b>تنبيه: رصيد الكاشيرة منخفض!</b>\n"
+                "🚧 <b>تنبيه: رصيد الكاشيرة منخفض!</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                f"💰 <b>الرصيد الحالي:</b> <code>{agent_balance:,} NSP</code>\n"
+                f"🪙 <b>الرصيد الحالي:</b> <code>{agent_balance:,} NSP</code>\n"
                 f"📉 <b>الحد الأدنى:</b> <code>{threshold:,} NSP</code>\n"
-                f"⚠️ <b>النقص:</b> <code>{threshold - agent_balance:,} NSP</code>\n\n"
+                f"🚧 <b>النقص:</b> <code>{threshold - agent_balance:,} NSP</code>\n\n"
                 f"⏰ <b>الوقت:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                "💡 <b>الإجراء المطلوب:</b>\n"
+                "🔆 <b>الإجراء المطلوب:</b>\n"
                 "قم بشحن رصيد الكاشيرة لضمان استمرارية العمليات.\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━"
             )
 
-            # 🆕 إرسال إلى قناة السجلات
+            # 🌟 إرسال إلى قناة السجلات
             log_channel_id = getattr(settings, "LOG_CHANNEL_ID", None)
             if log_channel_id:
                 try:
                     await bot.send_message(chat_id=log_channel_id, text=alert_text, parse_mode="HTML")
-                    logger.info("✅ Agent balance low alert sent to log channel")
+                    logger.info("✔️ Agent balance low alert sent to log channel")
                 except Exception as e:
                     logger.warning(f"Failed to send agent balance low alert to log channel: {e}")
 
@@ -388,17 +388,17 @@ async def check_agent_balance_and_alert(bot: Bot):
             for admin_id in admin_ids:
                 try:
                     await bot.send_message(chat_id=admin_id, text=alert_text, parse_mode="HTML")
-                    logger.warning(f"⚠️ Agent balance alert sent to admin {admin_id}: {agent_balance:,} NSP")
+                    logger.warning(f"🚧 Agent balance alert sent to admin {admin_id}: {agent_balance:,} NSP")
                 except Exception as e:
                     logger.warning(f"Failed to send agent balance alert to {admin_id}: {e}")
 
     except Exception as e:
-        logger.error(f"❌ Agent balance check error: {e}", exc_info=True)
+        logger.error(f"⛔ Agent balance check error: {e}", exc_info=True)
 
 
 async def daily_report_scheduler(bot: Bot):
     """مجدول التقرير المالي اليومي - يرسل التقرير في الساعة المحددة."""
-    logger.info("📊 Daily report scheduler initialized.")
+    logger.info("📈 Daily report scheduler initialized.")
 
     while True:
         try:
@@ -415,29 +415,29 @@ async def daily_report_scheduler(bot: Bot):
                 next_report = (now + timedelta(days=1)).replace(hour=report_hour, minute=0, second=0, microsecond=0)
 
             wait_seconds = (next_report - now).total_seconds()
-            logger.info(f"📊 Next daily report in {wait_seconds/3600:.1f} hours (at {next_report.strftime('%Y-%m-%d %H:%M')})")
+            logger.info(f"📈 Next daily report in {wait_seconds/3600:.1f} hours (at {next_report.strftime('%Y-%m-%d %H:%M')})")
 
             # انتظار حتى موعد التقرير
             await asyncio.sleep(wait_seconds)
 
             # إرسال التقرير إذا كان مفعلاً
             if report_enabled:
-                logger.info("📊 Generating daily financial report...")
+                logger.info("📈 Generating daily financial report...")
                 await generate_daily_report(bot)
 
             # فحص رصيد الكاشيرة (يتم فحصه مرتين يومياً: مع التقرير وفي منتصف النهار)
             await check_agent_balance_and_alert(bot)
 
         except asyncio.CancelledError:
-            logger.info("🛑 Daily report scheduler cancelled.")
+            logger.info("⛔ Daily report scheduler cancelled.")
             raise
         except Exception as e:
-            logger.error(f"❌ Daily report scheduler error: {e}", exc_info=True)
+            logger.error(f"⛔ Daily report scheduler error: {e}", exc_info=True)
             await asyncio.sleep(60)  # إعادة المحاولة بعد دقيقة
 
 
 # ================================================================
-# 🆕 (Update 18) لوحة المتصدرين الأسبوعية — تحديث الإحصائيات والتسوية
+# 🌟 (Update 18) لوحة المتصدرين الأسبوعية — تحديث الإحصائيات والتسوية
 # ================================================================
 # الوضع الأسبوعي يُفعّل من لوحة الميزات (leaderboard_type = 'weekly').
 # هذا النظام يزوّده ببيانات "دوران المراهنات" الحقيقية من iChancy ويصرف
@@ -453,13 +453,13 @@ async def refresh_turnover_leaderboard():
     try:
         users = await asyncio.to_thread(repo.get_users_with_player_ids)
         if not users:
-            logger.info("🏆 Leaderboard refresh: no linked players yet.")
+            logger.info("🏅 Leaderboard refresh: no linked players yet.")
             return 0
         bot_settings = await asyncio.to_thread(repo.get_bot_settings)
         field_name = str(bot_settings.get('turnover_field_name') or 'totalBet')
         bulk = await ichancy_api_client.get_all_players_stats_bulk(field_name=field_name)
         if not bulk:
-            logger.warning("🏆 Leaderboard refresh: bulk stats empty — skipped (بيانات البارحة تبقى سارية).")
+            logger.warning("🏅 Leaderboard refresh: bulk stats empty — skipped (بيانات البارحة تبقى سارية).")
             return 0
         cycle = lb_engine.week_monday()
         records = []
@@ -474,10 +474,10 @@ async def refresh_turnover_leaderboard():
                 'turnover': bulk[pid].get('turnover', 0),
             })
         updated = await asyncio.to_thread(repo.upsert_leaderboard_snapshot_records, records, cycle)
-        logger.info(f"🏆 Leaderboard refresh: {updated} records updated.")
+        logger.info(f"🏅 Leaderboard refresh: {updated} records updated.")
         return updated
     except Exception as e:
-        logger.error(f"🏆 Leaderboard refresh error: {e}", exc_info=True)
+        logger.error(f"🏅 Leaderboard refresh error: {e}", exc_info=True)
         return 0
 
 
@@ -485,21 +485,21 @@ async def _notify_leaderboard_winners(bot: Bot, credited_credits):
     """إشعار الفائزين الذين أُضيفت جوائزهم."""
     if not bot:
         return
-    rank_emoji = {1: '🥇', 2: '🥈', 3: '🥉'}
+    rank_emoji = {1: '🏆', 2: '🎖️', 3: '🏵️'}
     for c in credited_credits:
         try:
             await bot.send_message(
                 chat_id=c['telegram_id'],
                 text=(
-                    f"🏆 <b>مبروك! فزت بالمركز {rank_emoji.get(c['rank'], c['rank'])} في لوحة المتصدرين الأسبوعية</b>\n\n"
+                    f"🏅 <b>مبروك! فزت بالمركز {rank_emoji.get(c['rank'], c['rank'])} في لوحة المتصدرين الأسبوعية</b>\n\n"
                     f"🎲 دورانك الأسبوعي: <code>{c['weekly_turnover']:,}</code>\n"
-                    f"💰 تمت إضافة جائزتك <code>{c['prize_syp']:,} SYP</code> إلى رصيدك في البوت تلقائياً.\n\n"
-                    "👑 تابع اللعب لتبقى في القمة!"
+                    f"🪙 تمت إضافة جائزتك <code>{c['prize_syp']:,} SYP</code> إلى رصيدك في البوت تلقائياً.\n\n"
+                    "✨ تابع اللعب لتبقى في القمة!"
                 ),
                 parse_mode="HTML"
             )
         except Exception as e:
-            logger.warning(f"🏆 Failed to notify winner {c.get('telegram_id')}: {e}")
+            logger.warning(f"🏅 Failed to notify winner {c.get('telegram_id')}: {e}")
 
 
 async def _notify_admins_leaderboard(bot: Bot, text):
@@ -515,7 +515,7 @@ async def _notify_admins_leaderboard(bot: Bot, text):
         try:
             await bot.send_message(chat_id=target, text=text, parse_mode="HTML")
         except Exception as e:
-            logger.warning(f"🏆 Failed to send leaderboard summary to {target}: {e}")
+            logger.warning(f"🏅 Failed to send leaderboard summary to {target}: {e}")
 
 
 async def settle_weekly_leaderboard(bot: Bot = None, manual=False):
@@ -539,12 +539,12 @@ async def settle_weekly_leaderboard(bot: Bot = None, manual=False):
 
         refreshed = await refresh_turnover_leaderboard()
         if refreshed == 0:
-            logger.warning(f"🏆 Weekly settlement aborted ({settled_label}): refresh failed.")
+            logger.warning(f"🏅 Weekly settlement aborted ({settled_label}): refresh failed.")
             return {'ok': False, 'reason': 'refresh_failed', 'week_start': settled_label}
 
         snapshots = await asyncio.to_thread(repo.get_leaderboard_snapshots, cycle_start=settled_monday)
         if not snapshots:
-            logger.info(f"🏆 Weekly settlement ({settled_label}): no participants, skipping rollover.")
+            logger.info(f"🏅 Weekly settlement ({settled_label}): no participants, skipping rollover.")
             return {'ok': False, 'reason': 'no_participants', 'week_start': settled_label}
 
         standings = lb_engine.compute_standings(snapshots, min_weekly_turnover=cfg['min_weekly_turnover'], limit=50)
@@ -573,13 +573,13 @@ async def settle_weekly_leaderboard(bot: Bot = None, manual=False):
                     await asyncio.to_thread(DatabaseManager.execute_query, "UPDATE turnover_leaderboard_results SET credited = FALSE WHERE id = %s",
                         (int(row['id']),)
                     )
-                    logger.error(f"🏆 Prize credit FAILED for user {row.get('telegram_id')} (result {row['id']})")
+                    logger.error(f"🏅 Prize credit FAILED for user {row.get('telegram_id')} (result {row['id']})")
                     continue
                 row['new_balance'] = new_balance
                 credited.append(row)
-                logger.info(f"🏆 Prize credited: user={row['telegram_id']} rank={row['rank']} prize={row['prize_syp']:,}")
+                logger.info(f"🏅 Prize credited: user={row['telegram_id']} rank={row['rank']} prize={row['prize_syp']:,}")
         else:
-            logger.info(f"🏆 Auto credit disabled — winners archived only ({settled_label}).")
+            logger.info(f"🏅 Auto credit disabled — winners archived only ({settled_label}).")
 
         # 3) تدوير خطوط الأساس + تثبيت التسوية (بعد نجاح الأرشفة/الصرف فقط)
         await asyncio.to_thread(repo.rollover_leaderboard_baselines, new_cycle)
@@ -587,23 +587,23 @@ async def settle_weekly_leaderboard(bot: Bot = None, manual=False):
 
         # 4) الإشعارات
         await _notify_leaderboard_winners(bot, credited)
-        rank_emoji = {1: '🥇', 2: '🥈', 3: '🥉'}
+        rank_emoji = {1: '🏆', 2: '🎖️', 3: '🏵️'}
         lines = []
         for w in winners:
-            prize_txt = f" — 💰 {w['prize_syp']:,} SYP" if w['prize_syp'] else ""
+            prize_txt = f" — 🪙 {w['prize_syp']:,} SYP" if w['prize_syp'] else ""
             lines.append(f"{rank_emoji.get(w['rank'], w['rank'])} {w['username']}: <code>{w['weekly_turnover']:,}</code>{prize_txt}")
         summary = (
-            "🏆 <b>تسوية لوحة المتصدرين الأسبوعية</b>\n"
-            f"📅 الأسبوع الـمنتهي: <code>{settled_label}</code>\n"
-            f"👥 متأهلون: <code>{len(standings)}</code> | متتبَّعون: <code>{len(snapshots)}</code>\n\n"
+            "🏅 <b>تسوية لوحة المتصدرين الأسبوعية</b>\n"
+            f"🗓️ الأسبوع الـمنتهي: <code>{settled_label}</code>\n"
+            f"🧑‍🤝‍🧑 متأهلون: <code>{len(standings)}</code> | متتبَّعون: <code>{len(snapshots)}</code>\n\n"
             + ("\n".join(lines) if lines else "لا فائزين هذا الأسبوع (لم يتجاوز أحد الحد الأدنى).")
-            + (f"\n\n🤖 القيد التلقائي: {'مفعّل — أُضيفت الجوائز ✅' if cfg.get('auto_credit', True) else 'موقّف — أرشفة فقط'}")
+            + (f"\n\n🧠 القيد التلقائي: {'مفعّل — أُضيفت الجوائز ✔️' if cfg.get('auto_credit', True) else 'موقّف — أرشفة فقط'}")
         )
         await _notify_admins_leaderboard(bot, summary)
 
         return {'ok': True, 'week_start': settled_label, 'winners': len(winners), 'credited': len(credited)}
     except Exception as e:
-        logger.error(f"🏆 Weekly settlement error: {e}", exc_info=True)
+        logger.error(f"🏅 Weekly settlement error: {e}", exc_info=True)
         return {'ok': False, 'reason': 'exception', 'error': str(e)}
 
 
@@ -615,7 +615,7 @@ async def weekly_leaderboard_task(bot: Bot):
     """
     await asyncio.sleep(45)  # اترك الإقلاع ومسبح الاتصالات يكتملان
     last_refresh_ts = 0.0
-    logger.info(f"🏆 Weekly leaderboard scheduler started (refresh: {LEADERBOARD_REFRESH_MINUTES} min).")
+    logger.info(f"🏅 Weekly leaderboard scheduler started (refresh: {LEADERBOARD_REFRESH_MINUTES} min).")
     while True:
         try:
             now_ts = time.time()
@@ -640,16 +640,16 @@ async def weekly_leaderboard_task(bot: Bot):
 
             await asyncio.sleep(600)  # فحص خفيف كل 10 دقائق
         except asyncio.CancelledError:
-            logger.info("🏆 Weekly leaderboard task cancelled.")
+            logger.info("🏅 Weekly leaderboard task cancelled.")
             raise
         except Exception as e:
-            logger.error(f"🏆 Weekly leaderboard task error: {e}", exc_info=True)
+            logger.error(f"🏅 Weekly leaderboard task error: {e}", exc_info=True)
             await asyncio.sleep(120)
 
 
 # مراقب رصيد الكاشيرة (يتم فحصه مع الـ watchdog الرئيسي كل 5 دقائق)
 last_agent_balance_alert_sent = None
-last_agent_balance_value = None  # 🆕 لتخزين آخر رصيد معروف
+last_agent_balance_value = None  # 🌟 لتخزين آخر رصيد معروف
 
 
 async def check_agent_balance_periodic(bot: Bot):
@@ -666,7 +666,7 @@ async def check_agent_balance_periodic(bot: Bot):
         current_balance = int(bot_settings.get('agent_balance', 0))
         threshold = int(bot_settings.get('agent_balance_alert_threshold') or getattr(settings, 'AGENT_BALANCE_ALERT_THRESHOLD', 100000))
 
-        # 🆕 فحص تغيّر الرصيد (زيادة)
+        # 🌟 فحص تغيّر الرصيد (زيادة)
         if last_agent_balance_value is not None and current_balance > last_agent_balance_value:
             # تم إضافة رصيد جديد!
             added_amount = current_balance - last_agent_balance_value
@@ -674,7 +674,7 @@ async def check_agent_balance_periodic(bot: Bot):
         elif last_agent_balance_value is not None and current_balance < last_agent_balance_value:
             # تم خصم رصيد (شحن للاعبين)
             decreased_amount = last_agent_balance_value - current_balance
-            logger.info(f"📊 Agent balance decreased: {last_agent_balance_value:,} → {current_balance:,} (-{decreased_amount:,} NSP)")
+            logger.info(f"📈 Agent balance decreased: {last_agent_balance_value:,} → {current_balance:,} (-{decreased_amount:,} NSP)")
 
         # تحديث آخر رصيد معروف
         last_agent_balance_value = current_balance
@@ -697,14 +697,14 @@ async def notify_agent_balance_increase(bot: Bot, old_balance: int, new_balance:
 
         notification_text = (
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>تم تعبئة رصيد الكاشيرة!</b>\n"
+            "🪙 <b>تم تعبئة رصيد الكاشيرة!</b>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📊 <b>الرصيد السابق:</b> <code>{old_balance:,} NSP</code>\n"
-            f"➕ <b>القيمة المضافة:</b> <code>+{added_amount:,} NSP</code>\n"
-            f"💰 <b>الرصيد الحالي:</b> <code>{new_balance:,} NSP</code>\n\n"
+            f"📈 <b>الرصيد السابق:</b> <code>{old_balance:,} NSP</code>\n"
+            f"⊕ <b>القيمة المضافة:</b> <code>+{added_amount:,} NSP</code>\n"
+            f"🪙 <b>الرصيد الحالي:</b> <code>{new_balance:,} NSP</code>\n\n"
             f"⏰ <b>الوقت:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "✅ <i>تم تحديث الرصيد بنجاح</i>\n"
+            "✔️ <i>تم تحديث الرصيد بنجاح</i>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -712,7 +712,7 @@ async def notify_agent_balance_increase(bot: Bot, old_balance: int, new_balance:
         if log_channel_id:
             try:
                 await bot.send_message(chat_id=log_channel_id, text=notification_text, parse_mode="HTML")
-                logger.info("✅ Agent balance increase notification sent to log channel")
+                logger.info("✔️ Agent balance increase notification sent to log channel")
             except Exception as e:
                 logger.warning(f"Failed to send agent balance increase notification to log channel: {e}")
 
@@ -721,21 +721,21 @@ async def notify_agent_balance_increase(bot: Bot, old_balance: int, new_balance:
         for admin_id in admin_ids:
             try:
                 await bot.send_message(chat_id=admin_id, text=notification_text, parse_mode="HTML")
-                logger.info(f"✅ Agent balance increase notification sent to admin {admin_id}")
+                logger.info(f"✔️ Agent balance increase notification sent to admin {admin_id}")
             except Exception as e:
                 logger.warning(f"Failed to send agent balance increase notification to {admin_id}: {e}")
 
     except Exception as e:
-        logger.error(f"❌ Failed to notify agent balance increase: {e}", exc_info=True)
+        logger.error(f"⛔ Failed to notify agent balance increase: {e}", exc_info=True)
 
 
 async def on_startup(dispatcher: Dispatcher, bot: Bot):
     """تهيئة البوت عند بدء التشغيل."""
     global watchdog_task, ensure_webhook_task, daily_report_task, leaderboard_task, routers_registered
 
-    logger.info("🚀 Jude Robert is starting...")
+    logger.info("🛫 Jude Robert is starting...")
 
-    # ✅ فحص الإعدادات بدون قتل العملية (المنفذ مربوط قبل هاد الكود)
+    # ✔️ فحص الإعدادات بدون قتل العملية (المنفذ مربوط قبل هاد الكود)
     try:
         settings.validate_config()
     except ValueError as e:
@@ -758,10 +758,10 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
         routers_registered = True
 
     commands = [
-        BotCommand(command="start", description="🏠 القائمة الرئيسية"),
-        BotCommand(command="cancel", description="❌ إلغاء العملية الحالية"),
-        BotCommand(command="home", description="🔙 العودة للقائمة الرئيسية"),
-        BotCommand(command="delete", description="🗑️ حذف حسابي"),
+        BotCommand(command="start", description="🏡 القائمة الرئيسية"),
+        BotCommand(command="cancel", description="⛔ إلغاء العملية الحالية"),
+        BotCommand(command="home", description="↩️ العودة للقائمة الرئيسية"),
+        BotCommand(command="delete", description="🧹 حذف حسابي"),
     ]
     await bot.set_my_commands(commands, scope=BotCommandScopeDefault())
 
@@ -774,20 +774,20 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
     if ensure_webhook_task is None or ensure_webhook_task.done():
         ensure_webhook_task = asyncio.create_task(ensure_webhook(bot))
 
-    # 🆕 بدء مهمة التقرير المالي اليومي
+    # 🌟 بدء مهمة التقرير المالي اليومي
     if daily_report_task is None or daily_report_task.done():
         daily_report_task = asyncio.create_task(daily_report_scheduler(bot))
-        logger.info("📊 Daily financial report scheduler started.")
+        logger.info("📈 Daily financial report scheduler started.")
 
-    # 🆕 (Update 18) بدء مهمة لوحة المتصدرين الأسبوعية
+    # 🌟 (Update 18) بدء مهمة لوحة المتصدرين الأسبوعية
     if leaderboard_task is None or leaderboard_task.done():
         leaderboard_task = asyncio.create_task(weekly_leaderboard_task(bot))
-        logger.info("🏆 Weekly leaderboard task started.")
+        logger.info("🏅 Weekly leaderboard task started.")
 
 
 async def on_shutdown(dispatcher: Dispatcher, bot: Bot):
     """تنظيف الموارد عند إيقاف البوت."""
-    logger.info("🛑 Shutting down...")
+    logger.info("⛔ Shutting down...")
 
     for task in [watchdog_task, ensure_webhook_task, daily_report_task, leaderboard_task]:
         if task and not task.done():
@@ -804,7 +804,7 @@ async def on_shutdown(dispatcher: Dispatcher, bot: Bot):
 
 
 def _verify_telegram_init_data(init_data_raw):
-    """🔒 التحقق الرسمي من توقيع initData المرسل من Mini App (HMAC-SHA256).
+    """🔐 التحقق الرسمي من توقيع initData المرسل من Mini App (HMAC-SHA256).
 
     يتبع خوارزمية Telegram الرسمية لضمان أن الطلب صادر فعلاً من تيليجرام
     وغير مُزوّر. التزوير مستحيل رياضياً لأنه يتطلب BOT_TOKEN (سرّي).
@@ -855,7 +855,7 @@ def _verify_telegram_init_data(init_data_raw):
 
         # مقارنة آمنة ضد هجمات التوقيت (timing attack)
         if not hmac.compare_digest(calculated_hash, received_hash):
-            logger.warning("🔒 Mini App initData hash mismatch — possible forgery attempt rejected.")
+            logger.warning("🔐 Mini App initData hash mismatch — possible forgery attempt rejected.")
             return None
 
         # فحص إضافي: منع إعادة استخدام الطلبات القديمة (replay attack)
@@ -865,10 +865,10 @@ def _verify_telegram_init_data(init_data_raw):
             try:
                 auth_date = int(auth_date_str)
                 if abs(time.time() - auth_date) > 86400:  # 24 ساعة
-                    logger.warning(f"🔒 Mini App initData expired (auth_date={auth_date}) — rejected.")
+                    logger.warning(f"🔐 Mini App initData expired (auth_date={auth_date}) — rejected.")
                     return None
             except (ValueError, TypeError):
-                logger.warning("🔒 Invalid auth_date in Mini App initData — rejected.")
+                logger.warning("🔐 Invalid auth_date in Mini App initData — rejected.")
                 return None
 
         # استخراج بيانات المستخدم من الحقل user (JSON)
@@ -877,12 +877,12 @@ def _verify_telegram_init_data(init_data_raw):
             return json.loads(user_json)
         return {}
     except Exception as e:
-        logger.warning(f"🔒 Mini App initData verification failed: {e}")
+        logger.warning(f"🔐 Mini App initData verification failed: {e}")
         return None
 
 
 def _is_admin(init_data_raw):
-    """🔒 التحقق من أن مستخدم Mini App هو أدمن — عبر التحقق الرسمي من توقيع Telegram أولاً."""
+    """🔐 التحقق من أن مستخدم Mini App هو أدمن — عبر التحقق الرسمي من توقيع Telegram أولاً."""
     user_obj = _verify_telegram_init_data(init_data_raw)
     if not user_obj:
         return False
@@ -892,7 +892,7 @@ def _is_admin(init_data_raw):
 
 
 # ================================================================
-# 🆕 (Update 20 / Perf) كاشات اللوحات والحالة — فتح الميني آب خلال ميلي ثوانٍ
+# 🌟 (Update 20 / Perf) كاشات اللوحات والحالة — فتح الميني آب خلال ميلي ثوانٍ
 # ================================================================
 _DASHBOARD_CACHE = {'data': None, 'expires_at': 0.0}
 DASHBOARD_CACHE_TTL = 30.0
@@ -934,7 +934,7 @@ async def _get_total_bot_balance_cached():
 def _collect_dashboard_payload_sync():
     """جمع حمولة لوحة تحكم الأدمن — استعلامات DB فقط (صفر شبكة iChancy).
     يُستدعى عبر asyncio.to_thread حتى لا يجمّد الـ event loop طوال الجمع.
-    🆕 استعلامات «اليوم» الأربعة دمجت في مسح واحد، وعداد التذاكر COUNT خفيف."""
+    🌟 استعلامات «اليوم» الأربعة دمجت في مسح واحد، وعداد التذاكر COUNT خفيف."""
     bot_settings = repo.get_bot_settings()
     pending = repo.get_pending_requests()
     recent = repo.get_all_transactions(10)
@@ -965,7 +965,7 @@ def _collect_dashboard_payload_sync():
         'id': t['id'], 'type': t['type'], 'amount': float(t['amount']), 'status': t['status']
     } for t in recent[:5]]
 
-    # 🆕 (Update 20) مجاميع «اليوم» في مسح واحد مفهرس بدل 4 مسحات —
+    # 🌟 (Update 20) مجاميع «اليوم» في مسح واحد مفهرس بدل 4 مسحات —
     # مسند نطاقي SARGable يستفيد من idx_tx_created_at (نفس دلالة created_at::date = CURRENT_DATE تماماً)
     today_agg = DatabaseManager.execute_query_dict(
         """SELECT
@@ -1035,7 +1035,7 @@ def _collect_dashboard_payload_sync():
     )
     inactive_count = int(inactive_users[0]) if inactive_users else 0
 
-    # 🆕 (Update 20) رصيد الوكيل من الإعداد المحدَّث خلفياً من الـ watchdog (لا شبكة داخل الطلب).
+    # 🌟 (Update 20) رصيد الوكيل من الإعداد المحدَّث خلفياً من الـ watchdog (لا شبكة داخل الطلب).
     # التحديث الحي يدوياً متاح بزر «تحديث السيولة» في لوحة البوت.
     agent_balance_val = int(bot_settings.get('agent_balance', 0))
     agent_balance_alert = agent_balance_val < int(bot_settings.get('agent_balance_alert_threshold') or getattr(settings, 'AGENT_BALANCE_ALERT_THRESHOLD', 100000))
@@ -1090,7 +1090,7 @@ def _collect_dashboard_payload_sync():
 
 
 async def dashboard_api_handler(request):
-    """🆕 API لوحة التحكم — مكاشن 30 ثانية، وعند الفقد يجمّع بخيط جانبي غير حاجز للبوت."""
+    """🌟 API لوحة التحكم — مكاشن 30 ثانية، وعند الفقد يجمّع بخيط جانبي غير حاجز للبوت."""
     init_data_raw = request.headers.get('X-Telegram-Init-Data', '')
     if not _is_admin(init_data_raw):
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -1314,7 +1314,7 @@ async def admin_settings_post_handler(request):
             if shamcash_auto_mode not in ('off', 'verify_only', 'auto_approve'):
                 shamcash_auto_mode = 'off'
             shamcash_auto_channel_id = str(payload.get('shamcash_auto_channel_id') or '').strip()
-            # 🆕 حدود الإيداع والسحب الدنيا
+            # 🌟 حدود الإيداع والسحب الدنيا
             min_deposit_syp = int(str(payload.get('min_deposit_syp', '')).replace(',', ''))
             min_deposit_usd = int(str(payload.get('min_deposit_usd', '')).replace(',', ''))
             min_withdraw_syp = int(str(payload.get('min_withdraw_syp', '')).replace(',', ''))
@@ -1327,11 +1327,11 @@ async def admin_settings_post_handler(request):
             if exchange_rate <= 0 or usd_buy_rate <= 0 or usd_sell_rate <= 0 or withdraw_commission < 0 or game_min_deposit_syp < 1 or agent_revenue_percent < 0 or game_bonus_apply_percent < 0 or min_deposit_syp < 1 or min_deposit_usd < 1 or min_withdraw_syp < 1 or min_withdraw_usd < 1:
                 return web.json_response({'error': 'قيم غير صالحة'}, status=400)
             if game_bonus_apply_percent > withdraw_commission:
-                return web.json_response({'error': f'⚠️ نسبة إرفاق بونص اللعبة ({game_bonus_apply_percent}%) يجب ألا تتجاوز عمولة السحب ({withdraw_commission}%).'}, status=400)
-            # 🔒 حماية السبريد (Update 9): سعر الإيداع يجب أن يكون أقل من سعر السحب
+                return web.json_response({'error': f'🚧 نسبة إرفاق بونص اللعبة ({game_bonus_apply_percent}%) يجب ألا تتجاوز عمولة السحب ({withdraw_commission}%).'}, status=400)
+            # 🔐 حماية السبريد (Update 9): سعر الإيداع يجب أن يكون أقل من سعر السحب
             # لمنع المراجحة المالية (المستخدم يودع دولار ثم يسحبه بربح).
             if usd_buy_rate >= usd_sell_rate:
-                return web.json_response({'error': '⚠️ سعر الإيداع يجب أن يكون أقل من سعر السحب لتجنب المراجحة المالية. راجع الأسعار.'}, status=400)
+                return web.json_response({'error': '🚧 سعر الإيداع يجب أن يكون أقل من سعر السحب لتجنب المراجحة المالية. راجع الأسعار.'}, status=400)
             await asyncio.to_thread(repo.update_bot_settings, exchange_rate=exchange_rate,
                 usd_buy_rate=usd_buy_rate,
                 usd_sell_rate=usd_sell_rate,
@@ -1720,7 +1720,7 @@ async def admin_health_handler(request):
 
 
 async def admin_neon_handler(request):
-    """📊 مقاييس Neon (الخطة المجانية) — endpoint منفصل بكاش 15 دقيقة.
+    """📈 مقاييس Neon (الخطة المجانية) — endpoint منفصل بكاش 15 دقيقة.
 
     مفصول عمداً عن admin_health_handler كي لا يتسبّب بطء/تعطّل Neon الخارجي
     في إبطاء أو تعطيل فحص الصحة المحلي السريع.
@@ -1741,7 +1741,7 @@ async def admin_neon_handler(request):
 
 
 async def admin_render_handler(request):
-    """📊 حالة خدمة Render (الخطة المجانية) — endpoint منفصل بكاش 60 ثانية."""
+    """📈 حالة خدمة Render (الخطة المجانية) — endpoint منفصل بكاش 60 ثانية."""
     init_data_raw = request.headers.get('X-Telegram-Init-Data', '')
     if not _is_admin(init_data_raw):
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -1759,13 +1759,13 @@ async def admin_render_handler(request):
 
 def _broadcast_text(title, message, message_type='announcement'):
     icons = {
-        'announcement': '📢',
-        'alert': '⚠️',
+        'announcement': '📣',
+        'alert': '🚧',
         'maintenance': '🛠️',
-        'offer': '🎁',
+        'offer': '🧧',
         'update': '✨',
     }
-    icon = icons.get(message_type, '📢')
+    icon = icons.get(message_type, '📣')
     title = (title or 'تنبيه من الإدارة').strip()
     message = (message or '').strip()
     return f"{icon} {title}\n\n{message}"
@@ -1929,7 +1929,7 @@ async def admin_users_handler(request):
                 return web.json_response({'error': 'بيانات ناقصة'}, status=400)
             if len(text) > 3500:
                 return web.json_response({'error': 'الرسالة طويلة جداً'}, status=400)
-            await bot.send_message(chat_id=telegram_id, text=f"📩 رسالة من الإدارة\n\n{text}")
+            await bot.send_message(chat_id=telegram_id, text=f"📨 رسالة من الإدارة\n\n{text}")
             return web.json_response({'ok': True})
 
         if action == 'adjust_balance':
@@ -1943,7 +1943,7 @@ async def admin_users_handler(request):
             user = await asyncio.to_thread(repo.get_user, telegram_id)
             try:
                 sign = '+' if delta > 0 else ''
-                await bot.send_message(chat_id=telegram_id, text=f"💎 تم تحديث رصيدك في البوت: {sign}{delta:,} SYP\nرصيدك الحالي: {int(user.get('bot_balance') or 0):,} ل.س جديدة")
+                await bot.send_message(chat_id=telegram_id, text=f"🔷 تم تحديث رصيدك في البوت: {sign}{delta:,} SYP\nرصيدك الحالي: {int(user.get('bot_balance') or 0):,} ل.س جديدة")
             except Exception:
                 pass
             return web.json_response({'ok': True, 'user': _user_to_json(user)})
@@ -2070,7 +2070,7 @@ async def admin_requests_handler(request):
             text = (payload.get('message') or '').strip()
             if not telegram_id or not text:
                 return web.json_response({'error': 'بيانات ناقصة'}, status=400)
-            await bot.send_message(chat_id=telegram_id, text=f"📩 رسالة من الإدارة بخصوص طلبك\n\n{text}")
+            await bot.send_message(chat_id=telegram_id, text=f"📨 رسالة من الإدارة بخصوص طلبك\n\n{text}")
             return web.json_response({'ok': True})
 
         if action == 'delete_transaction':
@@ -2203,10 +2203,10 @@ async def admin_bonuses_handler(request):
                 return web.json_response({'error': 'طريقة دفع غير معروفة'}, status=400)
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
-            # 🔒 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
+            # 🔐 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
             withdraw_commission = float(await asyncio.to_thread(repo.get_bot_settings).get('withdraw_commission') or 0)
             if percent > withdraw_commission:
-                return web.json_response({'error': f'⚠️ نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
+                return web.json_response({'error': f'🚧 نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
             rule_id = await asyncio.to_thread(repo.create_bonus_rule, title, percent, payment_method, min_amount_syp, max_bonus_syp, created_by='miniapp')
             return web.json_response({'ok': True, 'rule_id': rule_id})
 
@@ -2240,10 +2240,10 @@ async def admin_bonuses_handler(request):
                 return web.json_response({'error': 'طريقة دفع غير معروفة'}, status=400)
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
-            # 🔒 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
+            # 🔐 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
             withdraw_commission = float(await asyncio.to_thread(repo.get_bot_settings).get('withdraw_commission') or 0)
             if percent > withdraw_commission:
-                return web.json_response({'error': f'⚠️ نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
+                return web.json_response({'error': f'🚧 نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
             await asyncio.to_thread(repo.update_bonus_rule, rule_id, title=title, percent=percent, payment_method=payment_method, min_amount_syp=min_amount_syp, max_bonus_syp=max_bonus_syp)
             return web.json_response({'ok': True})
 
@@ -2382,9 +2382,9 @@ async def admin_predictions_handler(request):
                     try:
                         if app_bot:
                             msg = (
-                                f"🎉 مبروك! ربحت في بطاقة التوقع #{card_id}\n\n"
-                                f"🏆 النتيجة الصحيحة: {winning_option}\n"
-                                f"💰 الجائزة: {int(card.get('reward_syp') or 0):,} SYP"
+                                f"✨ مبروك! ربحت في بطاقة التوقع #{card_id}\n\n"
+                                f"🏅 النتيجة الصحيحة: {winning_option}\n"
+                                f"🪙 الجائزة: {int(card.get('reward_syp') or 0):,} SYP"
                             )
                             await app_bot.send_message(chat_id=e.get('user_telegram_id'), text=msg)
                     except Exception:
@@ -2485,11 +2485,11 @@ async def admin_contests_handler(request):
             try:
                 reward_amount = int(result.get('reward_amount') or 0)
                 gift_code = result.get('gift_code')
-                text = "🎉 مبروك! تم اعتماد مشاركتك في مسابقة Jude Robert.\n\n"
+                text = "✨ مبروك! تم اعتماد مشاركتك في مسابقة Jude Robert.\n\n"
                 if gift_code:
-                    text += f"🎫 كود هديتك: <code>{gift_code}</code>\n💰 القيمة: <code>{reward_amount:,} SYP</code>"
+                    text += f"🎟️ كود هديتك: <code>{gift_code}</code>\n🪙 القيمة: <code>{reward_amount:,} SYP</code>"
                 else:
-                    text += f"💰 تمت إضافة الجائزة إلى رصيدك: <code>{reward_amount:,} SYP</code>"
+                    text += f"🪙 تمت إضافة الجائزة إلى رصيدك: <code>{reward_amount:,} SYP</code>"
                 await bot.send_message(chat_id=result.get('user_telegram_id'), text=text, parse_mode='HTML')
             except Exception:
                 pass
@@ -2597,7 +2597,7 @@ async def admin_support_handler(request):
             ticket = await asyncio.to_thread(repo.get_support_ticket, ticket_id)
             if not ticket:
                 return web.json_response({'error': 'التذكرة غير موجودة'}, status=404)
-            await bot.send_message(chat_id=ticket['user_telegram_id'], text=f"📩 رد من الإدارة\n\n{text}")
+            await bot.send_message(chat_id=ticket['user_telegram_id'], text=f"📨 رد من الإدارة\n\n{text}")
             await asyncio.to_thread(repo.add_support_message, ticket_id, 'admin', 'miniapp', text, 'text', None)
             return web.json_response({'ok': True})
 
@@ -2606,7 +2606,7 @@ async def admin_support_handler(request):
             await asyncio.to_thread(repo.close_support_ticket, ticket_id)
             ticket = await asyncio.to_thread(repo.get_support_ticket, ticket_id)
             with suppress(Exception):
-                await bot.send_message(chat_id=ticket['user_telegram_id'], text="✅ تم إغلاق تذكرة الدعم. يمكنك فتح محادثة جديدة في أي وقت من زر رسالة للإدارة.")
+                await bot.send_message(chat_id=ticket['user_telegram_id'], text="✔️ تم إغلاق تذكرة الدعم. يمكنك فتح محادثة جديدة في أي وقت من زر رسالة للإدارة.")
             return web.json_response({'ok': True})
 
         return web.json_response({'error': 'إجراء غير معروف'}, status=400)
@@ -2740,7 +2740,7 @@ def _no_cache_file_response(path):
 
 
 async def serve_dashboard_html(request):
-    """🆕 يقدّم صفحة HTML للوحة التحكم بدون كاش."""
+    """🌟 يقدّم صفحة HTML للوحة التحكم بدون كاش."""
     html_path = os.path.join(WEBAPP_DIR, "dashboard.html")
     if not os.path.exists(html_path):
         return web.Response(text="Dashboard not found", status=404)
@@ -2748,7 +2748,7 @@ async def serve_dashboard_html(request):
 
 
 async def serve_user_app_html(request):
-    """🆕 (Update 10) يقدّم Mini App للمستخدم العادي بدون كاش."""
+    """🌟 (Update 10) يقدّم Mini App للمستخدم العادي بدون كاش."""
     html_path = os.path.join(WEBAPP_DIR, "user_app.html")
     if not os.path.exists(html_path):
         return web.Response(text="App not found", status=404)
@@ -2765,7 +2765,7 @@ async def serve_user_app_pingo_html(request):
 
 def _collect_user_me_payload_sync(telegram_id, bot_username):
     """جمع حمولة لوحة Jude Robert للمستخدم — يعمل بخيط جانبي، وبقراءة واحدة لكل كيان.
-    🆕 (Update 20) كان user_me ينفذ ~25 استعلاماً بلا تزامن: get_user_features_settings
+    🌟 (Update 20) كان user_me ينفذ ~25 استعلاماً بلا تزامن: get_user_features_settings
     4 مرات + get_user 3 مرات + get_me من تيليجرام. الآن كلها مرة واحدة (ومكاشنة)."""
     user = repo.get_user(telegram_id)
     if not user:
@@ -2811,7 +2811,7 @@ def _collect_user_me_payload_sync(telegram_id, bot_username):
     except Exception:
         pass
 
-    # 🆕 قراءة واحدة لإعدادات الميزات تعوّض 4 قراءات كانت مكررة في هذا المعالج
+    # 🌟 قراءة واحدة لإعدادات الميزات تعوّض 4 قراءات كانت مكررة في هذا المعالج
     fs = repo.get_user_features_settings()
 
     referral = {}
@@ -2986,7 +2986,7 @@ def _collect_user_me_payload_sync(telegram_id, bot_username):
 
 
 async def user_me_api_handler(request):
-    """🆕 API لوحة Jude Robert للمستخدم — جمع كامل بخيط جانبي واحد غير حاجز للبوت."""
+    """🌟 API لوحة Jude Robert للمستخدم — جمع كامل بخيط جانبي واحد غير حاجز للبوت."""
     user_obj = _verify_telegram_init_data(request.headers.get('X-Telegram-Init-Data', ''))
     if not user_obj:
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -3014,7 +3014,7 @@ async def user_me_api_handler(request):
 
 
 async def user_checkin_handler(request):
-    """🆕 (Update 12) تسجيل الحضور اليومي."""
+    """🌟 (Update 12) تسجيل الحضور اليومي."""
     user_obj = _verify_telegram_init_data(request.headers.get('X-Telegram-Init-Data', ''))
     if not user_obj:
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -3141,7 +3141,7 @@ async def admin_gift_campaigns_handler(request):
 
 
 async def admin_flash_handler(request):
-    """🆕 (Update 12) إدارة فلاش البونص من الداشبورد."""
+    """🌟 (Update 12) إدارة فلاش البونص من الداشبورد."""
     if not _is_admin(request.headers.get('X-Telegram-Init-Data', '')):
         return web.json_response({'error': 'غير مصرّح'}, status=403)
     try:
@@ -3184,7 +3184,7 @@ async def admin_flash_handler(request):
 
 
 async def user_spin_wheel_handler(request):
-    """🆕 (Update 15) دوران عجلة الحظ على إيداع محدد."""
+    """🌟 (Update 15) دوران عجلة الحظ على إيداع محدد."""
     user_obj = _verify_telegram_init_data(request.headers.get('X-Telegram-Init-Data', ''))
     if not user_obj:
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -3230,19 +3230,19 @@ async def user_spin_wheel_handler(request):
         if not result.get('ok'):
             return web.json_response({'error': 'تعذّر تنفيذ الدوران'}, status=500)
 
-        # 🎯 PINGO: لا يضيف رصيداً تلقائياً، بل يرسل تنبيهاً للإدارة للتواصل مع اللاعب.
+        # 🧿 PINGO: لا يضيف رصيداً تلقائياً، بل يرسل تنبيهاً للإدارة للتواصل مع اللاعب.
         if str(result.get('label') or '').upper() == 'PINGO':
             try:
                 bot = request.app.get('bot')
                 user = await asyncio.to_thread(repo.get_user, telegram_id) or {}
                 username = user.get('telegram_username') or user_obj.get('username') or '—'
                 pingo_text = (
-                    "🎯 <b>PINGO في عجلة الحظ!</b>\n\n"
-                    f"👤 المستخدم: @{username}\n"
-                    f"🆔 Telegram ID: <code>{telegram_id}</code>\n"
-                    f"📌 رقم الإيداع: <code>#{deposit_tx_id}</code>\n"
-                    f"💰 مبلغ الإيداع: <code>{deposit_amount:,} SYP</code>\n\n"
-                    "🎁 الإجراء المقترح: تواصل مع المستخدم وأرسل كود هدية مناسب."
+                    "🧿 <b>PINGO في عجلة الحظ!</b>\n\n"
+                    f"🧑‍💼 المستخدم: @{username}\n"
+                    f"🔖 Telegram ID: <code>{telegram_id}</code>\n"
+                    f"📍 رقم الإيداع: <code>#{deposit_tx_id}</code>\n"
+                    f"🪙 مبلغ الإيداع: <code>{deposit_amount:,} SYP</code>\n\n"
+                    "🧧 الإجراء المقترح: تواصل مع المستخدم وأرسل كود هدية مناسب."
                 )
                 targets = []
                 log_channel_id = getattr(settings, 'LOG_CHANNEL_ID', None)
@@ -3268,25 +3268,25 @@ async def user_spin_wheel_handler(request):
 
 
 async def admin_features_get_handler(request):
-    """🆕 (Update 13) جلب إعدادات ميزات المستخدم وإحصائياتها."""
+    """🌟 (Update 13) جلب إعدادات ميزات المستخدم وإحصائياتها."""
     if not _is_admin(request.headers.get('X-Telegram-Init-Data', '')):
         return web.json_response({'error': 'غير مصرّح'}, status=403)
     try:
         settings = await asyncio.to_thread(repo.get_user_features_settings)
         stats = await asyncio.to_thread(repo.get_checkin_stats)
         
-        # 🆕 (Update 15) إعدادات وإحصائيات العجلة
+        # 🌟 (Update 15) إعدادات وإحصائيات العجلة
         wheel_settings = await asyncio.to_thread(repo.get_wheel_settings)
         settings['wheel_enabled'] = wheel_settings.get('wheel_enabled', True)
         settings['wheel_segments'] = wheel_settings.get('segments', [])
         wheel_stats = await asyncio.to_thread(repo.get_wheel_stats)
 
-        # 🆕 (Update 16) إعدادات VIP
+        # 🌟 (Update 16) إعدادات VIP
         vip_settings = await asyncio.to_thread(repo.get_vip_settings)
         settings['vip_enabled'] = vip_settings.get('vip_enabled', True)
         settings['vip_tiers'] = vip_settings.get('tiers', [])
 
-        # 🆕 (Update 17) إعدادات الكاش باك
+        # 🌟 (Update 17) إعدادات الكاش باك
         cb_settings = await asyncio.to_thread(repo.get_cashback_settings)
         settings['cashback_enabled'] = cb_settings.get('cashback_enabled', True)
         settings['cashback_pct'] = cb_settings.get('cashback_pct', 5)
@@ -3323,7 +3323,7 @@ async def admin_features_get_handler(request):
 
 
 async def admin_features_post_handler(request):
-    """🆕 (Update 13) تحديث إعدادات ميزات المستخدم."""
+    """🌟 (Update 13) تحديث إعدادات ميزات المستخدم."""
     if not _is_admin(request.headers.get('X-Telegram-Init-Data', '')):
         return web.json_response({'error': 'غير مصرّح'}, status=403)
     try:
@@ -3332,7 +3332,7 @@ async def admin_features_post_handler(request):
         payload = {}
     action = payload.get('action')
     
-    # 🆕 (Update 15 Fix) دالة مساعدة لتحويل القيم لـ boolean (تم نقلها لأعلى)
+    # 🌟 (Update 15 Fix) دالة مساعدة لتحويل القيم لـ boolean (تم نقلها لأعلى)
     def parse_bool(val):
         if val is None: return None
         if isinstance(val, bool): return val
@@ -3340,7 +3340,7 @@ async def admin_features_post_handler(request):
         
     try:
         if action == 'update_features':
-            # 🆕 (Update 14 Fix) تحويل القيم النصية لـ boolean بشكل صحيح
+            # 🌟 (Update 14 Fix) تحويل القيم النصية لـ boolean بشكل صحيح
             checkin_enabled = parse_bool(payload.get('checkin_enabled'))
             checkin_rewards = payload.get('checkin_rewards')
             checkin_min_deposit = payload.get('checkin_min_deposit')
@@ -3427,14 +3427,14 @@ async def oxapay_webhook_handler(request):
         await send_oxapay_deposit_log(request.app['bot'], payload, tx, result, event='webhook')
         if result.get('ok') and result.get('deposit_added') and not result.get('already_processed'):
             try:
-                bonus_text = f"\n🎁 البونص: <code>{result.get('bonus_added', 0):,} ل.س</code>" if result.get('bonus_added') else ''
+                bonus_text = f"\n🧧 البونص: <code>{result.get('bonus_added', 0):,} ل.س</code>" if result.get('bonus_added') else ''
                 await request.app['bot'].send_message(
                     chat_id=result['telegram_id'],
                     text=(
-                        "✅ <b>تم تأكيد شحن USDT بنجاح</b>\n\n"
-                        f"💰 تمت إضافة: <code>{result['deposit_added']:,} ل.س جديدة</code>{bonus_text}\n"
+                        "✔️ <b>تم تأكيد شحن USDT بنجاح</b>\n\n"
+                        f"🪙 تمت إضافة: <code>{result['deposit_added']:,} ل.س جديدة</code>{bonus_text}\n"
                         f"💳 رصيدك الجديد: <code>{result['new_balance']:,} ل.س جديدة</code>\n"
-                        f"🔗 رقم المعاملة: <code>{result.get('tx_hash') or payload.get('track_id')}</code>"
+                        f"🧷 رقم المعاملة: <code>{result.get('tx_hash') or payload.get('track_id')}</code>"
                     ), parse_mode='HTML'
                 )
             except Exception as notify_error:
@@ -3464,20 +3464,20 @@ async def send_oxapay_deposit_log(bot, payload, tx=None, result=None, event='cre
     def esc(value):
         return html.escape(str(value if value is not None else '—'))
     text = (
-        "🧾 <b>سجل إيداع USDT — OxaPay</b>\n\n"
+        "🧮 <b>سجل إيداع USDT — OxaPay</b>\n\n"
         f"📍 الحدث: <code>{esc(event)}</code>\n"
-        f"📊 الحالة: <code>{esc(status)}</code>\n"
-        f"🆔 رقم طلب البوت: <code>#{esc(tx.get('id'))}</code>\n"
-        f"👤 Telegram ID: <code>{esc(tx.get('user_telegram_id'))}</code>\n"
-        f"💵 مبلغ USDT: <code>{esc(payload.get('amount') or tx.get('original_amount'))}</code>\n"
-        f"💰 المضاف بالليرة: <code>{esc(tx.get('converted_amount_syp') or tx.get('amount'))}</code> SYP\n"
-        f"💱 سعر الصرف/طريقة الدفع: <code>{esc(tx.get('payment_method'))}</code>\n"
-        f"🌐 الشبكة: <code>{esc(first_tx.get('network') or tx.get('payment_network'))}</code>\n"
-        f"📥 عنوان الاستلام: <code>{esc(first_tx.get('address') or tx.get('payment_address'))}</code>\n"
-        f"🔗 Tx Hash: <code>{esc(first_tx.get('tx_hash') or tx.get('payment_tx_hash'))}</code>\n"
-        f"🔎 Track ID: <code>{esc(payload.get('track_id') or tx.get('oxapay_track_id'))}</code>\n"
+        f"📈 الحالة: <code>{esc(status)}</code>\n"
+        f"🔖 رقم طلب البوت: <code>#{esc(tx.get('id'))}</code>\n"
+        f"🧑‍💼 Telegram ID: <code>{esc(tx.get('user_telegram_id'))}</code>\n"
+        f"💳 مبلغ USDT: <code>{esc(payload.get('amount') or tx.get('original_amount'))}</code>\n"
+        f"🪙 المضاف بالليرة: <code>{esc(tx.get('converted_amount_syp') or tx.get('amount'))}</code> SYP\n"
+        f"💹 سعر الصرف/طريقة الدفع: <code>{esc(tx.get('payment_method'))}</code>\n"
+        f"🧭 الشبكة: <code>{esc(first_tx.get('network') or tx.get('payment_network'))}</code>\n"
+        f"📨 عنوان الاستلام: <code>{esc(first_tx.get('address') or tx.get('payment_address'))}</code>\n"
+        f"🧷 Tx Hash: <code>{esc(first_tx.get('tx_hash') or tx.get('payment_tx_hash'))}</code>\n"
+        f"🔍 Track ID: <code>{esc(payload.get('track_id') or tx.get('oxapay_track_id'))}</code>\n"
         f"🧷 Order ID: <code>{esc(payload.get('order_id') or tx.get('oxapay_order_id'))}</code>\n"
-        f"✅ نتيجة المعالجة: <code>{esc(result.get('reason') or ('credited' if result.get('deposit_added') else 'logged'))}</code>"
+        f"✔️ نتيجة المعالجة: <code>{esc(result.get('reason') or ('credited' if result.get('deposit_added') else 'logged'))}</code>"
     )
     try:
         await bot.send_message(chat_id=channel_id, text=text, parse_mode='HTML')
@@ -3493,7 +3493,7 @@ def main():
     app = web.Application()
     app['bot'] = bot
 
-    # 🆕 (Update 20 / Perf) إبطال كاش لوحة الأدمن فور أي تعديل إداري مسموح له بتغيير بياناتها
+    # 🌟 (Update 20 / Perf) إبطال كاش لوحة الأدمن فور أي تعديل إداري مسموح له بتغيير بياناتها
     @web.middleware
     async def admin_mutation_cache_buster(request, handler):
         response = await handler(request)
@@ -3516,7 +3516,7 @@ def main():
 
     app.router.add_get("/", health_check)
     app.router.add_post("/oxapay/webhook", oxapay_webhook_handler)
-    # 🆕 مسارات Mini App
+    # 🌟 مسارات Mini App
     app.router.add_get("/dashboard", serve_dashboard_html)
     app.router.add_get("/user-app", serve_user_app_html)
     app.router.add_get("/user-app-pingo", serve_user_app_pingo_html)
@@ -3550,7 +3550,7 @@ def main():
 
     setup_application(app, dp, bot=bot)
 
-    # 🆕 جلسة aiohttp مشتركة لطلبات Neon (تُنشأ مرة واحدة وتُغلق عند الإيقاف)
+    # 🌟 جلسة aiohttp مشتركة لطلبات Neon (تُنشأ مرة واحدة وتُغلق عند الإيقاف)
     async def _neon_session_startup(app):
         app['neon_session'] = aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(total=6, connect=3)

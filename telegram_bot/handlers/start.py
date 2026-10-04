@@ -17,7 +17,7 @@ from telegram_bot.miniapp_shortcuts import resolve_miniapp_shortcut
 router = Router()
 logger = logging.getLogger(__name__)
 
-# 🔧 إصلاح: قائمة الأدمن مع التسامح مع عدم وجود ADMIN_IDS في الإعدادات
+# 🛠️ إصلاح: قائمة الأدمن مع التسامح مع عدم وجود ADMIN_IDS في الإعدادات
 ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
 
 
@@ -38,12 +38,12 @@ async def send_log_message(bot, text, parse_mode="HTML"):
         await bot.send_message(chat_id=log_channel_id, text=text, parse_mode=parse_mode)
         return True
     except Exception as e:
-        logger.error(f"❌ send_log_message failed: {e}")
+        logger.error(f"⛔ send_log_message failed: {e}")
         return False
 
 
 # ================================================================
-# 🟢 دالة موحّدة لعرض القائمة الرئيسية الكاملة (15 زراً)
+# 🔹 دالة موحّدة لعرض القائمة الرئيسية الكاملة (15 زراً)
 # ================================================================
 async def show_main_menu(message: Message, user_id, edit: bool = False):
     """تعرض القائمة الرئيسية الكاملة مع رصيد المستخدم."""
@@ -52,10 +52,10 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
     game_balance = await asyncio.to_thread(repo.get_user_game_balance, str(user_id)) if user else 0
     bot_balance_new_str = format_new(bot_balance)
     text = (
-        f"👑 <b>أهلاً بك في Jude Robert</b>\n\n"
-        f"💎 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س</code> <i>({bot_balance_new_str} ل.س جديدة)</i>\n"
-        f"🎮 <b>رصيد اللعبة (iChancy):</b> <code>{game_balance:,} NSP</code>\n\n"
-        f"اختر الخدمة المطلوبة من الأزرار بالأسفل 👇"
+        f"✨ <b>أهلاً بك في Jude Robert</b>\n\n"
+        f"🔷 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س</code> <i>({bot_balance_new_str} ل.س جديدة)</i>\n"
+        f"🕹️ <b>رصيد اللعبة (iChancy):</b> <code>{game_balance:,} NSP</code>\n\n"
+        f"اختر الخدمة المطلوبة من الأزرار بالأسفل ↘️"
     )
 
     keyboard = get_user_menu_keyboard(user_id)
@@ -91,12 +91,12 @@ async def open_miniapp_shortcut_flow(message: Message, user_id, state: FSMContex
 
 
 # ================================================================
-# ✅ معالجات الموافقة على الشروط (كانت مفقودة بالكامل!)
+# ✔️ معالجات الموافقة على الشروط (كانت مفقودة بالكامل!)
 # ================================================================
 
 @router.callback_query(F.data == "accept_terms")
 async def accept_terms_callback(callback: CallbackQuery):
-    """➡️ الإصلاح الأهم: عند الضغط على 'موافق' يتم تسجيل القبول وعرض القائمة الرئيسية."""
+    """→ الإصلاح الأهم: عند الضغط على 'موافق' يتم تسجيل القبول وعرض القائمة الرئيسية."""
     telegram_id = str(callback.from_user.id)
     user = await asyncio.to_thread(repo.get_user, telegram_id)
     if not user:
@@ -109,18 +109,18 @@ async def accept_terms_callback(callback: CallbackQuery):
         pass
 
     await show_main_menu(callback.message, callback.from_user.id)
-    await callback.answer("✅ شكراً لموافقتك على الشروط!")
+    await callback.answer("✔️ شكراً لموافقتك على الشروط!")
 
 
 @router.callback_query(F.data == "reject_terms")
 async def reject_terms_callback(callback: CallbackQuery):
     """عند رفض الشروط."""
     await callback.message.edit_text(
-        "❌ <b>تم رفض الشروط.</b>\n\nلا يمكنك استخدام البوت دون الموافقة على الشروط.\n"
+        "⛔ <b>تم رفض الشروط.</b>\n\nلا يمكنك استخدام البوت دون الموافقة على الشروط.\n"
         "للمحاولة مجدداً اضغط على /start",
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(text="🔄 المحاولة مجدداً", callback_data="show_terms_only")
+            InlineKeyboardButton(text="🔁 المحاولة مجدداً", callback_data="show_terms_only")
         ]])
     )
     await callback.answer()
@@ -135,7 +135,7 @@ async def show_terms_only_callback(callback: CallbackQuery):
 
 
 # ================================================================
-# ✅ أمر /start — يعرض القائمة الرئيسية دائماً
+# ✔️ أمر /start — يعرض القائمة الرئيسية دائماً
 # ================================================================
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext, command: CommandObject):
@@ -177,7 +177,7 @@ async def cmd_start(message: Message, state: FSMContext, command: CommandObject)
 
 
 # ================================================================
-# ✅ معالجات الأوامر المنشورة في قائمة الأوامر (كانت بلا معالجات)
+# ✔️ معالجات الأوامر المنشورة في قائمة الأوامر (كانت بلا معالجات)
 # ================================================================
 
 @router.message(Command("home"))
@@ -198,11 +198,11 @@ async def cmd_cancel(message: Message, state: FSMContext):
 async def cmd_delete(message: Message):
     """حذف الحساب مع تأكيد."""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text="🗑️ نعم، احذف حسابي نهائياً", callback_data="delete_confirm"),
-        InlineKeyboardButton(text="❌ إلغاء", callback_data="delete_cancel"),
+        InlineKeyboardButton(text="🧹 نعم، احذف حسابي نهائياً", callback_data="delete_confirm"),
+        InlineKeyboardButton(text="⛔ إلغاء", callback_data="delete_cancel"),
     ]])
     await message.answer(
-        "⚠️ <b>هل أنت متأكد من حذف حسابك؟</b>\n\n"
+        "🚧 <b>هل أنت متأكد من حذف حسابك؟</b>\n\n"
         "سيتم حذف جميع بياناتك وأرصدتك ومعاملاتك نهائياً ولا يمكن التراجع.",
         reply_markup=keyboard,
         parse_mode="HTML"
@@ -213,11 +213,11 @@ async def cmd_delete(message: Message):
 async def delete_confirm_callback(callback: CallbackQuery):
     telegram_id = str(callback.from_user.id)
     await asyncio.to_thread(repo.delete_user_completely, telegram_id)
-    # 🆕 (Update 20 / Perf) إبطال كاش قبول الشروط فوراً حتى لا يمر حساب محذوف من الميدلوير
+    # 🌟 (Update 20 / Perf) إبطال كاش قبول الشروط فوراً حتى لا يمر حساب محذوف من الميدلوير
     from telegram_bot.middlewares.terms_check import invalidate_terms_cache
     invalidate_terms_cache(telegram_id)
     await callback.message.edit_text(
-        "🗑️ <b>تم حذف حسابك بنجاح.</b>\n\nللبدء من جديد اضغط على /start",
+        "🧹 <b>تم حذف حسابك بنجاح.</b>\n\nللبدء من جديد اضغط على /start",
         parse_mode="HTML"
     )
     await callback.answer("تم حذف الحساب.")
@@ -230,9 +230,9 @@ async def delete_cancel_callback(callback: CallbackQuery):
 
 
 # ================================================================
-# ✅ بيانات Mini App (web_app_data) — زر "العودة للقائمة الرئيسية"
+# ✔️ بيانات Mini App (web_app_data) — زر "العودة للقائمة الرئيسية"
 # ================================================================
-# عندما يضغط المستخدم زر "🏠 العودة للقائمة الرئيسية" داخل Mini App
+# عندما يضغط المستخدم زر "🏡 العودة للقائمة الرئيسية" داخل Mini App
 # الشروحات، يرسل الـ Mini App البيانات '/start' عبر WebApp.sendData()،
 # فيستقبلها البوت هنا كرسالة من نوع web_app_data ويعرض القائمة مباشرة.
 

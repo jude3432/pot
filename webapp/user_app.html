@@ -349,7 +349,7 @@
     box-shadow:0 7px 24px rgba(0,0,0,.30),0 0 18px rgba(255,93,56,.06)
   }
   .flash-banner::before{
-    content:'⚡';position:static;font-size:24px;opacity:1;
+    content:'🧭';position:static;font-size:24px;opacity:1;
     filter:drop-shadow(0 0 7px rgba(255,184,53,.45))
   }
   .flash-banner::after{
@@ -424,6 +424,12 @@
   .page{display:none;animation:fadeIn 0.3s ease}
   .page.active{display:block}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<style id="premium-icon-motion">
+  .premium-icon { display:inline-block; transform-origin:50% 65%; animation: premiumIconFloat 3.8s ease-in-out infinite; }
+  @keyframes premiumIconFloat { 0%,100% { transform:translateY(0) scale(1); filter:drop-shadow(0 0 0 transparent); } 50% { transform:translateY(-2px) scale(1.045); filter:drop-shadow(0 3px 7px rgba(255,193,7,.22)); } }
+  @media (prefers-reduced-motion: reduce) { .premium-icon { animation:none !important; } }
 </style>
 </head>
 <body>
@@ -506,7 +512,7 @@
     <!-- آخر المعاملات -->
     <div class="info-card">
       <div class="title">
-        <span>🕒 آخر العمليات</span>
+        <span>🕰️ آخر العمليات</span>
         <span class="badge" id="txCount">0</span>
       </div>
       <div id="txList" class="tx-list">
@@ -518,7 +524,7 @@
   <!-- ===== صفحة السجل الكامل ===== -->
   <div class="page" id="pageHistory">
     <div class="info-card">
-      <div class="title"><span>📋 سجل المعاملات الكامل</span></div>
+      <div class="title"><span>🗒️ سجل المعاملات الكامل</span></div>
       <div id="fullTxList" class="tx-list"></div>
     </div>
   </div>
@@ -542,16 +548,16 @@
 <!-- شريط التنقّل السفلي -->
 <div class="bottom-nav">
   <button class="nav-item active" id="navHome" onclick="showPage('home')">
-    <div class="nav-icon">🏠</div><span>الرئيسية</span>
+    <div class="nav-icon">🏡</div><span>الرئيسية</span>
   </button>
   <button class="nav-item" id="navHistory" onclick="showPage('history')">
-    <div class="nav-icon">📋</div><span>السجل</span>
+    <div class="nav-icon">🗒️</div><span>السجل</span>
   </button>
   <button class="nav-item" id="navReferral" onclick="showPage('referral')">
-    <div class="nav-icon">💰</div><span>الإحالات</span>
+    <div class="nav-icon">🪙</div><span>الإحالات</span>
   </button>
   <button class="nav-item" id="navPerks" onclick="showPage('perks')">
-    <div class="nav-icon">🏆</div><span>المزايا</span>
+    <div class="nav-icon">🏅</div><span>المزايا</span>
   </button>
 </div>
 
@@ -758,14 +764,14 @@ async function loadAll(){
     lastDataRefreshAt=Date.now();
     return true;
   }catch(e){
-    document.getElementById('errorBox').innerHTML='<div class="error-box">⚠️ تعذّر تحميل البيانات.<br>تأكد من فتح اللوحة من زر البوت.</div>';
+    document.getElementById('errorBox').innerHTML='<div class="error-box">🚧 تعذّر تحميل البيانات.<br>تأكد من فتح اللوحة من زر البوت.</div>';
     document.getElementById('balanceCard').innerHTML='';
     document.getElementById('pendingStatus').innerHTML='';
     return false;
   }
 }
 
-// 🏆 (Update 16) نظام VIP
+// 🏅 (Update 16) نظام VIP
 function renderVIP(d){
   const feat=d.features||{};
   const box=document.getElementById('vipCard');
@@ -775,7 +781,7 @@ function renderVIP(d){
   
   const total=vip.total_deposits||0;
   const next=vip.next_tier;
-  const names=vip.tier_names||['🥉 مواطن','🥈 فارس','🥇 نبيل','👑 Jude Robert'];
+  const names=vip.tier_names||['🏵️ مواطن','🎖️ فارس','🏆 نبيل','✨ Jude Robert'];
   const colors=['var(--hint)','#c0c0c0','#111318','#111318'];
   const tierColor=colors[vip.tier_index||0];
   
@@ -803,7 +809,7 @@ function renderVIP(d){
   `;
 }
 
-// 💸 (Update 17) الكاش باك
+// 💳 (Update 17) الكاش باك
 function renderCashback(d){
   const cb=d.cashback||{};
   const box=document.getElementById('cashbackCard');
@@ -816,10 +822,10 @@ function renderCashback(d){
   let statusText='';
   let statusColor='var(--hint)';
   if(cb.already_paid){
-    statusText='✅ تم صرف كاش باك هذا الأسبوع';
+    statusText='✔️ تم صرف كاش باك هذا الأسبوع';
     statusColor='var(--green)';
   }else if(loss>=minLoss){
-    statusText=`🎁 كاش باك متوقع: ${fmt(expected)} ل.س جديدة`;
+    statusText=`🧧 كاش باك متوقع: ${fmt(expected)} ل.س جديدة`;
     statusColor='var(--gold)';
   }else{
     statusText=`الحد الأدنى للخسارة: ${fmt(minLoss)} ل.س جديدة`;
@@ -828,7 +834,7 @@ function renderCashback(d){
   box.innerHTML=`
     <div class="info-card" style="background:linear-gradient(135deg,rgba(0,214,143,0.06) 0%,rgba(74,158,255,0.04) 100%);border-color:rgba(0,214,143,0.1)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:14px;font-weight:900;color:var(--green)">💸 الكاش باك الأسبوعي</div>
+        <div style="font-size:14px;font-weight:900;color:var(--green)">💳 الكاش باك الأسبوعي</div>
         <div class="pill" style="background:rgba(0,214,143,0.15);color:var(--green)">${pct}%</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
@@ -863,7 +869,7 @@ function renderBalance(d){
     bonusHtml = `
       <div class="divider"></div>
       <div class="game-balance">
-        <div class="g-label" style="color:var(--gold)">🎁 رصيد المكافآت (للّعب فقط)</div>
+        <div class="g-label" style="color:var(--gold)">🧧 رصيد المكافآت (للّعب فقط)</div>
         <div class="g-value" style="color:var(--gold)">${fmt(bonusBal)} ل.س جديدة</div>
       </div>
       <div class="private-balance-line" style="font-size:11px;color:var(--hint);margin-top:2px;text-align:left">${bonusNewStr} ل.س جديدة — يُرفق تلقائياً عند شحن اللعبة</div>
@@ -871,17 +877,17 @@ function renderBalance(d){
   }
   if(pendingCashback > 0){
     bonusHtml += `
-      <div class="private-balance-line" style="font-size:11px;color:var(--green);margin-top:6px;text-align:left">💸 كاش باك مستحق: ${fmt(pendingCashback)} ل.س جديدة — سيُضاف تلقائياً بعد أول شحن ناجح للعبة</div>
+      <div class="private-balance-line" style="font-size:11px;color:var(--green);margin-top:6px;text-align:left">💳 كاش باك مستحق: ${fmt(pendingCashback)} ل.س جديدة — سيُضاف تلقائياً بعد أول شحن ناجح للعبة</div>
     `;
   }
   if(pendingCheckin > 0){
     bonusHtml += `
-      <div class="private-balance-line" style="font-size:11px;color:var(--green);margin-top:6px;text-align:left">📅 مكافأة حضور مستحقة: ${fmt(pendingCheckin)} ل.س جديدة — ستُضاف تلقائياً بعد أول شحن ناجح للعبة</div>
+      <div class="private-balance-line" style="font-size:11px;color:var(--green);margin-top:6px;text-align:left">🗓️ مكافأة حضور مستحقة: ${fmt(pendingCheckin)} ل.س جديدة — ستُضاف تلقائياً بعد أول شحن ناجح للعبة</div>
     `;
   }
   if(activeGameBonus > 0){
     bonusHtml += `
-      <div class="private-balance-line" style="font-size:11px;color:var(--warn);margin-top:6px;text-align:left">🎁 بونص نشط داخل اللعبة: ${fmt(activeGameBonus)} ل.س جديدة — يُخصم أولاً عند السحب من اللعبة</div>
+      <div class="private-balance-line" style="font-size:11px;color:var(--warn);margin-top:6px;text-align:left">🧧 بونص نشط داخل اللعبة: ${fmt(activeGameBonus)} ل.س جديدة — يُخصم أولاً عند السحب من اللعبة</div>
     `;
   }
 
@@ -890,14 +896,14 @@ function renderBalance(d){
       <button class="balance-privacy" type="button" onclick="toggleBalancePrivacy()" aria-label="إظهار أو إخفاء الأرصدة" title="خصوصية الرصيد">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.7"/><path class="privacy-slash" d="M4 4l16 16"/></svg>
       </button>
-      <div class="label">💎 رصيدك الحالي (قابل للسحب)</div>
+      <div class="label">🔷 رصيدك الحالي (قابل للسحب)</div>
       <div class="amount">${fmt(botBal)} <span style="font-size:18px;color:var(--hint)">ل.س جديدة</span></div>
       <div class="amount-new">وحدة الحساب الداخلية: ل.س جديدة</div>
       ${bonusHtml}
       ${affBal>0?`<div class="divider"></div><div class="game-balance"><div class="g-label" style="color:var(--green)">🤝 رصيد أرباح الإحالات القابل للسحب</div><div class="g-value" style="color:var(--green)">${fmt(affBal)} ل.س جديدة</div></div>`:''}
       <div class="divider"></div>
       <div class="game-balance">
-        <div class="g-label">🎮 رصيد اللعبة (iChancy)</div>
+        <div class="g-label">🕹️ رصيد اللعبة (iChancy)</div>
         <div class="g-value">${fmt(gameBal)} NSP</div>
       </div>
     </div>
@@ -912,7 +918,7 @@ function renderOffers(d){
   const best = offers[0];
   box.innerHTML=`
     <div class="offer-banner" onclick="closeApp()">
-      <div class="offer-icon">🔥</div>
+      <div class="offer-icon">♨️</div>
       <div class="offer-text">
         <div class="offer-title">${best.title}</div>
         <div class="offer-desc">بونص ${best.percent}% ${best.payment_method=='all'?'على كل الإيداعات':'على '+best.method_label}</div>
@@ -929,7 +935,7 @@ function renderContests(d){
   const rewardTxt = c.reward_type==='bot_balance' ? `${fmt(c.reward_amount)} ل.س جديدة` : c.reward_type==='gift_code' ? 'كود هدية' : 'جائزة';
   box.innerHTML=`
     <div class="contest-banner" onclick="closeApp()">
-      <div class="contest-icon">👑</div>
+      <div class="contest-icon">✨</div>
       <div class="contest-text">
         <div class="contest-title">${c.title}</div>
         <div class="contest-desc">جائزة: ${rewardTxt} — شارك الآن!</div>
@@ -949,10 +955,10 @@ function txClass(t){
   return 'bonus';
 }
 function txIcon(t){
-  if(t&&t.includes('deposit'))return '📥';
-  if(t&&t.includes('withdraw'))return '📤';
-  if(t&&t.includes('game'))return '🎮';
-  return '🎁';
+  if(t&&t.includes('deposit'))return '📨';
+  if(t&&t.includes('withdraw'))return '📬';
+  if(t&&t.includes('game'))return '🕹️';
+  return '🧧';
 }
 function txSign(t){
   if(t&&t.includes('withdraw'))return '-';
@@ -967,10 +973,10 @@ function renderRecentTx(txs){
     const cls=txClass(t.type);
     const sign=txSign(t.type);
     const statusDot = t.status?`<span class="tx-status ${t.status}"></span>`:'';
-    // 🎰 زر العجلة على الإيداعات المؤهلة
+    // 🎲 زر العجلة على الإيداعات المؤهلة
     let wheelBtn='';
     if(t.can_spin_wheel){
-      wheelBtn=`<button class="btn gold" style="margin-top:8px;font-size:12px;padding:8px" onclick="openWheel(${t.id},${t.amount})">🎰 دوّر العجلة!</button>`;
+      wheelBtn=`<button class="btn gold" style="margin-top:8px;font-size:12px;padding:8px" onclick="openWheel(${t.id},${t.amount})">🎲 دوّر العجلة!</button>`;
     }
     return `
       <div class="tx-item ${cls}" style="flex-direction:column;align-items:stretch">
@@ -1027,14 +1033,14 @@ async function loadReferral(){
     const percent = ref.percent||0;
     const earnings = ref.total_earnings||0;
     const link = ref.ref_link||'';
-    const levels = [[3,3,'🥉'],[5,5,'🥈'],[10,10,'🥇']];
+    const levels = [[3,3,'🏵️'],[5,5,'🎖️'],[10,10,'🏆']];
     let progressBars = levels.map(([need,pct,medal])=>{
       const filled = Math.min(active/need,1)*100;
       return `
         <div style="margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span>${medal} ${pct}% (${active}/${need})</span>
-            <span style="color:var(--hint)">${active>=need?'✅ مكتمل':'متبقي '+(need-active)}</span>
+            <span style="color:var(--hint)">${active>=need?'✔️ مكتمل':'متبقي '+(need-active)}</span>
           </div>
           <div style="background:rgba(255,255,255,0.05);border-radius:10px;height:10px;overflow:hidden">
             <div style="width:${filled}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--purple));border-radius:10px;transition:width 0.5s"></div>
@@ -1045,7 +1051,7 @@ async function loadReferral(){
 
     el.innerHTML=`
       <div class="balance-card">
-        <div class="label">💰 أرباح الإحالات</div>
+        <div class="label">🪙 أرباح الإحالات</div>
         <div class="amount">${fmt(earnings)} <span style="font-size:18px;color:var(--hint)">ل.س</span></div>
         <div class="divider"></div>
         <div style="display:flex;justify-content:space-between;font-size:13px">
@@ -1054,11 +1060,11 @@ async function loadReferral(){
         </div>
       </div>
       <div class="info-card">
-        <div class="title"><span>🏆 مستويات الإحالات</span></div>
+        <div class="title"><span>🏅 مستويات الإحالات</span></div>
         ${progressBars}
       </div>
       <div class="info-card">
-        <div class="title"><span>🔗 رابطك الخاص</span></div>
+        <div class="title"><span>🧷 رابطك الخاص</span></div>
         <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:14px;text-align:center;word-break:break-all;font-size:13px;color:var(--blue)">${link||'غير متوفر'}</div>
       </div>
     `;
@@ -1081,7 +1087,7 @@ function renderCheckin(d){
   const reward=ck.completion_reward||20000;
   const pending=ck.pending_balance||0;
   if(!ck.has_deposit){
-    box.innerHTML=`<div class="info-card"><div class="title"><span>📅 الحضور اليومي</span></div><div style="font-size:12px;color:var(--hint)">يتفعل الحضور اليومي بعد أول إيداع مقبول لك.</div></div>`;
+    box.innerHTML=`<div class="info-card"><div class="title"><span>🗓️ الحضور اليومي</span></div><div style="font-size:12px;color:var(--hint)">يتفعل الحضور اليومي بعد أول إيداع مقبول لك.</div></div>`;
     return;
   }
   let days='';
@@ -1089,16 +1095,16 @@ function renderCheckin(d){
     const done=i<=streak?'done':'';
     days+=`<div class="ck-day ${done}" style="width:18px;height:18px;font-size:9px">${i}</div>`;
   }
-  const btn=ck.can_checkin?`<button class="checkin-btn" onclick="doCheckin()">📅 سجّل حضور اليوم</button>`:`<div class="checkin-btn" style="cursor:default;background:rgba(255,255,255,0.06);color:var(--hint)">✅ سجّلت اليوم — عُد غداً!</div>`;
-  const pendingLine=pending>0?`<div style="font-size:12px;color:var(--green);margin-top:8px">🎁 لديك مكافأة حضور مستحقة ${fmt(pending)} ل.س جديدة — ستُضاف عند أول شحن لعبة ناجح</div>`:'';
+  const btn=ck.can_checkin?`<button class="checkin-btn" onclick="doCheckin()">🗓️ سجّل حضور اليوم</button>`:`<div class="checkin-btn" style="cursor:default;background:rgba(255,255,255,0.06);color:var(--hint)">✔️ سجّلت اليوم — عُد غداً!</div>`;
+  const pendingLine=pending>0?`<div style="font-size:12px;color:var(--green);margin-top:8px">🧧 لديك مكافأة حضور مستحقة ${fmt(pending)} ل.س جديدة — ستُضاف عند أول شحن لعبة ناجح</div>`:'';
   box.innerHTML=`
     <div class="checkin-card">
-      <div class="ck-title">📅 الحضور اليومي — التقدم: ${streak} / ${cycle}</div>
+      <div class="ck-title">🗓️ الحضور اليومي — التقدم: ${streak} / ${cycle}</div>
       <div style="background:rgba(255,255,255,0.06);height:12px;border-radius:12px;overflow:hidden;margin:8px 0"><div style="width:${progress}%;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:12px"></div></div>
       <div class="ck-streak" style="flex-wrap:wrap;gap:3px">${days}</div>
-      <div style="font-size:11px;color:var(--hint);margin:8px 0">🎁 مكافأة إكمال الدورة: <b style="color:var(--gold)">${fmt(reward)}</b> ل.س جديدة</div>
-      <div style="font-size:11px;color:${recent>=minDep?'var(--green)':'var(--hint)'};margin-bottom:8px">💰 شرط الصرف: ${fmt(recent)} / ${fmt(minDep)} ل.س جديدة إيداعات خلال آخر 30 يوم</div>
-      <div style="font-size:10px;color:var(--warn);margin-bottom:8px">⚠️ الانقطاع يوم واحد يعيدك للبداية. لا تُصرف المكافأة إلا عند إكمال الدورة وتحقيق شرط الإيداع.</div>
+      <div style="font-size:11px;color:var(--hint);margin:8px 0">🧧 مكافأة إكمال الدورة: <b style="color:var(--gold)">${fmt(reward)}</b> ل.س جديدة</div>
+      <div style="font-size:11px;color:${recent>=minDep?'var(--green)':'var(--hint)'};margin-bottom:8px">🪙 شرط الصرف: ${fmt(recent)} / ${fmt(minDep)} ل.س جديدة إيداعات خلال آخر 30 يوم</div>
+      <div style="font-size:10px;color:var(--warn);margin-bottom:8px">🚧 الانقطاع يوم واحد يعيدك للبداية. لا تُصرف المكافأة إلا عند إكمال الدورة وتحقيق شرط الإيداع.</div>
       ${btn}
       ${pendingLine}
     </div>
@@ -1112,11 +1118,11 @@ async function doCheckin(){
     if(!res.ok){tg.showAlert(data.error||'تعذّر تسجيل الحضور');return}
     const r=data;
     if(r.cycle_completed && r.reward>0){
-      tg.showAlert(`🎉 مبروك! أكملت دورة الحضور ${r.cycle_days} يوم\n🎁 مكافأة مستحقة: ${fmt(r.reward)} ل.س جديدة\nستُضاف عند أول شحن لعبة ناجح`);
+      tg.showAlert(`✨ مبروك! أكملت دورة الحضور ${r.cycle_days} يوم\n🧧 مكافأة مستحقة: ${fmt(r.reward)} ل.س جديدة\nستُضاف عند أول شحن لعبة ناجح`);
     }else if(r.cycle_completed && !r.qualified){
-      tg.showAlert(`✅ اكتملت الدورة لكن شرط الإيداع غير محقق\nإيداعاتك: ${fmt(r.recent_deposits||0)} / ${fmt(r.required_deposits||0)} ل.س جديدة`);
+      tg.showAlert(`✔️ اكتملت الدورة لكن شرط الإيداع غير محقق\nإيداعاتك: ${fmt(r.recent_deposits||0)} / ${fmt(r.required_deposits||0)} ل.س جديدة`);
     }else{
-      tg.showAlert(`✅ تم تسجيل حضورك\nتقدمك: ${r.streak} / ${r.cycle_days} يوم`);
+      tg.showAlert(`✔️ تم تسجيل حضورك\nتقدمك: ${r.streak} / ${r.cycle_days} يوم`);
     }
     loadAll();
   }catch(e){tg.showAlert('خطأ في الاتصال')}
@@ -1141,10 +1147,10 @@ function renderWheel(d){
   const best=eligible[0]; // أول إيداع مؤهل
   box.innerHTML=`
     <div class="checkin-card" style="background:linear-gradient(135deg,rgba(17,19,24,0.12) 0%,rgba(255,152,0,0.06) 100%);border:1px solid var(--card-border)">
-      <div class="ck-title" style="color:var(--gold)">🎰 عجلة الحظ</div>
+      <div class="ck-title" style="color:var(--gold)">🎲 عجلة الحظ</div>
       <div style="font-size:13px;color:var(--text);margin-bottom:4px">لديك <b>${eligible.length}</b> لفة مجانية!</div>
       <div style="font-size:11px;color:var(--hint);margin-bottom:12px">إيداع #${best.id} — ${fmt(best.amount)} ل.س جديدة</div>
-      <button class="spin-btn" onclick="openWheel(${best.id},${best.amount})">🎰 دوّر العجلة!</button>
+      <button class="spin-btn" onclick="openWheel(${best.id},${best.amount})">🎲 دوّر العجلة!</button>
     </div>
   `;
 }
@@ -1189,7 +1195,7 @@ function buildWheelSVG(segments){
     <circle cx="130" cy="130" r="128" fill="#050505" stroke="url(#wheelGold)" stroke-width="8"/>
     ${paths}${labels}
     <circle cx="130" cy="130" r="44" fill="url(#wheelGold)" stroke="#ffffff" stroke-width="4"/>
-    <text x="130" y="137" text-anchor="middle" font-size="26" font-weight="900">👑</text>
+    <text x="130" y="137" text-anchor="middle" font-size="26" font-weight="900">✨</text>
   </svg>`;
 }
 
@@ -1198,15 +1204,15 @@ function showWheelModal(depositTxId,depositAmount,segments){
   const segAngle=360/segCount;
   const html=`
     <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px" id="wheelOverlay">
-      <h2 style="color:var(--gold);margin-bottom:6px;font-size:20px">🎰 عجلة الحظ</h2>
+      <h2 style="color:var(--gold);margin-bottom:6px;font-size:20px">🎲 عجلة الحظ</h2>
       <p style="color:var(--hint);font-size:12px;margin-bottom:16px">إيداعك: ${fmt(depositAmount)} ل.س جديدة</p>
       <div class="wheel-wrapper">
         <div class="wheel-pointer"></div>
         ${buildWheelSVG(segments)}
-        <div class="wheel-center">👑</div>
+        <div class="wheel-center">✨</div>
       </div>
       <div id="wheelResultBox"></div>
-      <button class="spin-btn" id="spinBtn" onclick="doSpin(${depositTxId})">🎰 دوّر العجلة!</button>
+      <button class="spin-btn" id="spinBtn" onclick="doSpin(${depositTxId})">🎲 دوّر العجلة!</button>
       <button class="spin-btn" style="background:transparent;color:var(--hint);margin-top:8px;font-size:13px;padding:8px" onclick="closeWheel()">تخطّي</button>
     </div>
   `;
@@ -1232,9 +1238,9 @@ async function doSpin(depositTxId){
       body:JSON.stringify({deposit_tx_id:depositTxId})
     });
     const data=await res.json();
-    if(!res.ok){tg.showAlert(data.error||'خطأ');btn.disabled=false;btn.textContent='🎰 دوّر العجلة!';isSpinning=false;return}
+    if(!res.ok){tg.showAlert(data.error||'خطأ');btn.disabled=false;btn.textContent='🎲 دوّر العجلة!';isSpinning=false;return}
 
-    // 🎯 (Update 15 Fix) مزامنة العجلة مع الخادم بدقة 100%
+    // 🧿 (Update 15 Fix) مزامنة العجلة مع الخادم بدقة 100%
     // كل قطاع يأخذ زاوية (360 / عدد القطاعات)
     const segCount = 8; 
     const segAngle = 360 / segCount;
@@ -1259,13 +1265,13 @@ async function doSpin(depositTxId){
     setTimeout(()=>{
       const box=document.getElementById('wheelResultBox');
       if(String(data.label||'').toUpperCase()==='PINGO'){
-        box.innerHTML=`<div class="wheel-result pingo">🎯 PINGO!<br><span style="font-size:12px">جائزة خاصة — ستتواصل معك الإدارة للحصول على كود هدية 🎁</span></div>`;
+        box.innerHTML=`<div class="wheel-result pingo">🧿 PINGO!<br><span style="font-size:12px">جائزة خاصة — ستتواصل معك الإدارة للحصول على كود هدية 🧧</span></div>`;
       }else if(data.reward_amount>0){
-        box.innerHTML=`<div class="wheel-result win">🎉 مبروك! ربحت +${data.reward_percent}% = ${fmt(data.reward_amount)} ل.س جديدة<br><span style="font-size:11px">أُضيفت لرصيد المكافآت 🎁</span></div>`;
+        box.innerHTML=`<div class="wheel-result win">✨ مبروك! ربحت +${data.reward_percent}% = ${fmt(data.reward_amount)} ل.س جديدة<br><span style="font-size:11px">أُضيفت لرصيد المكافآت 🧧</span></div>`;
       }else{
-        box.innerHTML=`<div class="wheel-result lose">💔 حظ أوفر! حاول مرة أخرى في الإيداع القادم</div>`;
+        box.innerHTML=`<div class="wheel-result lose">🫶 حظ أوفر! حاول مرة أخرى في الإيداع القادم</div>`;
       }
-      btn.textContent='✅ تم';
+      btn.textContent='✔️ تم';
       btn.style.background='var(--green)';
       isSpinning=false;
       // تحديث البيانات
@@ -1275,7 +1281,7 @@ async function doSpin(depositTxId){
   }catch(e){
     tg.showAlert('خطأ في الاتصال');
     btn.disabled=false;
-    btn.textContent='🎰 دوّر العجلة!';
+    btn.textContent='🎲 دوّر العجلة!';
     isSpinning=false;
   }
 }
@@ -1313,7 +1319,7 @@ function renderFlash(d){
     const s=Math.floor((diff%60000)/1000);
     box.innerHTML=`
       <div class="flash-banner">
-        <div class="fl-title">⚡ فلاش بونص ${fb.percent}%!</div>
+        <div class="fl-title">🧭 فلاش بونص ${fb.percent}%!</div>
         <div class="fl-desc">${methodDescription}</div>
         <div class="fl-timer">⏰ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</div>
       </div>`;
@@ -1337,7 +1343,7 @@ async function loadPerks(){
 
     const topHtml=top.map(u=>{
       const rc=u.rank<=3?'r'+u.rank:'';
-      const medal=u.rank===1?'🥇':u.rank===2?'🥈':u.rank===3?'🥉':u.rank;
+      const medal=u.rank===1?'🏆':u.rank===2?'🎖️':u.rank===3?'🏵️':u.rank;
       return `<div class="lb-item ${rc}"><div class="lb-rank">${medal}</div><div class="lb-name">${u.username}</div><div class="lb-val">${fmt(u.balance)}</div></div>`;
     }).join('');
 
@@ -1347,11 +1353,11 @@ async function loadPerks(){
     const ck=d.checkin||{};
     const streak=ck.current_streak||0;
     const cycle=ck.cycle_days||30;
-    const btn=ck.can_checkin?`<button class="checkin-btn" onclick="doCheckin()">📅 سجّل حضور اليوم</button>`:`<div class="checkin-btn" style="cursor:default;background:rgba(255,255,255,0.06);color:var(--hint)">✅ سجّلت اليوم — عُد غداً!</div>`;
+    const btn=ck.can_checkin?`<button class="checkin-btn" onclick="doCheckin()">🗓️ سجّل حضور اليوم</button>`:`<div class="checkin-btn" style="cursor:default;background:rgba(255,255,255,0.06);color:var(--hint)">✔️ سجّلت اليوم — عُد غداً!</div>`;
 
     const checkinHtml=feat.checkin_enabled!==false?`
       <div class="info-card">
-        <div class="title"><span>📅 الحضور اليومي</span><span class="badge">التقدم: ${streak} / ${cycle} يوم</span></div>
+        <div class="title"><span>🗓️ الحضور اليومي</span><span class="badge">التقدم: ${streak} / ${cycle} يوم</span></div>
         <div style="font-size:12px;color:var(--hint);margin-bottom:10px">سجّل حضورك يومياً لإكمال دورة 30 يوم دون انقطاع. المكافأة (${fmt(ck.completion_reward||20000)} ل.س جديدة) تُصرف عند أول شحن لعبة ناجح بعد تحقق شرط الإيداعات.</div>
         ${btn}
         <div style="font-size:11px;color:var(--hint);margin-top:8px">مكافآت حضور مستحقة: <b style="color:var(--gold)">${fmt(ck.pending_balance||0)}</b> ل.س جديدة | إجمالي أيام الحضور: ${ck.total_checkins||0}</div>
@@ -1359,7 +1365,7 @@ async function loadPerks(){
 
     const lbHtml=feat.leaderboard_enabled!==false?`
       <div class="info-card">
-        <div class="title"><span>🏆 لوحة الصدارة</span></div>
+        <div class="title"><span>🏅 لوحة الصدارة</span></div>
         ${topHtml||'<div class="empty">لا يوجد لاعبون بعد</div>'}
         ${myHtml}
       </div>`:'';
@@ -1370,6 +1376,24 @@ async function loadPerks(){
 
 // بدء التشغيل
 loadAll().finally(()=>setTimeout(showLogoHintOnce,700));
+</script>
+
+<script id="premium-icon-motion-script">
+(() => {
+  const iconPattern = /\p{Extended_Pictographic}/u;
+  const skip = new Set(['SCRIPT','STYLE','CODE','PRE']);
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes=[]; let n; while ((n=walk.nextNode())) if(!skip.has(n.parentElement?.tagName) && iconPattern.test(n.nodeValue)) nodes.push(n);
+  for (const node of nodes) {
+    const frag=document.createDocumentFragment(); let rest=node.nodeValue;
+    const re=new RegExp(iconPattern.source,'gu'); let m, last=0;
+    while ((m=re.exec(rest))) {
+      frag.append(document.createTextNode(rest.slice(last,m.index)));
+      const span=document.createElement('span'); span.className='premium-icon'; span.textContent=m[0]; span.setAttribute('aria-hidden','true'); frag.append(span); last=m.index+m[0].length;
+    }
+    frag.append(document.createTextNode(rest.slice(last))); node.parentNode.replaceChild(frag,node);
+  }
+})();
 </script>
 </body>
 </html>

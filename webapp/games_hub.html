@@ -10,10 +10,16 @@ body{margin:0;font-family:-apple-system,Segoe UI,Tahoma,sans-serif;background:#0
 .card{max-width:640px;margin:0 auto;background:#182533;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 h1{margin:0 0 10px;color:#ffd700;font-size:24px}p{color:#b7c1cc;line-height:1.8}.btn{display:block;width:100%;text-align:center;text-decoration:none;background:#2b5278;color:#fff;padding:14px;border-radius:12px;font-weight:800;margin-top:14px}.sub{font-size:13px;color:#8ea0b4;margin-top:8px}.logo{font-size:44px;margin-bottom:10px}
 </style>
+
+<style id="premium-icon-motion">
+  .premium-icon { display:inline-block; transform-origin:50% 65%; animation: premiumIconFloat 3.8s ease-in-out infinite; }
+  @keyframes premiumIconFloat { 0%,100% { transform:translateY(0) scale(1); filter:drop-shadow(0 0 0 transparent); } 50% { transform:translateY(-2px) scale(1.045); filter:drop-shadow(0 3px 7px rgba(255,193,7,.22)); } }
+  @media (prefers-reduced-motion: reduce) { .premium-icon { animation:none !important; } }
+</style>
 </head>
 <body>
 <div class="card">
-<div class="logo">🎮</div>
+<div class="logo">🕹️</div>
 <h1>ألعاب iChancy</h1>
 <p>من هنا يمكنك فتح صفحة الألعاب بسرعة داخل تجربة Mini App مرتبة وأنيقة. إذا لم يعمل الفتح الداخلي، يمكنك نسخ الرابط أو فتحه من المتصفح.</p>
 <a id="openBtn" class="btn" href="#" target="_blank" rel="noopener">▶️ فتح ألعاب iChancy</a>
@@ -22,6 +28,24 @@ h1{margin:0 0 10px;color:#ffd700;font-size:24px}p{color:#b7c1cc;line-height:1.8}
 <script>
 const tg=window.Telegram&&Telegram.WebApp?Telegram.WebApp:{ready(){},expand(){}};tg.ready();tg.expand();
 fetch(window.location.origin+'/api/public/links').then(r=>r.json()).then(d=>{const url=(d.games_url||'').trim();document.getElementById('openBtn').href=url||'#';document.getElementById('linkText').textContent=url||'الرابط غير متوفر حالياً';}).catch(()=>{document.getElementById('linkText').textContent='تعذر تحميل الرابط';});
+</script>
+
+<script id="premium-icon-motion-script">
+(() => {
+  const iconPattern = /\p{Extended_Pictographic}/u;
+  const skip = new Set(['SCRIPT','STYLE','CODE','PRE']);
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes=[]; let n; while ((n=walk.nextNode())) if(!skip.has(n.parentElement?.tagName) && iconPattern.test(n.nodeValue)) nodes.push(n);
+  for (const node of nodes) {
+    const frag=document.createDocumentFragment(); let rest=node.nodeValue;
+    const re=new RegExp(iconPattern.source,'gu'); let m, last=0;
+    while ((m=re.exec(rest))) {
+      frag.append(document.createTextNode(rest.slice(last,m.index)));
+      const span=document.createElement('span'); span.className='premium-icon'; span.textContent=m[0]; span.setAttribute('aria-hidden','true'); frag.append(span); last=m.index+m[0].length;
+    }
+    frag.append(document.createTextNode(rest.slice(last))); node.parentNode.replaceChild(frag,node);
+  }
+})();
 </script>
 </body>
 </html>

@@ -28,7 +28,7 @@ from telegram_bot.keyboards.inline import (
 router = Router()
 logger = logging.getLogger(__name__)
 
-# 🔒 قفل حماية ضد النقر المزدوج السريع على أزرار التأكيد (Double-Click Guard)
+# 🔐 قفل حماية ضد النقر المزدوج السريع على أزرار التأكيد (Double-Click Guard)
 _user_action_locks = set()
 
 def _try_acquire_lock(user_id) -> bool:
@@ -75,7 +75,7 @@ def _get_min_withdraw_usd():
     except:
         return 10
 
-# 🆕 دوال مساعدة لتحويل الليرة القديمة ↔ الجديدة
+# 🌟 دوال مساعدة لتحويل الليرة القديمة ↔ الجديدة
 def _syp_old_to_new(amount_old):
     return old_to_new(amount_old)
 
@@ -97,7 +97,7 @@ def _fmt_limits_dual(amount_new):
 
 def _fmt_syp_copy_label(amount_old):
     ver = _get_syp_version()
-    return f"📋 نسخ {format_new(amount_old)} ل.س جديدة"
+    return f"🗒️ نسخ {format_new(amount_old)} ل.س جديدة"
 
 def _get_syp_copy_amount(amount_old):
     ver = _get_syp_version()
@@ -124,14 +124,14 @@ async def notify_admins(bot, text, reply_markup=None, parse_mode="HTML"):
 
 def get_support_chat_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔴 إنهاء المحادثة", callback_data="end_support_chat")]
+        [InlineKeyboardButton(text="🔻 إنهاء المحادثة", callback_data="end_support_chat")]
     ])
 
 
 def get_admin_reply_keyboard(user_id):
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="↩️ رد على المستخدم", callback_data=f"reply_user_{user_id}")],
-        [InlineKeyboardButton(text="👤 تفاصيل المستخدم", callback_data=f"user_details_{user_id}")]
+        [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{user_id}")]
     ])
 
 
@@ -148,12 +148,12 @@ async def forward_support_message_to_admins(message: Message):
 
     caption = (
         "📨 <b>رسالة دعم مباشر جديدة</b>\n\n"
-        f"👤 <b>المرسل:</b> {display_name}\n"
-        f"📛 <b>المعرف:</b> {username}\n"
-        f"🆔 <b>Telegram ID:</b> <code>{sender.id}</code>\n"
-        f"💎 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س جديدة</code>\n"
-        f"🎮 <b>iChancy:</b> <code>{ichancy_username}</code>\n"
-        f"🔑 <b>Player ID:</b> <code>{player_id}</code>"
+        f"🧑‍💼 <b>المرسل:</b> {display_name}\n"
+        f"🏷️ <b>المعرف:</b> {username}\n"
+        f"🔖 <b>Telegram ID:</b> <code>{sender.id}</code>\n"
+        f"🔷 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س جديدة</code>\n"
+        f"🕹️ <b>iChancy:</b> <code>{ichancy_username}</code>\n"
+        f"🗝️ <b>Player ID:</b> <code>{player_id}</code>"
     )
     reply_markup = get_admin_reply_keyboard(sender.id)
 
@@ -172,7 +172,7 @@ def get_log_channel_id():
     return getattr(settings, "LOG_CHANNEL_ID", None)
 
 
-# 🆕 تحسين دالة إرسال السجلات لتعيد bool وتدعم التتبع
+# 🌟 تحسين دالة إرسال السجلات لتعيد bool وتدعم التتبع
 async def send_log_message(bot, text, parse_mode="HTML"):
     log_channel_id = get_log_channel_id()
     if not log_channel_id:
@@ -180,10 +180,10 @@ async def send_log_message(bot, text, parse_mode="HTML"):
         return False
     try:
         await bot.send_message(chat_id=log_channel_id, text=text, parse_mode=parse_mode)
-        logger.debug(f"✅ Log sent to {log_channel_id}")
+        logger.debug(f"✔️ Log sent to {log_channel_id}")
         return True
     except Exception as e:
-        logger.error(f"❌ send_log_message failed: {e}")
+        logger.error(f"⛔ send_log_message failed: {e}")
         return False
 
 
@@ -279,11 +279,11 @@ def is_valid_usdt_address(value: str) -> bool:
 
 def validate_recipient_by_gateway(gateway: str, recipient: str):
     if gateway in ['syriatel', 'mtn'] and not is_valid_phone_number(recipient):
-        return False, "❌ رقم الهاتف غير صالح. يرجى إدخال رقم صحيح."
+        return False, "⛔ رقم الهاتف غير صالح. يرجى إدخال رقم صحيح."
     if gateway in ['sham_syp', 'sham_usd'] and not is_valid_sham_account(recipient):
-        return False, "❌ معرف أو رقم حساب شام كاش غير صالح."
+        return False, "⛔ معرف أو رقم حساب شام كاش غير صالح."
     if gateway in ['usdt_trc', 'usdt_bep'] and not is_valid_usdt_address(recipient):
-        return False, "❌ عنوان المحفظة غير صالح مبدئياً."
+        return False, "⛔ عنوان المحفظة غير صالح مبدئياً."
     return True, None
 
 
@@ -312,7 +312,7 @@ async def safe_delete_message(target_message):
 
 async def safe_answer_callback(callback: CallbackQuery, text=None, show_alert=False):
     try:
-        await callback.answer(text or "✅", show_alert=show_alert)
+        await callback.answer(text or "✔️", show_alert=show_alert)
         return True
     except Exception as e:
         logger.warning(f"safe_answer_callback ignored: {e}")
@@ -322,7 +322,7 @@ async def safe_answer_callback(callback: CallbackQuery, text=None, show_alert=Fa
 async def send_expired_flow_message(target_message, user_id):
     try:
         await target_message.answer(
-            "⚠️ <b>انتهت صلاحية هذه العملية أو تم استخدام هذا الزر سابقاً.</b>\n\n"
+            "🚧 <b>انتهت صلاحية هذه العملية أو تم استخدام هذا الزر سابقاً.</b>\n\n"
             "يرجى العودة إلى القائمة الرئيسية وبدء العملية من جديد.",
             reply_markup=get_user_menu_keyboard(user_id),
             parse_mode="HTML"
@@ -333,7 +333,7 @@ async def send_expired_flow_message(target_message, user_id):
 
 async def ensure_admin_callback(callback: CallbackQuery) -> bool:
     if not is_admin_user(callback.from_user.id):
-        await safe_answer_callback(callback, "❌ غير مسموح لك باستخدام أدوات الإدارة.", show_alert=True)
+        await safe_answer_callback(callback, "⛔ غير مسموح لك باستخدام أدوات الإدارة.", show_alert=True)
         return False
     return True
 
@@ -342,7 +342,7 @@ async def ensure_admin_message(message: Message, state: FSMContext | None = None
     if not is_admin_user(message.from_user.id):
         if state:
             await state.clear()
-        await message.answer("❌ غير مسموح لك باستخدام أدوات الإدارة.")
+        await message.answer("⛔ غير مسموح لك باستخدام أدوات الإدارة.")
         return False
     return True
 
@@ -352,9 +352,9 @@ async def require_ichancy_registered(callback: CallbackQuery) -> bool:
     if not user or not user.get('player_id'):
         await safe_edit_text(
             callback.message,
-            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
+            "✨ <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
-            "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
+            "توجه إلى قسم 🧭️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -403,9 +403,9 @@ async def start_deposit_flow(target_message, user_id, state: FSMContext, edit=Fa
     if not user or not user.get('player_id'):
         await _deliver_flow_message(
             target_message,
-            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
+            "✨ <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
-            "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
+            "توجه إلى قسم 🧭️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(user_id),
             edit=edit,
         )
@@ -425,11 +425,11 @@ async def start_deposit_flow(target_message, user_id, state: FSMContext, edit=Fa
             InlineKeyboardButton(text="🇸🇾 ليرة سورية", callback_data="dep_curr_syp"),
             InlineKeyboardButton(text="🇺🇸 دولار أمريكي (USD)", callback_data="dep_curr_usd")
         ],
-        [InlineKeyboardButton(text="🔙 القائمة الرئيسية", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
     ])
     await _deliver_flow_message(
         target_message,
-        "📥 <b>إيداع في البوت:</b>\n\nالرجاء تحديد العملة التي تود الإيداع بها 👇:",
+        "📨 <b>إيداع في البوت:</b>\n\nالرجاء تحديد العملة التي تود الإيداع بها ↘️:",
         reply_markup=keyboard,
         edit=edit,
     )
@@ -446,9 +446,9 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
     if not user or not user.get('player_id'):
         await _deliver_flow_message(
             target_message,
-            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
+            "✨ <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
-            "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
+            "توجه إلى قسم 🧭️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(user_id),
             edit=edit,
         )
@@ -457,7 +457,7 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
     if safe_balance(user) <= 0:
         await _deliver_flow_message(
             target_message,
-            "❌ ليس لديك أي رصيد قابل للسحب في البوت حالياً!",
+            "⛔ ليس لديك أي رصيد قابل للسحب في البوت حالياً!",
             reply_markup=get_user_menu_keyboard(user_id),
             edit=edit,
         )
@@ -475,17 +475,17 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
     if not has_usd_deposits_approved(telegram_id):
         await state.update_data(withdraw_currency='syp')
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🟢 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [InlineKeyboardButton(text="🟡 MTN Cash", callback_data="wit_gate_mtn")],
-            [InlineKeyboardButton(text="📱 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
-            [InlineKeyboardButton(text="🔙 القائمة الرئيسية", callback_data="back_to_main_menu")]
+            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
+            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
+            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
+            [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
         ])
         await _deliver_flow_message(
             target_message,
-            f"📤 <b>سحب من البوت (ليرة سورية):</b>\n\n"
-            f"💰 رصيدك: <code>{safe_balance(user):,} ل.س جديدة</code>\n"
-            "⚠️ السحب بالدولار غير متاح لأنك لم تقم بإيداع دولار سابقاً.\n\n"
-            "يرجى اختيار طريقة السحب 👇:",
+            f"📬 <b>سحب من البوت (ليرة سورية):</b>\n\n"
+            f"🪙 رصيدك: <code>{safe_balance(user):,} ل.س جديدة</code>\n"
+            "🚧 السحب بالدولار غير متاح لأنك لم تقم بإيداع دولار سابقاً.\n\n"
+            "يرجى اختيار طريقة السحب ↘️:",
             reply_markup=keyboard,
             edit=edit,
         )
@@ -497,17 +497,17 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
             InlineKeyboardButton(text="🇸🇾 ليرة سورية", callback_data="wit_curr_syp"),
             InlineKeyboardButton(text="🇺🇸 دولار أمريكي (USD)", callback_data="wit_curr_usd")
         ],
-        [InlineKeyboardButton(text="🔙 القائمة الرئيسية", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
     ])
     bot_settings = await asyncio.to_thread(repo.get_bot_settings)
     usd_sell_rate = float(bot_settings['usd_sell_rate'])
     approx_usd = safe_balance(user) / usd_sell_rate if usd_sell_rate > 0 else 0
     await _deliver_flow_message(
         target_message,
-        f"📤 <b>سحب من البوت:</b>\n\n"
-        f"💰 رصيدك: <code>{safe_balance(user):,} ل.س جديدة</code>\n"
-        f"💱 ما يعادل تقريباً: <code>{approx_usd:,.2f} USD</code> (حسب سعر الصرف الحالي)\n\n"
-        "اختر عملة السحب 👇:",
+        f"📬 <b>سحب من البوت:</b>\n\n"
+        f"🪙 رصيدك: <code>{safe_balance(user):,} ل.س جديدة</code>\n"
+        f"💹 ما يعادل تقريباً: <code>{approx_usd:,.2f} USD</code> (حسب سعر الصرف الحالي)\n\n"
+        "اختر عملة السحب ↘️:",
         reply_markup=keyboard,
         edit=edit,
     )
@@ -524,7 +524,7 @@ async def start_gift_flow(target_message, user_id, state: FSMContext, edit=False
     if not user or safe_balance(user) <= 0:
         await _deliver_flow_message(
             target_message,
-            "❌ لا يوجد لديك رصيد كافٍ لإنشاء كود هدية.",
+            "⛔ لا يوجد لديك رصيد كافٍ لإنشاء كود هدية.",
             reply_markup=get_user_menu_keyboard(user_id),
             edit=edit,
         )
@@ -532,7 +532,7 @@ async def start_gift_flow(target_message, user_id, state: FSMContext, edit=False
 
     await _deliver_flow_message(
         target_message,
-        f"🎁 <b>إهداء رصيد</b>\n\nرصيدك الحالي: <code>{safe_balance(user):,} ل.س جديدة</code>\n\n"
+        f"🧧 <b>إهداء رصيد</b>\n\nرصيدك الحالي: <code>{safe_balance(user):,} ل.س جديدة</code>\n\n"
         "أرسل الآن المبلغ الذي تريد تحويله إلى كود هدية (بالليرة السورية):",
         edit=edit,
     )
@@ -542,21 +542,21 @@ async def start_gift_flow(target_message, user_id, state: FSMContext, edit=False
 def format_deposit_admin_message(tx_id, telegram_id, username, amount, currency, gateway, transfer_number, amount_syp, user_balance, player_id=None, ichancy_username=None):
     username_text = f"@{username}" if username else "بدون معرف"
     msg = (
-        "📥 <b>طلب إيداع جديد</b>\n\n"
-        f"🆔 <b>رقم الطلب:</b> <code>#{tx_id}</code>\n"
-        f"👤 <b>المستخدم:</b> {username_text}\n"
+        "📨 <b>طلب إيداع جديد</b>\n\n"
+        f"🔖 <b>رقم الطلب:</b> <code>#{tx_id}</code>\n"
+        f"🧑‍💼 <b>المستخدم:</b> {username_text}\n"
         f"💬 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
     )
     if ichancy_username:
-        msg += f"🎮 <b>اسم اللاعب (iChancy):</b> <code>{ichancy_username}</code>\n"
+        msg += f"🕹️ <b>اسم اللاعب (iChancy):</b> <code>{ichancy_username}</code>\n"
     if player_id:
-        msg += f"🔑 <b>Player ID:</b> <code>{player_id}</code>\n"
+        msg += f"🗝️ <b>Player ID:</b> <code>{player_id}</code>\n"
     msg += (
-        f"💰 <b>المبلغ الأصلي:</b> <code>{amount:,} {currency}</code>\n"
-        f"💱 <b>المكافئ بالليرة:</b> {_fmt_syp_dual(amount_syp)}\n"
+        f"🪙 <b>المبلغ الأصلي:</b> <code>{amount:,} {currency}</code>\n"
+        f"💹 <b>المكافئ بالليرة:</b> {_fmt_syp_dual(amount_syp)}\n"
         f"💳 <b>الوسيلة:</b> <code>{gateway.upper()}</code>\n"
         f"🔢 <b>الإثبات:</b> <code>{transfer_number}</code>\n"
-        f"💎 <b>رصيد المستخدم الحالي:</b> {_fmt_syp_dual(user_balance)}"
+        f"🔷 <b>رصيد المستخدم الحالي:</b> {_fmt_syp_dual(user_balance)}"
     )
     return msg
 
@@ -570,30 +570,30 @@ def format_withdraw_admin_message(tx_id, telegram_id, username, entered_syp, gat
     }
     gateway_name = gateway_labels.get(gateway, gateway.upper())
     msg = (
-        "🚨 <b>طلب سحب جديد</b>\n\n"
-        f"🆔 <b>رقم الطلب:</b> <code>#{tx_id}</code>\n"
-        f"👤 <b>المستخدم:</b> {username_text}\n"
+        "🚧 <b>طلب سحب جديد</b>\n\n"
+        f"🔖 <b>رقم الطلب:</b> <code>#{tx_id}</code>\n"
+        f"🧑‍💼 <b>المستخدم:</b> {username_text}\n"
         f"💬 <b>Telegram ID:</b> <code>{telegram_id}</code>\n"
     )
     if ichancy_username:
-        msg += f"🎮 <b>اسم اللاعب (iChancy):</b> <code>{ichancy_username}</code>\n"
+        msg += f"🕹️ <b>اسم اللاعب (iChancy):</b> <code>{ichancy_username}</code>\n"
     if player_id:
-        msg += f"🔑 <b>Player ID:</b> <code>{player_id}</code>\n"
+        msg += f"🗝️ <b>Player ID:</b> <code>{player_id}</code>\n"
     msg += (
         f"💳 <b>الوسيلة:</b> <code>{gateway_name}</code>\n"
-        f"📱 <b>المستلم:</b> <code>{recipient}</code>\n"
-        f"💰 <b>المبلغ المخصوم:</b> {_fmt_syp_dual(entered_syp)}\n"
+        f"📲 <b>المستلم:</b> <code>{recipient}</code>\n"
+        f"🪙 <b>المبلغ المخصوم:</b> {_fmt_syp_dual(entered_syp)}\n"
         f"📈 <b>القيمة قبل العمولة:</b> <code>{gross_label}</code>\n"
         f"🏷️ <b>العمولة:</b> <code>{commission_label}</code>\n"
-        f"🎁 <b>الصافي:</b> <code>{net_label}</code>\n"
-        f"💎 <b>رصيد المستخدم قبل الطلب:</b> {_fmt_syp_dual(user_balance_before)}\n\n"
-        f"📤 <b>أرسل للمستخدم:</b> <code>{net_label}</code> عبر {gateway_name}"
+        f"🧧 <b>الصافي:</b> <code>{net_label}</code>\n"
+        f"🔷 <b>رصيد المستخدم قبل الطلب:</b> {_fmt_syp_dual(user_balance_before)}\n\n"
+        f"📬 <b>أرسل للمستخدم:</b> <code>{net_label}</code> عبر {gateway_name}"
     )
     return msg
 
 
 # ================================================================
-# 🆕 دوال الإيداع والسحب من / إلى اللعبة (مضافة للاستخدام المستقبلي)
+# 🌟 دوال الإيداع والسحب من / إلى اللعبة (مضافة للاستخدام المستقبلي)
 # ================================================================
 
 async def deposit_to_player_game(
@@ -605,46 +605,46 @@ async def deposit_to_player_game(
     تحويل مبلغ من رصيد البوت (SYP) إلى حساب اللاعب في اللعبة (NSP).
     النسبة الثابتة: 1 SYP = 1 NSP
 
-    🔒 آمن ذرياً (Update 3): يخصم المبلغ مسبقاً قبل استدعاء الـ API،
+    🔐 آمن ذرياً (Update 3): يخصم المبلغ مسبقاً قبل استدعاء الـ API،
     فلو فشل الـ API يُعاد الرصيد فوراً. مستحيل ضياع/تضاعف المبلغ.
     """
     try:
-        logger.info(f"🔄 Starting deposit_to_player for user {user_id}, amount_syp: {amount_syp}")
+        logger.info(f"🔁 Starting deposit_to_player for user {user_id}, amount_syp: {amount_syp}")
         user = await asyncio.to_thread(repo.get_user, user_id)
         if not user:
-            logger.error(f"❌ User {user_id} not found")
+            logger.error(f"⛔ User {user_id} not found")
             return False
 
         player_id = user.get('player_id')
         if not player_id:
-            logger.error(f"❌ User {user_id} has no player_id")
+            logger.error(f"⛔ User {user_id} has no player_id")
             return False
 
         username = user.get('telegram_username') or 'Unknown'
 
-        # 🆕 النسبة الثابتة 1 SYP = 1 NSP للمبلغ النقدي، ويُضاف بونص اللعب تلقائياً حسب إعدادات الأدمن
+        # 🌟 النسبة الثابتة 1 SYP = 1 NSP للمبلغ النقدي، ويُضاف بونص اللعب تلقائياً حسب إعدادات الأدمن
         cash_amount = int(amount_syp)
         if cash_amount < 1:
             return {'success': False, 'reason': 'invalid_amount'}
 
-        # 🔒 الخطوة 1: خصم ذري مسبق (قفل الصف + خصم + سجل pending)
+        # 🔐 الخطوة 1: خصم ذري مسبق (قفل الصف + خصم + سجل pending)
         # هذا يحمي من: النقر المزدوج + انقطاع الاتصال
         reserve = await asyncio.to_thread(repo.reserve_game_deposit_atomic, user_id, amount_syp, player_id)
         if not reserve.get('success'):
             reason = reserve.get('reason')
             if reason == 'insufficient':
                 old_balance = int(reserve.get('old_balance', 0))
-                logger.error(f"❌ Insufficient bot balance: {old_balance} < {amount_syp}")
+                logger.error(f"⛔ Insufficient bot balance: {old_balance} < {amount_syp}")
                 log_text = (
-                    f"❌ <b>فشل شحن اللعبة - رصيد غير كافٍ</b>\n\n"
-                    f"👤 المستخدم: {username} ({user_id})\n"
-                    f"💰 المبلغ المطلوب: {amount_syp:,} ل.س جديدة\n"
-                    f"⚠️ رصيد البوت لديك: {old_balance:,} ل.س جديدة\n"
+                    f"⛔ <b>فشل شحن اللعبة - رصيد غير كافٍ</b>\n\n"
+                    f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+                    f"🪙 المبلغ المطلوب: {amount_syp:,} ل.س جديدة\n"
+                    f"🚧 رصيد البوت لديك: {old_balance:,} ل.س جديدة\n"
                     f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                 )
                 await send_log_message(bot, log_text)
             else:
-                logger.error(f"❌ reserve_game_deposit_atomic failed: {reason}")
+                logger.error(f"⛔ reserve_game_deposit_atomic failed: {reason}")
             return False
 
         tx_id = reserve['tx_id']
@@ -653,9 +653,9 @@ async def deposit_to_player_game(
         checkin_amount = int(reserve.get('checkin_amount') or 0)
         total_to_game = int(reserve.get('total_to_game') or cash_amount)
 
-        # 🔒 الخطوة 2: iChancy يستقبل الوحدات القديمة؛ مبالغ البوت هنا جديدة.
+        # 🔐 الخطوة 2: iChancy يستقبل الوحدات القديمة؛ مبالغ البوت هنا جديدة.
         api_total_to_game = new_to_old(total_to_game)
-        logger.info(f"📤 Calling API depositToPlayer: player_id={player_id}, cash_new={cash_amount}, total_old={api_total_to_game}")
+        logger.info(f"📬 Calling API depositToPlayer: player_id={player_id}, cash_new={cash_amount}, total_old={api_total_to_game}")
         deposit_result = await ichancy_api_client.deposit_to_player(
             player_id=player_id,
             amount=api_total_to_game
@@ -663,64 +663,64 @@ async def deposit_to_player_game(
 
         if not deposit_result or not deposit_result.get('success'):
             error_msg = deposit_result.get('message', 'Unknown error') if deposit_result else 'No response from API'
-            logger.error(f"❌ depositToPlayer API failed: {error_msg}")
+            logger.error(f"⛔ depositToPlayer API failed: {error_msg}")
             if deposit_result and deposit_result.get('uncertain'):
                 # لا نعيد الرصيد تلقائياً لأن API قد يكون نفذ الشحن لكن التحقق من الرصيد فشل/تأخر.
                 # نترك المعاملة pending للمراجعة اليدوية حتى لا يحدث شحن فعلي + رد رصيد للمستخدم.
                 log_text = (
-                    f"⚠️ <b>شحن لعبة غير مؤكد ويحتاج مراجعة</b>\n\n"
-                    f"👤 المستخدم: {username} ({user_id})\n"
-                    f"🎮 حساب اللعبة: {player_id}\n"
-                    f"💰 المبلغ النقدي: {cash_amount:,} ل.س جديدة\n"
-                    f"🎁 البونص المرفق: {bonus_amount:,} ل.س جديدة\n"
-                    f"🎮 الإجمالي المطلوب: {total_to_game:,} NSP\n"
-                    f"⚠️ السبب: {error_msg}\n"
-                    f"📌 المعاملة بقيت pending: <code>#{tx_id}</code>"
+                    f"🚧 <b>شحن لعبة غير مؤكد ويحتاج مراجعة</b>\n\n"
+                    f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+                    f"🕹️ حساب اللعبة: {player_id}\n"
+                    f"🪙 المبلغ النقدي: {cash_amount:,} ل.س جديدة\n"
+                    f"🧧 البونص المرفق: {bonus_amount:,} ل.س جديدة\n"
+                    f"🕹️ الإجمالي المطلوب: {total_to_game:,} NSP\n"
+                    f"🚧 السبب: {error_msg}\n"
+                    f"📍 المعاملة بقيت pending: <code>#{tx_id}</code>"
                 )
                 await send_log_message(bot, log_text)
                 return {'success': False, 'uncertain': True, 'tx_id': tx_id, 'message': error_msg}
-            # 🔒 إعادة الرصيد فوراً بعد فشل مؤكد للـ API
+            # 🔐 إعادة الرصيد فوراً بعد فشل مؤكد للـ API
             await asyncio.to_thread(repo.revert_game_transaction, tx_id)
             log_text = (
-                f"❌ <b>فشل شحن اللعبة - خطأ API (تم إعادة الرصيد)</b>\n\n"
-                f"👤 المستخدم: {username} ({user_id})\n"
-                f"🎮 حساب اللعبة: {player_id}\n"
-                f"💰 المبلغ النقدي: {cash_amount:,} ل.س جديدة\n"
-                f"🎁 البونص المرفق: {bonus_amount:,} ل.س جديدة\n"
-                f"🎮 الإجمالي للعبة: {total_to_game:,} NSP\n"
-                f"🔴 الخطأ: {error_msg}\n"
+                f"⛔ <b>فشل شحن اللعبة - خطأ API (تم إعادة الرصيد)</b>\n\n"
+                f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+                f"🕹️ حساب اللعبة: {player_id}\n"
+                f"🪙 المبلغ النقدي: {cash_amount:,} ل.س جديدة\n"
+                f"🧧 البونص المرفق: {bonus_amount:,} ل.س جديدة\n"
+                f"🕹️ الإجمالي للعبة: {total_to_game:,} NSP\n"
+                f"🔻 الخطأ: {error_msg}\n"
                 f"🔁 تم إعادة الرصيد النقدي والبونص للمستخدم\n"
                 f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             )
             await send_log_message(bot, log_text)
             return False
 
-        # 🔒 الخطوة 3: نجح الـ API → تأكيد العملية + تفعيل البونص النشط + تحديث رصيد اللعبة محلياً
+        # 🔐 الخطوة 3: نجح الـ API → تأكيد العملية + تفعيل البونص النشط + تحديث رصيد اللعبة محلياً
         await asyncio.to_thread(repo.confirm_reserved_game_deposit, tx_id)
         cached_game_balance = await asyncio.to_thread(repo.get_user_game_balance, user_id)
         await asyncio.to_thread(repo.update_user_game_balance, user_id, cached_game_balance + api_total_to_game)
 
-        logger.info(f"✅ depositToPlayer successful for user {user_id} (tx #{tx_id})")
+        logger.info(f"✔️ depositToPlayer successful for user {user_id} (tx #{tx_id})")
         log_text = (
-            f"✅ <b>شحن ناجح إلى حساب اللعبة</b>\n\n"
-            f"👤 المستخدم: {username} ({user_id})\n"
-            f"🎮 حساب اللعبة: {player_id}\n"
-            f"💰 الشحن النقدي: {cash_amount:,} ل.س جديدة\n"
-            f"🎁 بونص اللعب المرفق: {bonus_amount:,} ل.س جديدة\n"
-            f"💱 الإجمالي: {api_total_to_game:,} ل.س قديمة\n"
-            f"🟢 الحالة: مكتمل\n"
+            f"✔️ <b>شحن ناجح إلى حساب اللعبة</b>\n\n"
+            f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+            f"🕹️ حساب اللعبة: {player_id}\n"
+            f"🪙 الشحن النقدي: {cash_amount:,} ل.س جديدة\n"
+            f"🧧 بونص اللعب المرفق: {bonus_amount:,} ل.س جديدة\n"
+            f"💹 الإجمالي: {api_total_to_game:,} ل.س قديمة\n"
+            f"🔹 الحالة: مكتمل\n"
             f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         await send_log_message(bot, log_text)
         return {'success': True, 'cash_amount': cash_amount, 'bonus_amount': bonus_amount, 'cashback_amount': cashback_amount, 'checkin_amount': checkin_amount, 'total_to_game': api_total_to_game, 'tx_id': tx_id}
 
     except Exception as e:
-        logger.error(f"❌ Exception in deposit_to_player: {e}", exc_info=True)
+        logger.error(f"⛔ Exception in deposit_to_player: {e}", exc_info=True)
         log_text = (
-            f"🚨 <b>خطأ استثناء في شحن اللعبة</b>\n\n"
-            f"👤 المستخدم ID: {user_id}\n"
-            f"💰 المبلغ: {amount_syp:,} ل.س جديدة\n"
-            f"❌ الخطأ: {str(e)}\n"
+            f"🚧 <b>خطأ استثناء في شحن اللعبة</b>\n\n"
+            f"🧑‍💼 المستخدم ID: {user_id}\n"
+            f"🪙 المبلغ: {amount_syp:,} ل.س جديدة\n"
+            f"⛔ الخطأ: {str(e)}\n"
             f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         await send_log_message(bot, log_text)
@@ -736,30 +736,30 @@ async def withdraw_from_player_game(
     """سحب مبلغ من حساب اللاعب في اللعبة (NSP) إلى رصيد البوت (SYP).
     النسبة الثابتة: 1 NSP = 1 SYP
 
-    🔒 آمن ذرياً (Update 3): نسجل المعاملة pending أولاً، ثم نستدعي الـ API،
+    🔐 آمن ذرياً (Update 3): نسجل المعاملة pending أولاً، ثم نستدعي الـ API،
     ثم نضيف الرصيد فقط عند النجاح. مستحيل ضياع/تضاعف المبلغ.
-    🆕 (Rollover Guard): يمنع السحب إذا كان هناك بونص محجوز لم يتم تدويره.
+    🌟 (Rollover Guard): يمنع السحب إذا كان هناك بونص محجوز لم يتم تدويره.
     """
     try:
-        logger.info(f"🔄 Starting withdraw_from_player for user {user_id}, amount_nsp: {amount_nsp}")
+        logger.info(f"🔁 Starting withdraw_from_player for user {user_id}, amount_nsp: {amount_nsp}")
         user = await asyncio.to_thread(repo.get_user, user_id)
         if not user:
-            logger.error(f"❌ User {user_id} not found")
+            logger.error(f"⛔ User {user_id} not found")
             return False
 
         player_id = user.get('player_id')
         if not player_id:
-            logger.error(f"❌ User {user_id} has no player_id")
+            logger.error(f"⛔ User {user_id} has no player_id")
             return False
 
         username = user.get('telegram_username') or 'Unknown'
 
-        # 🎁 لا يوجد تدوير الآن: بونص اللعبة النشط يُخصم من مبلغ السحب عند التسوية.
+        # 🧧 لا يوجد تدوير الآن: بونص اللعبة النشط يُخصم من مبلغ السحب عند التسوية.
 
-        # 🆕 النسبة الثابتة 1 NSP = 1 SYP
+        # 🌟 النسبة الثابتة 1 NSP = 1 SYP
         amount_syp = int(amount_nsp)
 
-        # 🔒 الخطوة 1: تسجيل المعاملة pending كدليل على العملية الجارية
+        # 🔐 الخطوة 1: تسجيل المعاملة pending كدليل على العملية الجارية
         # (الرصيد لا يُضاف هنا بعد؛ يُضاف فقط عند نجاح الـ API)
         tx_id = await asyncio.to_thread(repo.create_transaction, telegram_id=str(user_id),
             tx_type='withdraw_from_game',
@@ -769,8 +769,8 @@ async def withdraw_from_player_game(
             status='pending'
         )
 
-        # 🔒 الخطوة 2: استدعاء iChancy API
-        logger.info(f"📥 Calling API withdrawFromPlayer: player_id={player_id}, amount_nsp={int(amount_nsp)}")
+        # 🔐 الخطوة 2: استدعاء iChancy API
+        logger.info(f"📨 Calling API withdrawFromPlayer: player_id={player_id}, amount_nsp={int(amount_nsp)}")
         withdraw_result = await ichancy_api_client.withdraw_from_player(
             player_id=player_id,
             amount=int(amount_nsp)
@@ -778,26 +778,26 @@ async def withdraw_from_player_game(
 
         if not withdraw_result or not withdraw_result.get('success'):
             error_msg = withdraw_result.get('message', 'Unknown error') if withdraw_result else 'No response'
-            logger.error(f"❌ withdrawFromPlayer API failed: {error_msg}")
-            # 🔒 تعليم المعاملة كفاشلة دون إضافة رصيد (المبلغ لم يُخصم من اللعبة)
+            logger.error(f"⛔ withdrawFromPlayer API failed: {error_msg}")
+            # 🔐 تعليم المعاملة كفاشلة دون إضافة رصيد (المبلغ لم يُخصم من اللعبة)
             if tx_id:
                 await asyncio.to_thread(repo.update_transaction_status, tx_id, 'failed')
                 await asyncio.to_thread(repo.update_transaction_rejection_reason, tx_id, f'iChancy API failed: {error_msg}')
             log_text = (
-                f"❌ <b>فشل السحب من اللعبة - خطأ API</b>\n\n"
-                f"👤 المستخدم: {username} ({user_id})\n"
-                f"🎮 حساب اللعبة: {player_id}\n"
-                f"💰 المبلغ: {int(amount_nsp):,} NSP\n"
-                f"🔴 الخطأ: {error_msg}\n"
+                f"⛔ <b>فشل السحب من اللعبة - خطأ API</b>\n\n"
+                f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+                f"🕹️ حساب اللعبة: {player_id}\n"
+                f"🪙 المبلغ: {int(amount_nsp):,} NSP\n"
+                f"🔻 الخطأ: {error_msg}\n"
                 f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             )
             await send_log_message(bot, log_text)
             return False
 
-        # 🔒 الخطوة 3: نجح الـ API → خصم بونص اللعبة النشط أولاً ثم إضافة الصافي لرصيد البوت
+        # 🔐 الخطوة 3: نجح الـ API → خصم بونص اللعبة النشط أولاً ثم إضافة الصافي لرصيد البوت
         settlement = await asyncio.to_thread(repo.settle_game_withdraw_with_active_bonus, user_id, amount_syp, tx_id=tx_id)
         if not settlement.get('ok'):
-            logger.error(f"❌ settlement failed after iChancy withdraw: {settlement}")
+            logger.error(f"⛔ settlement failed after iChancy withdraw: {settlement}")
             return {'success': False, 'reason': 'settlement_failed'}
         # تحديث رصيد اللعبة محلياً بالمبلغ الكامل المسحوب من iChancy
         cached_game_balance = await asyncio.to_thread(repo.get_user_game_balance, user_id)
@@ -805,27 +805,27 @@ async def withdraw_from_player_game(
 
         cash_credited = int(settlement.get('cash_credited') or 0)
         bonus_deducted = int(settlement.get('bonus_deducted') or 0)
-        logger.info(f"✅ withdrawFromPlayer successful for user {user_id}")
+        logger.info(f"✔️ withdrawFromPlayer successful for user {user_id}")
         log_text = (
-            f"✅ <b>سحب ناجح من حساب اللعبة</b>\n\n"
-            f"👤 المستخدم: {username} ({user_id})\n"
-            f"🎮 حساب اللعبة: {player_id}\n"
-            f"💱 المسحوب من اللعبة: {int(amount_nsp):,} NSP\n"
-            f"🎁 خصم بونص لعب نشط: {bonus_deducted:,} ل.س جديدة\n"
-            f"💎 الصافي المضاف لرصيد البوت: {cash_credited:,} ل.س جديدة\n"
-            f"🟢 الحالة: مكتمل\n"
+            f"✔️ <b>سحب ناجح من حساب اللعبة</b>\n\n"
+            f"🧑‍💼 المستخدم: {username} ({user_id})\n"
+            f"🕹️ حساب اللعبة: {player_id}\n"
+            f"💹 المسحوب من اللعبة: {int(amount_nsp):,} NSP\n"
+            f"🧧 خصم بونص لعب نشط: {bonus_deducted:,} ل.س جديدة\n"
+            f"🔷 الصافي المضاف لرصيد البوت: {cash_credited:,} ل.س جديدة\n"
+            f"🔹 الحالة: مكتمل\n"
             f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         await send_log_message(bot, log_text)
         return {'success': True, **settlement}
 
     except Exception as e:
-        logger.error(f"❌ Exception in withdraw_from_player: {e}", exc_info=True)
+        logger.error(f"⛔ Exception in withdraw_from_player: {e}", exc_info=True)
         log_text = (
-            f"🚨 <b>خطأ استثناء في سحب اللعبة</b>\n\n"
-            f"👤 المستخدم ID: {user_id}\n"
-            f"💰 المبلغ: {amount_nsp:,} NSP\n"
-            f"❌ الخطأ: {str(e)}\n"
+            f"🚧 <b>خطأ استثناء في سحب اللعبة</b>\n\n"
+            f"🧑‍💼 المستخدم ID: {user_id}\n"
+            f"🪙 المبلغ: {amount_nsp:,} NSP\n"
+            f"⛔ الخطأ: {str(e)}\n"
             f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         await send_log_message(bot, log_text)
@@ -948,9 +948,9 @@ async def auto_approve_cash_deposit(bot, tx_id, external_ref=None, provider_labe
             await bot.send_message(
                 chat_id=tx['user_telegram_id'],
                 text=(
-                    f"🎉 <b>مبروك! تمت ترقيتك إلى {vip_upgrade.get('new_tier')}!</b>\n\n"
-                    f"💎 مكافأة الترقية: <code>{vip_upgrade_reward:,} ل.س</code>\n"
-                    "(أُضيفت لرصيد المكافآت 🎁 للاستخدام في اللعبة)"
+                    f"✨ <b>مبروك! تمت ترقيتك إلى {vip_upgrade.get('new_tier')}!</b>\n\n"
+                    f"🔷 مكافأة الترقية: <code>{vip_upgrade_reward:,} ل.س</code>\n"
+                    "(أُضيفت لرصيد المكافآت 🧧 للاستخدام في اللعبة)"
                 ),
                 parse_mode="HTML"
             )
@@ -967,10 +967,10 @@ async def auto_approve_cash_deposit(bot, tx_id, external_ref=None, provider_labe
                     await bot.send_message(
                         chat_id=newly_activated_referrer,
                         text=(
-                            "🎉 <b>إحالة نشطة جديدة!</b>\n\n"
+                            "✨ <b>إحالة نشطة جديدة!</b>\n\n"
                             "قام أحد أصدقائك بإكمال أول إيداع مقبول.\n"
-                            f"✅ إحالاتك النشطة الآن: <code>{active_count}</code>\n"
-                            "💡 أرباح الإحالات تُحسب أسبوعياً من خسارة المحالين في اللعبة."
+                            f"✔️ إحالاتك النشطة الآن: <code>{active_count}</code>\n"
+                            "🔆 أرباح الإحالات تُحسب أسبوعياً من خسارة المحالين في اللعبة."
                         ),
                         parse_mode="HTML"
                     )
@@ -979,33 +979,33 @@ async def auto_approve_cash_deposit(bot, tx_id, external_ref=None, provider_labe
 
     bonus_lines = []
     if public_bonus_amount > 0 and bonus_rule:
-        bonus_lines.append(f"🎁 بونص العرض: <code>{public_bonus_amount:,} ل.س جديدة</code> — <code>{bonus_rule.get('title')}</code>")
+        bonus_lines.append(f"🧧 بونص العرض: <code>{public_bonus_amount:,} ل.س جديدة</code> — <code>{bonus_rule.get('title')}</code>")
     if vip_deposit_bonus > 0:
-        bonus_lines.append(f"🏆 بونص VIP: <code>{vip_deposit_bonus:,} ل.س جديدة</code> (<code>{vip_deposit_pct:g}%</code>)")
+        bonus_lines.append(f"🏅 بونص VIP: <code>{vip_deposit_bonus:,} ل.س جديدة</code> (<code>{vip_deposit_pct:g}%</code>)")
     if vip_upgrade_reward > 0:
-        bonus_lines.append(f"🎉 مكافأة ترقية VIP: <code>{vip_upgrade_reward:,} ل.س جديدة</code>")
-    bonus_text = ("\n" + "\n".join(bonus_lines) + f"\n🎁 إجمالي البونص: <code>{bonus_amount:,} ل.س جديدة</code>") if bonus_amount > 0 else ""
+        bonus_lines.append(f"✨ مكافأة ترقية VIP: <code>{vip_upgrade_reward:,} ل.س جديدة</code>")
+    bonus_text = ("\n" + "\n".join(bonus_lines) + f"\n🧧 إجمالي البونص: <code>{bonus_amount:,} ل.س جديدة</code>") if bonus_amount > 0 else ""
 
     user = await asyncio.to_thread(repo.get_user, tx['user_telegram_id'])
     await bot.send_message(
         chat_id=tx['user_telegram_id'],
         text=(
-            f"✅ <b>تم التحقق من حوالة {provider_label} تلقائياً وقبول الإيداع!</b>\n\n"
-            f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
+            f"✔️ <b>تم التحقق من حوالة {provider_label} تلقائياً وقبول الإيداع!</b>\n\n"
+            f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
             f"🔢 رقم العملية: <code>{external_ref or '—'}</code>\n"
-            f"💰 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
+            f"🪙 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
             f"{bonus_text}\n"
-            f"💎 رصيدك النقدي الآن: {_fmt_syp_dual(safe_balance(user))}"
+            f"🔷 رصيدك النقدي الآن: {_fmt_syp_dual(safe_balance(user))}"
         ),
         parse_mode="HTML"
     )
     auto_log_text = (
-        f"✅ <b>قبول إيداع {provider_label} تلقائي</b>\n\n"
-        f"📌 الطلب: <code>#{tx_id}</code>\n"
-        f"👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
+        f"✔️ <b>قبول إيداع {provider_label} تلقائي</b>\n\n"
+        f"📍 الطلب: <code>#{tx_id}</code>\n"
+        f"🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
         f"🔢 العملية: <code>{external_ref or '—'}</code>\n"
-        f"💰 المبلغ: {_fmt_syp_dual(deposit_amount)}\n"
-        f"🎁 البونص: <code>{bonus_amount:,} ل.س جديدة</code>"
+        f"🪙 المبلغ: {_fmt_syp_dual(deposit_amount)}\n"
+        f"🧧 البونص: <code>{bonus_amount:,} ل.س جديدة</code>"
     )
     await send_log_message(bot, auto_log_text)
     await send_syriatel_auto_message(bot, auto_log_text)
@@ -1026,7 +1026,7 @@ async def auto_approve_shamcash_deposit(bot, tx_id, external_ref=None):
 
 @router.callback_query(F.data == "back_to_main_menu")
 async def back_to_main_menu_callback(callback: CallbackQuery, state: FSMContext):
-    # ✅ مسح أي حالة جارية (إيداع/سحب/هدية) لمنع بقاء المستخدم عالقاً
+    # ✔️ مسح أي حالة جارية (إيداع/سحب/هدية) لمنع بقاء المستخدم عالقاً
     await state.clear()
 
     telegram_id = str(callback.from_user.id)
@@ -1048,9 +1048,9 @@ async def back_to_main_menu_callback(callback: CallbackQuery, state: FSMContext)
     affiliate_balance = int(user.get('affiliate_balance') or 0)
     affiliate_line = f"🤝 <b>أرباح الإحالات:</b><code>{affiliate_balance:,} ل.س جديدة</code>\n" if affiliate_balance > 0 else ""
     balance_text = (
-        f"💎 <b>رصيد البوت:</b><code>{format_new(bot_balance)} ل.س جديدة</code>\n"
+        f"🔷 <b>رصيد البوت:</b><code>{format_new(bot_balance)} ل.س جديدة</code>\n"
         f"{affiliate_line}"
-        f"🎮 <b>رصيد اللعبة (iChancy):</b><code>{game_balance:,} NSP</code>\n\n"
+        f"🕹️ <b>رصيد اللعبة (iChancy):</b><code>{game_balance:,} NSP</code>\n\n"
         " <i>اختر الخدمة المطلوبة:</i>"
     )
 
@@ -1083,23 +1083,23 @@ async def ichancy_menu_callback(callback: CallbackQuery):
             display_balance = await asyncio.to_thread(repo.get_user_game_balance, telegram_id)
 
         status_text = (
-            "⚡️ <b>حساب iChancy الخاص بك:</b>\n\n"
-            f"👤 <b>اسم المستخدم:</b><code>{user['ichancy_username']}</code>\n"
-            f"📧 <b>الإيميل:</b><code>{user['ichancy_email']}</code>\n"
-            f"🔒 <b>كلمة المرور:</b><code>{user['ichancy_password']}</code>\n"
-            f"🆔 <b>معرف اللاعب (Player ID):</b><code>{player_id}</code>\n\n"
-            f"💰 <b>رصيد اللعبة الفعلي:</b><code>{display_balance:,} NSP</code>"
+            "🧭️ <b>حساب iChancy الخاص بك:</b>\n\n"
+            f"🧑‍💼 <b>اسم المستخدم:</b><code>{user['ichancy_username']}</code>\n"
+            f"📨 <b>الإيميل:</b><code>{user['ichancy_email']}</code>\n"
+            f"🔐 <b>كلمة المرور:</b><code>{user['ichancy_password']}</code>\n"
+            f"🔖 <b>معرف اللاعب (Player ID):</b><code>{player_id}</code>\n\n"
+            f"🪙 <b>رصيد اللعبة الفعلي:</b><code>{display_balance:,} NSP</code>"
         )
         await callback.message.edit_text(status_text, reply_markup=get_ichancy_submenu(has_account=True), parse_mode="HTML")
     else:
-        text = "⚠️ <b>ليس لديك حساب iChancy مرتبط بعد!</b>\n\nيمكنك إنشاء حساب جديد تلقائياً وربطه بالبوت بضغطة زر:"
+        text = "🚧 <b>ليس لديك حساب iChancy مرتبط بعد!</b>\n\nيمكنك إنشاء حساب جديد تلقائياً وربطه بالبوت بضغطة زر:"
         await callback.message.edit_text(text, reply_markup=get_ichancy_submenu(has_account=False), parse_mode="HTML")
     await callback.answer()
 
 
 @router.callback_query(F.data == "create_ichancy_account")
 async def create_ichancy_account_callback(callback: CallbackQuery, state: FSMContext):
-    await callback.message.edit_text("👤 يرجى إدخال اسم المستخدم المطلق للحساب الجديد (بالأحرف والأرقام الإنجليزية فقط):")
+    await callback.message.edit_text("🧑‍💼 يرجى إدخال اسم المستخدم المطلق للحساب الجديد (بالأحرف والأرقام الإنجليزية فقط):")
     await state.set_state(BotStates.entering_ichancy_username)
     await callback.answer()
 
@@ -1108,10 +1108,10 @@ async def create_ichancy_account_callback(callback: CallbackQuery, state: FSMCon
 async def process_ichancy_username(message: Message, state: FSMContext):
     username = message.text.strip().lower()
     if not username.isalnum():
-        await message.answer("❌ يجب أن يكون اسم المستخدم حروفاً إنجليزية وأرقاماً فقط دون مسافات! يرجى إدخاله مجدداً:")
+        await message.answer("⛔ يجب أن يكون اسم المستخدم حروفاً إنجليزية وأرقاماً فقط دون مسافات! يرجى إدخاله مجدداً:")
         return
     await state.update_data(ichancy_username=username)
-    await message.answer("🔒 يرجى إدخال كلمة المرور المطلوبة لحسابك:")
+    await message.answer("🔐 يرجى إدخال كلمة المرور المطلوبة لحسابك:")
     await state.set_state(BotStates.entering_ichancy_password)
 
 
@@ -1167,50 +1167,50 @@ async def process_ichancy_password(message: Message, state: FSMContext):
         if player_id:
             await asyncio.to_thread(repo.update_user_ichancy_details, telegram_id, username, password, email, player_id)
             success_text = (
-                "✅ <b>تم إنشاء وربط الحساب بنجاح!</b>\n\n"
-                f"👤 <b>اسم الدخول:</b><code>{username}</code>\n"
-                f"🔒 <b>كلمة المرور:</b><code>{password}</code>\n"
-                f"📧 <b>الإيميل المسجل:</b><code>{email}</code>\n"
-                f"🆔 <b>معرف اللاعب:</b><code>{player_id}</code>"
+                "✔️ <b>تم إنشاء وربط الحساب بنجاح!</b>\n\n"
+                f"🧑‍💼 <b>اسم الدخول:</b><code>{username}</code>\n"
+                f"🔐 <b>كلمة المرور:</b><code>{password}</code>\n"
+                f"📨 <b>الإيميل المسجل:</b><code>{email}</code>\n"
+                f"🔖 <b>معرف اللاعب:</b><code>{player_id}</code>"
             )
             keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="⚡️ خيارات الحساب", callback_data="ichancy_menu")],
-                [InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_to_main_menu")]
+                [InlineKeyboardButton(text="🧭️ خيارات الحساب", callback_data="ichancy_menu")],
+                [InlineKeyboardButton(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")]
             ])
             await message.answer(success_text, reply_markup=keyboard, parse_mode="HTML")
             await send_log_message(
                 message.bot,
-                "🆕 <b>تسجيل لاعب جديد</b>\n\n"
-                f"👤 تيليغرام: @{message.from_user.username if message.from_user.username else message.from_user.first_name}\n"
-                f"🆔 Telegram ID: <code>{telegram_id}</code>\n"
-                f"⚡ iChancy Username: <code>{username}</code>\n"
-                f"📧 Email: <code>{email}</code>\n"
-                f"🎮 Player ID: <code>{player_id}</code>\n"
-                f"💎 رصيد البوت: <code>{await asyncio.to_thread(repo.get_user, telegram_id)['bot_balance']:,} ل.س جديدة</code>\n"
-                f"🎯 رصيد اللعبة: <code>{await asyncio.to_thread(repo.get_user_game_balance, telegram_id):,} NSP</code>"
+                "🌟 <b>تسجيل لاعب جديد</b>\n\n"
+                f"🧑‍💼 تيليغرام: @{message.from_user.username if message.from_user.username else message.from_user.first_name}\n"
+                f"🔖 Telegram ID: <code>{telegram_id}</code>\n"
+                f"🧭 iChancy Username: <code>{username}</code>\n"
+                f"📨 Email: <code>{email}</code>\n"
+                f"🕹️ Player ID: <code>{player_id}</code>\n"
+                f"🔷 رصيد البوت: <code>{await asyncio.to_thread(repo.get_user, telegram_id)['bot_balance']:,} ل.س جديدة</code>\n"
+                f"🧿 رصيد اللعبة: <code>{await asyncio.to_thread(repo.get_user_game_balance, telegram_id):,} NSP</code>"
             )
         else:
             await message.answer(
-                "⚠️ <b>تم إنشاء الحساب بنجاح لكن ربط معرف اللاعب تأخر قليلاً.</b>\n\n"
-                f"👤 <b>اسم الدخول:</b><code>{username}</code>\n"
-                f"🔒 <b>كلمة المرور:</b><code>{password}</code>\n"
-                f"📧 <b>الإيميل:</b><code>{email}</code>\n\n"
-                "يرجى المحاولة بعد لحظات من خلال قسم ⚡️ حساب iChancy أو التواصل مع الإدارة لإعادة مزامنة المعرف.",
+                "🚧 <b>تم إنشاء الحساب بنجاح لكن ربط معرف اللاعب تأخر قليلاً.</b>\n\n"
+                f"🧑‍💼 <b>اسم الدخول:</b><code>{username}</code>\n"
+                f"🔐 <b>كلمة المرور:</b><code>{password}</code>\n"
+                f"📨 <b>الإيميل:</b><code>{email}</code>\n\n"
+                "يرجى المحاولة بعد لحظات من خلال قسم 🧭️ حساب iChancy أو التواصل مع الإدارة لإعادة مزامنة المعرف.",
                 reply_markup=get_user_menu_keyboard(message.from_user.id),
                 parse_mode="HTML"
             )
             await send_log_message(
                 message.bot,
-                "⚠️ <b>تم إنشاء حساب جديد لكن Player ID لم يُجلب بعد</b>\n\n"
-                f"👤 تيليغرام: @{message.from_user.username if message.from_user.username else message.from_user.first_name}\n"
-                f"🆔 Telegram ID: <code>{telegram_id}</code>\n"
-                f"⚡ iChancy Username: <code>{username}</code>\n"
-                f"📧 Email: <code>{email}</code>"
+                "🚧 <b>تم إنشاء حساب جديد لكن Player ID لم يُجلب بعد</b>\n\n"
+                f"🧑‍💼 تيليغرام: @{message.from_user.username if message.from_user.username else message.from_user.first_name}\n"
+                f"🔖 Telegram ID: <code>{telegram_id}</code>\n"
+                f"🧭 iChancy Username: <code>{username}</code>\n"
+                f"📨 Email: <code>{email}</code>"
             )
     else:
         error_msg = result.get('error', 'خطأ غير معروف')
         await message.answer(
-            f"❌ فشل إنشاء الحساب:\n <b>{error_msg}</b>\n\nيرجى المحاولة مجدداً عبر القائمة الرئيسية.",
+            f"⛔ فشل إنشاء الحساب:\n <b>{error_msg}</b>\n\nيرجى المحاولة مجدداً عبر القائمة الرئيسية.",
             reply_markup=get_user_menu_keyboard(message.from_user.id),
             parse_mode="HTML"
         )
@@ -1235,19 +1235,19 @@ async def process_deposit_currency(callback: CallbackQuery, state: FSMContext):
 
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🟢 Syriatel Cash", callback_data="dep_gate_syriatel")],
-            [InlineKeyboardButton(text="🟡 MTN Cash", callback_data="dep_gate_mtn")],
-            [InlineKeyboardButton(text="📱 Sham Cash (SYP)", callback_data="dep_gate_sham_syp")],
-            [InlineKeyboardButton(text="🔙 عودة", callback_data="deposit_bot")]
+            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="dep_gate_syriatel")],
+            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="dep_gate_mtn")],
+            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="dep_gate_sham_syp")],
+            [InlineKeyboardButton(text="↩️ عودة", callback_data="deposit_bot")]
         ])
         await callback.message.edit_text("🇸🇾 <b>يرجى اختيار وسيلة الإيداع بالليرة السورية الجديدة:</b>", reply_markup=keyboard, parse_mode="HTML")
     else:
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📱 Sham Cash (USD)", callback_data="dep_gate_sham_usd")],
+            [InlineKeyboardButton(text="📲 Sham Cash (USD)", callback_data="dep_gate_sham_usd")],
             [InlineKeyboardButton(text="🪙 USDT - Polygon", callback_data="dep_gate_usdt_polygon")],
             [InlineKeyboardButton(text="🪙 USDT - TRC20", callback_data="dep_gate_usdt_trc")],
             [InlineKeyboardButton(text="🪙 USDT - BEP20", callback_data="dep_gate_usdt_bep")],
-            [InlineKeyboardButton(text="🔙 عودة", callback_data="deposit_bot")]
+            [InlineKeyboardButton(text="↩️ عودة", callback_data="deposit_bot")]
         ])
         await callback.message.edit_text("🇺🇸 <b>يرجى اختيار وسيلة الإيداع بالدولار الأمريكي:</b>", reply_markup=keyboard, parse_mode="HTML")
 
@@ -1290,20 +1290,20 @@ async def process_deposit_gateway(callback: CallbackQuery, state: FSMContext):
     min_dep_syp = _get_min_deposit_syp()
     min_dep_syp_new_str = format_new(min_dep_syp)
     instructions = {
-        'syriatel': f"🟢 <b>إيداع سيريتل كاش:</b>\n\nيرجى تحويل الرصيد إلى أحد الأرقام التالية:\n📱 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
-        'mtn': f"🟡 <b>إيداع MTN كاش:</b>\n\nيرجى تحويل الرصيد إلى الرقم التالي:\n📱 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
-        'sham_syp': f"📱 <b>إيداع شام كاش (ليرة):</b>\n\nيرجى تحويل الرصيد إلى:\n🆔 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
-        'sham_usd': f"📱 <b>إيداع شام كاش (دولار):</b>\n\nيرجى تحويل الرصيد إلى:\n🆔 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {_get_min_deposit_usd()} دولار",
-        'usdt_trc': f"🪙 <b>إيداع USDT (TRC-20):</b>\n\nيرجى إرسال الـ USDT إلى:\n🔑 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {_get_min_deposit_usd()} USDT",
-        'usdt_bep': f"🪙 <b>إيداع USDT (BEP-20):</b>\n\nيرجى إرسال الـ USDT إلى:\n🔑 <code>{payment_address}</code>\n\n⚠️ الحد الأدنى: {_get_min_deposit_usd()} USDT"
+        'syriatel': f"🔹 <b>إيداع سيريتل كاش:</b>\n\nيرجى تحويل الرصيد إلى أحد الأرقام التالية:\n📲 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
+        'mtn': f"🔸 <b>إيداع MTN كاش:</b>\n\nيرجى تحويل الرصيد إلى الرقم التالي:\n📲 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
+        'sham_syp': f"📲 <b>إيداع شام كاش (ليرة):</b>\n\nيرجى تحويل الرصيد إلى:\n🔖 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
+        'sham_usd': f"📲 <b>إيداع شام كاش (دولار):</b>\n\nيرجى تحويل الرصيد إلى:\n🔖 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {_get_min_deposit_usd()} دولار",
+        'usdt_trc': f"🪙 <b>إيداع USDT (TRC-20):</b>\n\nيرجى إرسال الـ USDT إلى:\n🗝️ <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {_get_min_deposit_usd()} USDT",
+        'usdt_bep': f"🪙 <b>إيداع USDT (BEP-20):</b>\n\nيرجى إرسال الـ USDT إلى:\n🗝️ <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {_get_min_deposit_usd()} USDT"
     }.get(gateway, "الرجاء التحويل إلى حسابات الإدارة.")
 
-    await callback.message.edit_text(f"{instructions}\n\n<b>الآن يرجى إدخال قيمة المبلغ الذي قمت بتحويله 👇:</b>", parse_mode="HTML")
+    await callback.message.edit_text(f"{instructions}\n\n<b>الآن يرجى إدخال قيمة المبلغ الذي قمت بتحويله ↘️:</b>", parse_mode="HTML")
     await state.set_state(BotStates.entering_deposit_amount)
     await callback.answer()
 
 
-# 🆕 استبدال معالج المبلغ القديم بالنسخة المُحسَّنة
+# 🌟 استبدال معالج المبلغ القديم بالنسخة المُحسَّنة
 @router.message(BotStates.entering_deposit_amount)
 async def process_deposit_amount(message: Message, state: FSMContext):
     """معالج مبلغ الإيداع مع الحسابات الصحيحة وعرض بيانات المستخدم الكاملة"""
@@ -1315,7 +1315,7 @@ async def process_deposit_amount(message: Message, state: FSMContext):
         try:
             amount = Decimal(amount_text)
         except (ValueError, InvalidOperation):
-            await message.reply("❌ يجب إدخال رقم صحيح\n\nمثال: 100 أو 100.50")
+            await message.reply("⛔ يجب إدخال رقم صحيح\n\nمثال: 100 أو 100.50")
             return
 
         currency = user_data.get('deposit_currency')  # 'syp' أو 'usd'
@@ -1324,10 +1324,10 @@ async def process_deposit_amount(message: Message, state: FSMContext):
         # التحقق من الحدود حسب العملة
         if currency == 'usd':
             if amount < _get_min_deposit_usd():
-                await message.reply(f"❌ الحد الأدنى للإيداع بالدولار: ${_get_min_deposit_usd()}")
+                await message.reply(f"⛔ الحد الأدنى للإيداع بالدولار: ${_get_min_deposit_usd()}")
                 return
             if amount > 5000:
-                await message.reply("❌ الحد الأقصى للإيداع بالدولار: $5000")
+                await message.reply("⛔ الحد الأقصى للإيداع بالدولار: $5000")
                 return
 
             # حساب الصرف: ضرب × سعر الشراء المخزّن في قاعدة البيانات
@@ -1335,28 +1335,28 @@ async def process_deposit_amount(message: Message, state: FSMContext):
             bot_settings = await asyncio.to_thread(repo.get_bot_settings)
             exchange_rate_buy = Decimal(str(bot_settings['usd_buy_rate']))
             if exchange_rate_buy <= 0:
-                await message.reply("❌ خطأ في إعدادات سعر شراء الدولار. يرجى التواصل مع الدعم.")
+                await message.reply("⛔ خطأ في إعدادات سعر شراء الدولار. يرجى التواصل مع الدعم.")
                 await state.clear()
                 return
 
             amount_in_syp = amount * exchange_rate_buy
 
-            logger.info(f"💵 USD Deposit: ${amount} × DB usd_buy_rate={exchange_rate_buy} = {amount_in_syp} SYP")
+            logger.info(f"💳 USD Deposit: ${amount} × DB usd_buy_rate={exchange_rate_buy} = {amount_in_syp} SYP")
         else:  # syp
             if amount < _get_min_deposit_syp():
-                await message.reply(f"❌ الحد الأدنى للإيداع بالليرة: {_get_min_deposit_syp():,} ل.س")
+                await message.reply(f"⛔ الحد الأدنى للإيداع بالليرة: {_get_min_deposit_syp():,} ل.س")
                 return
             if amount > MAX_WITHDRAW_SYP:  # استخدمنا نفس حد السحب كحد أقصى
-                await message.reply(f"❌ الحد الأقصى للإيداع: {MAX_WITHDRAW_SYP:,} ل.س")
+                await message.reply(f"⛔ الحد الأقصى للإيداع: {MAX_WITHDRAW_SYP:,} ل.س")
                 return
 
             try:
                 amount = Decimal(require_new_integer(amount))
             except ValueError:
-                await message.reply("❌ أدخل مبلغاً صحيحاً بالليرة الجديدة دون كسور.")
+                await message.reply("⛔ أدخل مبلغاً صحيحاً بالليرة الجديدة دون كسور.")
                 return
             amount_in_syp = amount
-            logger.info(f"💷 SYP_NEW Deposit: {amount_in_syp}")
+            logger.info(f"💳 SYP_NEW Deposit: {amount_in_syp}")
 
         # OxaPay USDT: create a white-label payment and show its address in Telegram.
         if gateway in ('usdt_polygon', 'usdt_trc', 'usdt_bep'):
@@ -1367,7 +1367,7 @@ async def process_deposit_amount(message: Message, state: FSMContext):
             settings_row = await asyncio.to_thread(repo.get_bot_settings)
             rate = Decimal(str(settings_row.get('usd_buy_rate') or 0))
             if rate <= 0:
-                await message.reply("❌ سعر الصرف غير مضبوط حالياً. تواصل مع الإدارة.")
+                await message.reply("⛔ سعر الصرف غير مضبوط حالياً. تواصل مع الإدارة.")
                 await state.clear()
                 return
             # The user enters the crypto amount directly. SYP is the credited bot balance.
@@ -1378,7 +1378,7 @@ async def process_deposit_amount(message: Message, state: FSMContext):
                 external_ref=f'oxapay-pending-{message.from_user.id}-{int(datetime.now().timestamp())}'
             )
             if not tx_id:
-                await message.reply("❌ تعذر إنشاء طلب الشحن، حاول لاحقاً.")
+                await message.reply("⛔ تعذر إنشاء طلب الشحن، حاول لاحقاً.")
                 await state.clear()
                 return
             order_id = f"JUDE-{tx_id}"
@@ -1396,16 +1396,16 @@ async def process_deposit_amount(message: Message, state: FSMContext):
                         await message.bot.send_message(
                             chat_id=oxapay.DEPOSIT_LOG_CHANNEL_ID,
                             text=(
-                                "🆕 <b>إنشاء طلب إيداع USDT</b>\n\n"
-                                f"📌 الطلب: <code>#{tx_id}</code>\n"
-                                f"👤 Telegram ID: <code>{message.from_user.id}</code>\n"
-                                f"💵 المبلغ الأساسي: <code>{amount_usdt} USDT</code>\n"
-                                f"💰 المضاف المتوقع: <code>{int(amount_in_syp):,} SYP</code>\n"
-                                f"🌐 الشبكة: <code>{payment.get('network') or gateway}</code>\n"
-                                f"📥 العنوان: <code>{payment['address']}</code>\n"
-                                f"🔎 Track ID: <code>{payment['track_id']}</code>\n"
+                                "🌟 <b>إنشاء طلب إيداع USDT</b>\n\n"
+                                f"📍 الطلب: <code>#{tx_id}</code>\n"
+                                f"🧑‍💼 Telegram ID: <code>{message.from_user.id}</code>\n"
+                                f"💳 المبلغ الأساسي: <code>{amount_usdt} USDT</code>\n"
+                                f"🪙 المضاف المتوقع: <code>{int(amount_in_syp):,} SYP</code>\n"
+                                f"🧭 الشبكة: <code>{payment.get('network') or gateway}</code>\n"
+                                f"📨 العنوان: <code>{payment['address']}</code>\n"
+                                f"🔍 Track ID: <code>{payment['track_id']}</code>\n"
                                 f"🧷 Order ID: <code>{order_id}</code>\n"
-                                "📊 الحالة: <code>WAITING</code>"
+                                "📈 الحالة: <code>WAITING</code>"
                             ), parse_mode="HTML"
                         )
                     except Exception as log_error:
@@ -1413,19 +1413,19 @@ async def process_deposit_amount(message: Message, state: FSMContext):
             except Exception as exc:
                 logger.error(f"OxaPay payment creation failed for tx {tx_id}: {exc}", exc_info=True)
                 await asyncio.to_thread(repo.delete_transaction_safe, tx_id, refund=False)
-                await message.reply("❌ تعذر تجهيز عنوان الدفع الآن. لم يتم إنشاء أي طلب، حاول مجدداً بعد قليل.")
+                await message.reply("⛔ تعذر تجهيز عنوان الدفع الآن. لم يتم إنشاء أي طلب، حاول مجدداً بعد قليل.")
                 await state.clear()
                 return
             await message.reply(
-                "✅ <b>تم تجهيز طلب الشحن</b>\n\n"
-                f"💵 المبلغ الذي ستدفعه: <code>{amount_usdt} USDT</code>\n"
-                f"💰 سيُضاف إلى رصيدك: <code>{int(amount_in_syp):,} ل.س جديدة</code>\n"
-                f"💱 سعر الصرف: <code>1 USDT = {rate:,} ل.س</code>\n"
+                "✔️ <b>تم تجهيز طلب الشحن</b>\n\n"
+                f"💳 المبلغ الذي ستدفعه: <code>{amount_usdt} USDT</code>\n"
+                f"🪙 سيُضاف إلى رصيدك: <code>{int(amount_in_syp):,} ل.س جديدة</code>\n"
+                f"💹 سعر الصرف: <code>1 USDT = {rate:,} ل.س</code>\n"
                 f"🪙 المبلغ المطلوب: <code>{payment.get('pay_amount') or amount_usdt} USDT</code>\n"
-                f"🌐 الشبكة: <code>{payment.get('network') or gateway}</code>\n\n"
-                f"📥 <b>حوّل المبلغ إلى العنوان التالي:</b>\n<code>{payment['address']}</code>\n\n"
-                "⚠️ أرسل USDT على نفس الشبكة فقط. رسوم الشبكة ورسوم الدفع عليك، وسيتم التحقق تلقائياً وإضافة الرصيد بعد تأكيد الشبكة.\n"
-                f"📌 رقم الطلب: <code>#{tx_id}</code>",
+                f"🧭 الشبكة: <code>{payment.get('network') or gateway}</code>\n\n"
+                f"📨 <b>حوّل المبلغ إلى العنوان التالي:</b>\n<code>{payment['address']}</code>\n\n"
+                "🚧 أرسل USDT على نفس الشبكة فقط. رسوم الشبكة ورسوم الدفع عليك، وسيتم التحقق تلقائياً وإضافة الرصيد بعد تأكيد الشبكة.\n"
+                f"📍 رقم الطلب: <code>#{tx_id}</code>",
                 reply_markup=get_user_menu_keyboard(message.from_user.id), parse_mode="HTML"
             )
             await state.clear()
@@ -1434,7 +1434,7 @@ async def process_deposit_amount(message: Message, state: FSMContext):
         # جلب بيانات المستخدم الكاملة
         user = await asyncio.to_thread(repo.get_user, user_id)
         if not user:
-            await message.reply("❌ خطأ: لم يتم العثور على بيانات المستخدم")
+            await message.reply("⛔ خطأ: لم يتم العثور على بيانات المستخدم")
             return
 
         # حفظ البيانات في الـ state
@@ -1451,21 +1451,21 @@ async def process_deposit_amount(message: Message, state: FSMContext):
         current_balance = Decimal(str(user.get('bot_balance', 0)))
 
         confirmation_text = (
-            f"<b>📋 تفاصيل الإيداع النهائية</b>\n\n"
-            f"<b>📊 بيانات حسابك:</b>\n"
-            f"👤 اسم المستخدم: <code>{username}</code>\n"
-            f"🆔 معرف Telegram: <code>{user_id}</code>\n"
-            f"🎮 معرف اللاعب (Player ID): <code>{player_id}</code>\n"
-            f"💰 الرصيد الحالي: {current_balance:,} ل.س جديدة\n\n"
-            f"<b>💸 تفاصيل العملية:</b>\n"
-            f"💱 العملة: {currency.upper()}\n"
-            f"🏦 طريقة الدفع: {gateway}\n"
-            f"📌 المبلغ: {amount} {currency.upper()}\n"
+            f"<b>🗒️ تفاصيل الإيداع النهائية</b>\n\n"
+            f"<b>📈 بيانات حسابك:</b>\n"
+            f"🧑‍💼 اسم المستخدم: <code>{username}</code>\n"
+            f"🔖 معرف Telegram: <code>{user_id}</code>\n"
+            f"🕹️ معرف اللاعب (Player ID): <code>{player_id}</code>\n"
+            f"🪙 الرصيد الحالي: {current_balance:,} ل.س جديدة\n\n"
+            f"<b>💳 تفاصيل العملية:</b>\n"
+            f"💹 العملة: {currency.upper()}\n"
+            f"🏛️ طريقة الدفع: {gateway}\n"
+            f"📍 المبلغ: {amount} {currency.upper()}\n"
         )
         if currency == 'usd':
             confirmation_text += (
-                f"📊 سعر الصرف: 1 = {exchange_rate_buy} ل.س جديدة\n"
-                f"✅ المبلغ بـ SYP: {amount_in_syp:,} ل.س جديدة\n\n"
+                f"📈 سعر الصرف: 1 = {exchange_rate_buy} ل.س جديدة\n"
+                f"✔️ المبلغ بـ SYP: {amount_in_syp:,} ل.س جديدة\n\n"
             )
         else:
             confirmation_text += "\n"
@@ -1475,36 +1475,36 @@ async def process_deposit_amount(message: Message, state: FSMContext):
             f"• سيتم إضافة {amount_in_syp:,} SYP لرصيدك\n"
             f"• الرصيد الجديد: {current_balance + amount_in_syp:,} ل.س جديدة\n"
             f"• يرجى الحفظ الدقيق لبيانات التحويل\n\n"
-            f"📤 <b>الآن أرسل إثبات التحويل:</b> صورة الإيصال أو رقم العملية 👇"
+            f"📬 <b>الآن أرسل إثبات التحويل:</b> صورة الإيصال أو رقم العملية ↘️"
         )
 
         confirm_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="❌ إلغاء العملية والعودة للقائمة", callback_data="back_to_main_menu")]
+            [InlineKeyboardButton(text="⛔ إلغاء العملية والعودة للقائمة", callback_data="back_to_main_menu")]
         ])
         await message.reply(confirmation_text, reply_markup=confirm_keyboard, parse_mode="HTML")
 
         # إرسال السجل
         log_text = (
-            f"<b>📥 محاولة إيداع جديدة</b>\n\n"
-            f"<b>👤 بيانات المستخدم:</b>\n"
-            f"🆔 Telegram ID: <code>{user_id}</code>\n"
-            f"📝 اسم المستخدم: {username}\n"
-            f"🎮 حساب اللعبة (Player ID): {player_id}\n\n"
-            f"<b>💰 تفاصيل الإيداع:</b>\n"
-            f"💱 العملة: {currency.upper()}\n"
-            f"🏦 البوابة: {gateway}\n"
-            f"📊 المبلغ: {amount} {currency.upper()}\n"
-            f"✅ المعادل بـ SYP: {amount_in_syp:,} ل.س جديدة\n"
+            f"<b>📨 محاولة إيداع جديدة</b>\n\n"
+            f"<b>🧑‍💼 بيانات المستخدم:</b>\n"
+            f"🔖 Telegram ID: <code>{user_id}</code>\n"
+            f"🖋️ اسم المستخدم: {username}\n"
+            f"🕹️ حساب اللعبة (Player ID): {player_id}\n\n"
+            f"<b>🪙 تفاصيل الإيداع:</b>\n"
+            f"💹 العملة: {currency.upper()}\n"
+            f"🏛️ البوابة: {gateway}\n"
+            f"📈 المبلغ: {amount} {currency.upper()}\n"
+            f"✔️ المعادل بـ SYP: {amount_in_syp:,} ل.س جديدة\n"
             f"⏰ الوقت: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-            f"🟡 الحالة: في انتظار التأكيد"
+            f"🔸 الحالة: في انتظار التأكيد"
         )
         await send_log_message(message.bot, log_text)
 
         await state.set_state(BotStates.entering_deposit_proof)
 
     except Exception as e:
-        logger.error(f"❌ Error in process_deposit_amount: {e}")
-        await message.reply("❌ حدث خطأ في معالجة الطلب")
+        logger.error(f"⛔ Error in process_deposit_amount: {e}")
+        await message.reply("⛔ حدث خطأ في معالجة الطلب")
 
 
 # معالج الإثبات (معدل لاستخدام المبلغ المحسوب مسبقاً)
@@ -1516,7 +1516,7 @@ async def process_deposit_proof(message: Message, state: FSMContext):
     currency = data.get('deposit_currency')
     gateway = data.get('deposit_gateway')
     amount = data.get('deposit_amount')
-    amount_to_save_syp = data.get('deposit_amount_in_syp')  # 🆕 استخدام القيمة المحسوبة مسبقاً
+    amount_to_save_syp = data.get('deposit_amount_in_syp')  # 🌟 استخدام القيمة المحسوبة مسبقاً
 
     # إذا لم تكن موجودة (للتوافق) نعيد حسابها بسعر شراء الدولار من قاعدة البيانات
     if amount_to_save_syp is None:
@@ -1546,18 +1546,18 @@ async def process_deposit_proof(message: Message, state: FSMContext):
     )
 
     confirm_text = (
-        "📝 <b>يرجى تأكيد تفاصيل طلب الإيداع الخاص بك:</b>\n\n"
-        f"🔑 <b>رمز المعاملة:</b><code>{short_tx_code}</code>\n"
+        "🖋️ <b>يرجى تأكيد تفاصيل طلب الإيداع الخاص بك:</b>\n\n"
+        f"🗝️ <b>رمز المعاملة:</b><code>{short_tx_code}</code>\n"
         f"💳 <b>بوابة الدفع:</b><code>{gateway.upper()}</code>\n"
-        f"💰 <b>المبلغ المدخل:</b><code>{amount:,} {'ل.س' if currency == 'syp' else 'USD'}</code>\n"
-        f"💱 <b>الرصيد المكافئ للتعبئة:</b>{_fmt_syp_dual(amount_to_save_syp)}\n"
+        f"🪙 <b>المبلغ المدخل:</b><code>{amount:,} {'ل.س' if currency == 'syp' else 'USD'}</code>\n"
+        f"💹 <b>الرصيد المكافئ للتعبئة:</b>{_fmt_syp_dual(amount_to_save_syp)}\n"
         f"🔢 <b>الإثبات:</b> {transfer_number}\n\n"
-        "💡 اضغط على زر التأكيد لإرسال طلبك للمراجعة 👇:"
+        "🔆 اضغط على زر التأكيد لإرسال طلبك للمراجعة ↘️:"
     )
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🟢 تأكيد وإرسال الطلب", callback_data="confirm_my_deposit")],
-        [InlineKeyboardButton(text="❌ إلغاء الطلب", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="🔹 تأكيد وإرسال الطلب", callback_data="confirm_my_deposit")],
+        [InlineKeyboardButton(text="⛔ إلغاء الطلب", callback_data="back_to_main_menu")]
     ])
 
     if photo_id:
@@ -1581,7 +1581,7 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
         data = await state.get_data()
         if not data:
             await send_expired_flow_message(callback.message, callback.from_user.id)
-            await safe_answer_callback(callback, "⚠️ انتهت صلاحية الطلب!", show_alert=True)
+            await safe_answer_callback(callback, "🚧 انتهت صلاحية الطلب!", show_alert=True)
             return
 
         telegram_id = str(callback.from_user.id)
@@ -1614,7 +1614,7 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
         if not all([currency, gateway, amount, amount_to_save_syp, short_tx_code]):
             await send_expired_flow_message(callback.message, callback.from_user.id)
             await state.clear()
-            await safe_answer_callback(callback, "⚠️ بيانات الطلب غير مكتملة.", show_alert=True)
+            await safe_answer_callback(callback, "🚧 بيانات الطلب غير مكتملة.", show_alert=True)
             return
 
         tx_id = await asyncio.to_thread(repo.create_transaction, telegram_id=telegram_id,
@@ -1628,7 +1628,7 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
             payment_destination=payment_destination,
         )
 
-        # ✅ تحقق تلقائي لإيداعات Syriatel Cash وShamCash عبر API عند توفر الإثبات النصي
+        # ✔️ تحقق تلقائي لإيداعات Syriatel Cash وShamCash عبر API عند توفر الإثبات النصي
         auto_verified = False
         auto_verify_note = ""
         auto_provider = None
@@ -1670,7 +1670,7 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
                 if verify.get('ok'):
                     external_ref = verify.get('external_ref')
                     if await asyncio.to_thread(repo.is_external_ref_used, external_ref, exclude_tx_id=tx_id):
-                        auto_verify_note = "⚠️ رقم العملية موجود سابقاً، تم تحويل الطلب للمراجعة اليدوية."
+                        auto_verify_note = "🚧 رقم العملية موجود سابقاً، تم تحويل الطلب للمراجعة اليدوية."
                     elif auto_mode == 'auto_approve':
                         approved = await auto_approve_cash_deposit(
                             callback.bot, tx_id, external_ref=external_ref,
@@ -1680,10 +1680,10 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
                         if approved.get('ok'):
                             auto_verified = True
                         else:
-                            auto_verify_note = f"⚠️ تحقق API نجح لكن تعذر القبول التلقائي ({approved.get('reason')}). تم تحويل الطلب للمراجعة اليدوية."
+                            auto_verify_note = f"🚧 تحقق API نجح لكن تعذر القبول التلقائي ({approved.get('reason')}). تم تحويل الطلب للمراجعة اليدوية."
                     else:
                         await asyncio.to_thread(repo.set_transaction_external_ref, tx_id, external_ref)
-                        auto_verify_note = f"✅ تم التحقق من الحوالة عبر API. رقم العملية: {external_ref}. بانتظار قبول المشرف."
+                        auto_verify_note = f"✔️ تم التحقق من الحوالة عبر API. رقم العملية: {external_ref}. بانتظار قبول المشرف."
                 else:
                     auto_verify_note = f"ℹ️ لم يتم التحقق تلقائياً ({verify.get('reason')}). تم إرسال الطلب للمراجعة اليدوية."
             except Exception as e:
@@ -1693,7 +1693,7 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
         if auto_verify_note and auto_channel_sender:
             await auto_channel_sender(
                 callback.bot,
-                f"🟡 <b>{auto_provider} Auto</b>\n\n📌 الطلب: <code>#{tx_id}</code>\n👤 المستخدم: <code>{telegram_id}</code>\n💰 المبلغ: {_fmt_syp_dual(amount_to_save_syp)}\n🔎 النتيجة: {auto_verify_note}"
+                f"🔸 <b>{auto_provider} Auto</b>\n\n📍 الطلب: <code>#{tx_id}</code>\n🧑‍💼 المستخدم: <code>{telegram_id}</code>\n🪙 المبلغ: {_fmt_syp_dual(amount_to_save_syp)}\n🔍 النتيجة: {auto_verify_note}"
             )
 
         if auto_verified:
@@ -1702,22 +1702,22 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
             except Exception:
                 pass
             await callback.message.answer(
-                f"✅ <b>تم إرسال طلب الإيداع والتحقق منه تلقائياً عبر {auto_provider}.</b>\n\n"
-                f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
+                f"✔️ <b>تم إرسال طلب الإيداع والتحقق منه تلقائياً عبر {auto_provider}.</b>\n\n"
+                f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
                 "تم قبول الإيداع وإضافة الرصيد إلى حسابك.",
                 reply_markup=get_user_menu_keyboard(callback.from_user.id),
                 parse_mode="HTML"
             )
             await state.clear()
-            await safe_answer_callback(callback, "تم التحقق والقبول تلقائياً ✅")
+            await safe_answer_callback(callback, "تم التحقق والقبول تلقائياً ✔️")
             return
 
         success_text = (
-            "✅ <b>تم إرسال طلب الشحن بنجاح للمراجعة!</b>\n\n"
-            f"🔑 <b>رمز التحقق:</b><code>{short_tx_code}</code>\n"
-            f"📌 <b>رقم الطلب:</b><code>#{tx_id}</code>\n"
-            f"💰 <b>المبلغ المطلوب تعبئته:</b><code>{amount:,} {'ل.س' if currency == 'syp' else 'USD'}</code>\n"
-            f"💱 <b>الرصيد المكافئ:</b>{_fmt_syp_dual(amount_to_save_syp)}\n\n"
+            "✔️ <b>تم إرسال طلب الشحن بنجاح للمراجعة!</b>\n\n"
+            f"🗝️ <b>رمز التحقق:</b><code>{short_tx_code}</code>\n"
+            f"📍 <b>رقم الطلب:</b><code>#{tx_id}</code>\n"
+            f"🪙 <b>المبلغ المطلوب تعبئته:</b><code>{amount:,} {'ل.س' if currency == 'syp' else 'USD'}</code>\n"
+            f"💹 <b>الرصيد المكافئ:</b>{_fmt_syp_dual(amount_to_save_syp)}\n\n"
             f"{('\n' + auto_verify_note + '\n') if auto_verify_note else ''}"
             "سيتم تدقيق الطلب والموافقة عليه خلال دقائق وإشعارك تلقائياً!"
         )
@@ -1743,29 +1743,29 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
             ichancy_username=await asyncio.to_thread(repo.get_user, telegram_id).get('ichancy_username')
         )
         if cashier_profile_name:
-            admin_text += f"\n👤 <b>مشرف الاستلام:</b> <code>{cashier_profile_name}</code>"
+            admin_text += f"\n🧑‍💼 <b>مشرف الاستلام:</b> <code>{cashier_profile_name}</code>"
         if payment_destination:
-            admin_text += f"\n🏦 <b>عنوان الاستلام المثبت:</b> <code>{payment_destination}</code>"
+            admin_text += f"\n🏛️ <b>عنوان الاستلام المثبت:</b> <code>{payment_destination}</code>"
         if auto_verify_note:
             admin_text += f"\n\n{auto_verify_note}"
 
-        # 🆕 (Update 5) زر نسخ ذكي للإيداع — أرقام فقط، حسب نوع العملة
+        # 🌟 (Update 5) زر نسخ ذكي للإيداع — أرقام فقط، حسب نوع العملة
         if currency == 'usd':
             # إيداع بالدولار → نسخ المبلغ بالدولار (ما حوّله المستخدم فعلياً)
             dep_usd = float(amount)
-            copy_button_label = f"📋 نسخ {dep_usd:,.2f} USD"
+            copy_button_label = f"🗒️ نسخ {dep_usd:,.2f} USD"
             copy_dep_data = f"copy_usd_{dep_usd:.2f}"
         else:
             # إيداع بالليرة → نسخ المبلغ بالليرة الجديدة
             dep_new = int(float(amount_to_save_syp))
-            copy_button_label = f"📋 نسخ {format_new(dep_new)} ل.س جديدة"
+            copy_button_label = f"🗒️ نسخ {format_new(dep_new)} ل.س جديدة"
             copy_dep_data = f"copy_amt_{dep_new}"
         admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [
-                InlineKeyboardButton(text="✅ قبول", callback_data=f"approve_dep_{tx_id}"),
-                InlineKeyboardButton(text="❌ رفض", callback_data=f"reject_dep_{tx_id}")
+                InlineKeyboardButton(text="✔️ قبول", callback_data=f"approve_dep_{tx_id}"),
+                InlineKeyboardButton(text="⛔ رفض", callback_data=f"reject_dep_{tx_id}")
             ],
-            [InlineKeyboardButton(text="👤 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
+            [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
             [InlineKeyboardButton(text=copy_button_label, callback_data=copy_dep_data)]
         ])
 
@@ -1792,12 +1792,12 @@ async def confirm_my_deposit_callback(callback: CallbackQuery, state: FSMContext
 
         await send_log_message(
         callback.bot,
-        "📥 <b>طلب إيداع جديد</b>\n\n"
-        f"👤 المستخدم: @{callback.from_user.username if callback.from_user.username else callback.from_user.first_name}\n"
-        f"🆔 الآيدي: <code>{telegram_id}</code>\n"
-        f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
-        f"💰 المبلغ الأصلي: <code>{amount}</code> <b>{'SYP' if currency == 'syp' else 'USD'}</b>\n"
-        f"💱 المكافئ: <code>{amount_to_save_syp:,} ل.س جديدة</code>\n"
+        "📨 <b>طلب إيداع جديد</b>\n\n"
+        f"🧑‍💼 المستخدم: @{callback.from_user.username if callback.from_user.username else callback.from_user.first_name}\n"
+        f"🔖 الآيدي: <code>{telegram_id}</code>\n"
+        f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
+        f"🪙 المبلغ الأصلي: <code>{amount}</code> <b>{'SYP' if currency == 'syp' else 'USD'}</b>\n"
+        f"💹 المكافئ: <code>{amount_to_save_syp:,} ل.س جديدة</code>\n"
         f"💳 الوسيلة: <code>{gateway}</code>"
         )
         await state.clear()
@@ -1824,18 +1824,18 @@ async def process_withdraw_currency(callback: CallbackQuery, state: FSMContext):
 
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🟢 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [InlineKeyboardButton(text="🟡 MTN Cash", callback_data="wit_gate_mtn")],
-            [InlineKeyboardButton(text="📱 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
-            [InlineKeyboardButton(text="🔙 القائمة", callback_data="withdraw_bot")]
+            [InlineKeyboardButton(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
+            [InlineKeyboardButton(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
+            [InlineKeyboardButton(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
+            [InlineKeyboardButton(text="↩️ القائمة", callback_data="withdraw_bot")]
         ])
         await callback.message.edit_text("🇸🇾 <b>اختر وسيلة سحب الليرة السورية:</b>", reply_markup=keyboard, parse_mode="HTML")
     else:
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📱 Sham Cash (USD)", callback_data="wit_gate_sham_usd")],
+            [InlineKeyboardButton(text="📲 Sham Cash (USD)", callback_data="wit_gate_sham_usd")],
             [InlineKeyboardButton(text="🪙 USDT - TRC20", callback_data="wit_gate_usdt_trc")],
             [InlineKeyboardButton(text="🪙 USDT - BEP20", callback_data="wit_gate_usdt_bep")],
-            [InlineKeyboardButton(text="🔙 القائمة", callback_data="withdraw_bot")]
+            [InlineKeyboardButton(text="↩️ القائمة", callback_data="withdraw_bot")]
         ])
         await callback.message.edit_text("🇺🇸 <b>اختر وسيلة سحب الدولار الأمريكي:</b>", reply_markup=keyboard, parse_mode="HTML")
 
@@ -1849,10 +1849,10 @@ async def process_withdraw_gateway(callback: CallbackQuery, state: FSMContext):
     await state.update_data(withdraw_gateway=gateway)
 
     prompt = {
-        'syriatel': "🟢 <b>سحب سيريتل كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
-        'mtn': "🟡 <b>سحب MTN كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
-        'sham_syp': "📱 <b>سحب شام كاش (ليرة):</b>\n\nيرجى إدخال رقم حساب شام كاش المستلم:",
-        'sham_usd': "📱 <b>سحب شام كاش (دولار):</b>\n\nيرجى إدخال رقم حساب شام كاش بالدولار المستلم:",
+        'syriatel': "🔹 <b>سحب سيريتل كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
+        'mtn': "🔸 <b>سحب MTN كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
+        'sham_syp': "📲 <b>سحب شام كاش (ليرة):</b>\n\nيرجى إدخال رقم حساب شام كاش المستلم:",
+        'sham_usd': "📲 <b>سحب شام كاش (دولار):</b>\n\nيرجى إدخال رقم حساب شام كاش بالدولار المستلم:",
         'usdt_trc': "🪙 <b>سحب USDT (TRC-20):</b>\n\nيرجى إدخال عنوان المحفظة بدقة:",
         'usdt_bep': "🪙 <b>سحب USDT (BEP-20):</b>\n\nيرجى إدخال عنوان المحفظة بدقة:"
     }.get(gateway, "الرجاء إدخال تفاصيل المستلم:")
@@ -1877,9 +1877,9 @@ async def process_withdraw_recipient(message: Message, state: FSMContext):
 
     currency = data.get('withdraw_currency')
     if currency == 'usd':
-        prompt = "💵 <b>أدخل المبلغ الذي تريد سحبه بالليرة السورية الجديدة من رصيدك:</b>"
+        prompt = "💳 <b>أدخل المبلغ الذي تريد سحبه بالليرة السورية الجديدة من رصيدك:</b>"
     else:
-        prompt = "💵 <b>أدخل المبلغ الذي تريد سحبه بالليرة السورية الجديدة:</b>"
+        prompt = "💳 <b>أدخل المبلغ الذي تريد سحبه بالليرة السورية الجديدة:</b>"
 
     await message.answer(prompt, parse_mode="HTML")
     await state.set_state(BotStates.entering_withdraw_amount)
@@ -1893,18 +1893,18 @@ async def process_withdraw_amount(message: Message, state: FSMContext):
         if entered_syp <= 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال مبلغ رقمي صحيح أكبر من 0:")
+        await message.answer("⛔ الرجاء إدخال مبلغ رقمي صحيح أكبر من 0:")
         return
 
     if Decimal(amount_text) != Decimal(entered_syp):
-        await message.answer("❌ أدخل مبلغاً صحيحاً بالليرة الجديدة دون كسور:")
+        await message.answer("⛔ أدخل مبلغاً صحيحاً بالليرة الجديدة دون كسور:")
         return
 
     if entered_syp < _get_min_withdraw_syp():
-        await message.answer(f"❌ الحد الأدنى للسحب هو {_get_min_withdraw_syp():,} ل.س جديدة.")
+        await message.answer(f"⛔ الحد الأدنى للسحب هو {_get_min_withdraw_syp():,} ل.س جديدة.")
         return
     if entered_syp > MAX_WITHDRAW_SYP:
-        await message.answer(f"❌ الحد الأعلى للسحب هو {MAX_WITHDRAW_SYP:,} ل.س جديدة.")
+        await message.answer(f"⛔ الحد الأعلى للسحب هو {MAX_WITHDRAW_SYP:,} ل.س جديدة.")
         return
 
     telegram_id = str(message.from_user.id)
@@ -1919,12 +1919,12 @@ async def process_withdraw_amount(message: Message, state: FSMContext):
     withdraw_commission = float(bot_settings['withdraw_commission'])
 
     if entered_syp > safe_balance(user):
-        await message.answer(f"❌ رصيدك غير كافٍ! رصيدك الحالي: <code>{safe_balance(user):,} ل.س جديدة</code>. أعد إدخال المبلغ:", parse_mode="HTML")
+        await message.answer(f"⛔ رصيدك غير كافٍ! رصيدك الحالي: <code>{safe_balance(user):,} ل.س جديدة</code>. أعد إدخال المبلغ:", parse_mode="HTML")
         return
 
     if currency == 'usd':
         if usd_sell_rate == 0:
-            await message.answer("❌ خطأ في إعدادات سعر بيع الدولار. يرجى التواصل مع الدعم.")
+            await message.answer("⛔ خطأ في إعدادات سعر بيع الدولار. يرجى التواصل مع الدعم.")
             await state.clear()
             return
         usd_value = entered_syp / usd_sell_rate
@@ -1936,11 +1936,11 @@ async def process_withdraw_amount(message: Message, state: FSMContext):
         net_label = f"{net_value:,.2f} USD"
         gross_label = f"{usd_value:,.2f} USD"
 
-        # 🆕 تحقق من أدنى سحب بالدولار
+        # 🌟 تحقق من أدنى سحب بالدولار
         min_usd = _get_min_withdraw_usd()
         if net_value < min_usd:
             await message.answer(
-                f"❌ الحد الأدنى للسحب بالدولار هو ${min_usd}.\n\n"
+                f"⛔ الحد الأدنى للسحب بالدولار هو ${min_usd}.\n\n"
                 f"صافي المبلغ بعد العمولة: ${net_value:,.2f}\n"
                 f"يرجى زيادة مبلغ السحب."
             )
@@ -1966,21 +1966,21 @@ async def process_withdraw_amount(message: Message, state: FSMContext):
     )
 
     confirm_msg = (
-        "📋 <b>تفاصيل طلب السحب:</b>\n\n"
-        f"💱 <b>العملة:</b> {currency_label}\n"
+        "🗒️ <b>تفاصيل طلب السحب:</b>\n\n"
+        f"💹 <b>العملة:</b> {currency_label}\n"
         f"💳 <b>طريقة السحب:</b><code>{gateway.upper()}</code>\n"
-        f"👤 <b>معلومات الاستلام:</b><code>{recipient}</code>\n"
-        f"💰 <b>المبلغ المخصوم من رصيدك:</b>{_fmt_syp_dual(entered_syp)}\n"
+        f"🧑‍💼 <b>معلومات الاستلام:</b><code>{recipient}</code>\n"
+        f"🪙 <b>المبلغ المخصوم من رصيدك:</b>{_fmt_syp_dual(entered_syp)}\n"
         f"📈 <b>سعر الصرف المعتمد:</b><code>{rate_display}</code>\n"
-        f"🧾 <b>القيمة قبل العمولة:</b><code>{gross_label}</code>\n"
+        f"🧮 <b>القيمة قبل العمولة:</b><code>{gross_label}</code>\n"
         f"🏷️ <b>العمولة ({withdraw_commission}%):</b><code>{commission_label}</code>\n"
-        f"🎁 <b>الصافي الذي سيصلك:</b><code>{net_label}</code>\n\n"
+        f"🧧 <b>الصافي الذي سيصلك:</b><code>{net_label}</code>\n\n"
         "<b>هل تريد تأكيد طلب السحب؟</b>"
     )
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ تأكيد السحب", callback_data="confirm_my_withdraw")],
-        [InlineKeyboardButton(text="❌ إلغاء", callback_data="cancel_my_withdraw")]
+        [InlineKeyboardButton(text="✔️ تأكيد السحب", callback_data="confirm_my_withdraw")],
+        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="cancel_my_withdraw")]
     ])
 
     await message.answer(confirm_msg, reply_markup=keyboard, parse_mode="HTML")
@@ -1998,7 +1998,7 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     if not data:
         await send_expired_flow_message(callback.message, callback.from_user.id)
-        await safe_answer_callback(callback, "⚠️ انتهت صلاحية الطلب.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 انتهت صلاحية الطلب.", show_alert=True)
         return
 
     telegram_id = str(callback.from_user.id)
@@ -2019,7 +2019,7 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
     if entered_syp is None or not gateway or not recipient:
         await send_expired_flow_message(callback.message, callback.from_user.id)
         await state.clear()
-        await safe_answer_callback(callback, "⚠️ بيانات الطلب غير مكتملة.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 بيانات الطلب غير مكتملة.", show_alert=True)
         return
 
     short_tx_code = "JUDE-W-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
@@ -2042,15 +2042,15 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
         elif reason == 'insufficient':
             current_balance = int(atomic_result.get('old_balance', 0))
             await callback.message.answer(
-                f"❌ لا يمكن تنفيذ الطلب لأن الرصيد أصبح غير كافٍ.\n"
-                f"💎 رصيدك الحالي: <code>{current_balance:,} ل.س جديدة</code>\n"
+                f"⛔ لا يمكن تنفيذ الطلب لأن الرصيد أصبح غير كافٍ.\n"
+                f"🔷 رصيدك الحالي: <code>{current_balance:,} ل.س جديدة</code>\n"
                 "يرجى المحاولة مجدداً.",
                 reply_markup=get_user_menu_keyboard(callback.from_user.id),
                 parse_mode="HTML"
             )
         else:
             await callback.message.answer(
-                "❌ حدث خطأ أثناء إنشاء طلب السحب. لم يتم خصم أي رصيد. يرجى المحاولة لاحقاً.",
+                "⛔ حدث خطأ أثناء إنشاء طلب السحب. لم يتم خصم أي رصيد. يرجى المحاولة لاحقاً.",
                 reply_markup=get_user_menu_keyboard(callback.from_user.id)
             )
         await state.clear()
@@ -2063,13 +2063,13 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
     await safe_delete_message(callback.message)
 
     success_text = (
-        "✅ <b>تم تقديم طلب السحب بنجاح!</b>\n\n"
-        f"🔑 <b>رمز المعاملة:</b><code>{short_tx_code}</code>\n"
-        f"📌 <b>رقم الطلب:</b><code>#{tx_id}</code>\n"
-        f"💰 <b>المبلغ المخصوم:</b>{_fmt_syp_dual(entered_syp)}\n"
+        "✔️ <b>تم تقديم طلب السحب بنجاح!</b>\n\n"
+        f"🗝️ <b>رمز المعاملة:</b><code>{short_tx_code}</code>\n"
+        f"📍 <b>رقم الطلب:</b><code>#{tx_id}</code>\n"
+        f"🪙 <b>المبلغ المخصوم:</b>{_fmt_syp_dual(entered_syp)}\n"
         f"🏷️ <b>العمولة:</b><code>{commission_label}</code>\n"
-        f"🎁 <b>الصافي:</b><code>{net_label}</code>\n"
-        f"📱 <b>المستلم:</b><code>{recipient}</code>\n\n"
+        f"🧧 <b>الصافي:</b><code>{net_label}</code>\n"
+        f"📲 <b>المستلم:</b><code>{recipient}</code>\n\n"
         "⏳ سيتم مراجعة الطلب من قبل المشرفين."
     )
     await callback.message.answer(success_text, reply_markup=get_user_menu_keyboard(callback.from_user.id), parse_mode="HTML")
@@ -2089,25 +2089,25 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
         ichancy_username=user.get('ichancy_username')
     )
     copy_wd_label = _fmt_syp_copy_label(entered_syp)
-    # 🆕 (Update 5) زر نسخ ذكي ينسخ الصافي بعد العمولة، حسب نوع الوسيلة
+    # 🌟 (Update 5) زر نسخ ذكي ينسخ الصافي بعد العمولة، حسب نوع الوسيلة
     net_value_num = data.get('net_value') or 0
     currency_label = data.get('currency_label') or 'SYP'
     if currency_label == 'USD':
         # سحب بالدولار → نسخ الصافي بالدولار
         net_usd = float(net_value_num)
-        copy_wd_label = f"📋 نسخ {net_usd:,.2f} USD"
+        copy_wd_label = f"🗒️ نسخ {net_usd:,.2f} USD"
         copy_wd_data = f"copy_usd_{net_usd:.2f}"
     else:
         # سحب بالليرة → نسخ الصافي بالليرة الجديدة
         net_new = int(net_value_num)
-        copy_wd_label = f"📋 نسخ {format_new(net_new)} ل.س جديدة"
+        copy_wd_label = f"🗒️ نسخ {format_new(net_new)} ل.س جديدة"
         copy_wd_data = f"copy_amt_{net_new}"
     admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="✅ تم التحويل", callback_data=f"approve_withdraw_{tx_id}"),
-            InlineKeyboardButton(text="❌ رفض", callback_data=f"reject_withdraw_{tx_id}")
+            InlineKeyboardButton(text="✔️ تم التحويل", callback_data=f"approve_withdraw_{tx_id}"),
+            InlineKeyboardButton(text="⛔ رفض", callback_data=f"reject_withdraw_{tx_id}")
         ],
-        [InlineKeyboardButton(text="👤 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
+        [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{telegram_id}")],
         [InlineKeyboardButton(text=copy_wd_label, callback_data=copy_wd_data)]
     ])
 
@@ -2122,18 +2122,18 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
 
     await send_log_message(
         callback.bot,
-        "📤 <b>طلب سحب جديد</b>\n\n"
-        f"👤 المستخدم: @{callback.from_user.username if callback.from_user.username else callback.from_user.first_name}\n"
-        f"🆔 الآيدي: <code>{telegram_id}</code>\n"
-        f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
-        f"💰 المبلغ المخصوم: {_fmt_syp_dual(entered_syp)}\n"
-        f"🎁 الصافي: <code>{net_label}</code>\n"
+        "📬 <b>طلب سحب جديد</b>\n\n"
+        f"🧑‍💼 المستخدم: @{callback.from_user.username if callback.from_user.username else callback.from_user.first_name}\n"
+        f"🔖 الآيدي: <code>{telegram_id}</code>\n"
+        f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
+        f"🪙 المبلغ المخصوم: {_fmt_syp_dual(entered_syp)}\n"
+        f"🧧 الصافي: <code>{net_label}</code>\n"
         f"💳 الوسيلة: <code>{gateway}</code>"
     )
     await state.clear()
     await safe_answer_callback(callback, "تم إرسال الطلب.")
 
-# 🆕 معالج زر نسخ المبلغ (للمشرف)
+# 🌟 معالج زر نسخ المبلغ (للمشرف)
 @router.callback_query(F.data.startswith("copy_amt_"))
 async def copy_amount_callback(callback: CallbackQuery):
     """زر نسخ الصافي بالليرة الجديدة — أرقام فقط للّصق السهل في المحفظة."""
@@ -2143,7 +2143,7 @@ async def copy_amount_callback(callback: CallbackQuery):
         await callback.answer(copy_val, show_alert=True)
     except Exception as e:
         logger.warning(f"copy_amount_callback failed: {e}")
-        await callback.answer("⚠️ تعذر النسخ", show_alert=True)
+        await callback.answer("🚧 تعذر النسخ", show_alert=True)
 
 
 @router.callback_query(F.data.startswith("copy_usd_"))
@@ -2154,11 +2154,11 @@ async def copy_usd_callback(callback: CallbackQuery):
         await callback.answer(copy_val, show_alert=True)
     except Exception as e:
         logger.warning(f"copy_usd_callback failed: {e}")
-        await callback.answer("⚠️ تعذر النسخ", show_alert=True)
+        await callback.answer("🚧 تعذر النسخ", show_alert=True)
 
 @router.callback_query(F.data == "cancel_my_withdraw", BotStates.confirming_withdraw)
 async def cancel_withdraw_callback(callback: CallbackQuery, state: FSMContext):
-    await callback.message.edit_text("🚫 <b>تم إلغاء طلب السحب.</b>", reply_markup=get_user_menu_keyboard(callback.from_user.id), parse_mode="HTML")
+    await callback.message.edit_text("⛔ <b>تم إلغاء طلب السحب.</b>", reply_markup=get_user_menu_keyboard(callback.from_user.id), parse_mode="HTML")
     await callback.answer("تم الإلغاء.")
     await state.clear()
 
@@ -2170,7 +2170,7 @@ async def cancel_withdraw_callback(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == "admin_panel")
 async def admin_panel_callback(callback: CallbackQuery):
     if not is_admin_user(callback.from_user.id):
-        await safe_answer_callback(callback, "❌ هذه اللوحة للمشرفين فقط.", show_alert=True)
+        await safe_answer_callback(callback, "⛔ هذه اللوحة للمشرفين فقط.", show_alert=True)
         return
     try:
         from telegram_bot.handlers.admin import caesar_control_panel
@@ -2179,7 +2179,7 @@ async def admin_panel_callback(callback: CallbackQuery):
         logger.error(f"admin_panel_callback failed: {e}")
         await safe_edit_text(
             callback.message,
-            "⚠️ تعذر فتح لوحة الأدمن الآن. تأكد من إعدادات المشرفين ثم حاول مجدداً.",
+            "🚧 تعذر فتح لوحة الأدمن الآن. تأكد من إعدادات المشرفين ثم حاول مجدداً.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -2190,10 +2190,10 @@ async def admin_panel_callback(callback: CallbackQuery):
 async def message_admin_callback(callback: CallbackQuery, state: FSMContext):
     await safe_edit_text(
         callback.message,
-        "✅ <b>تم فتح محادثة مع الإدارة.</b>\n\n"
-        "📝 يمكنك الآن إرسال رسائلك، صورك، أو ملفاتك بحرية.\n"
+        "✔️ <b>تم فتح محادثة مع الإدارة.</b>\n\n"
+        "🖋️ يمكنك الآن إرسال رسائلك، صورك، أو ملفاتك بحرية.\n"
         "سيقوم فريق الدعم بالرد عليك في أقرب وقت.\n\n"
-        "🔴 لإنهاء المحادثة اضغط الزر بالأسفل.",
+        "🔻 لإنهاء المحادثة اضغط الزر بالأسفل.",
         reply_markup=get_support_chat_keyboard(),
         parse_mode="HTML"
     )
@@ -2214,7 +2214,7 @@ async def end_support_chat_callback(callback: CallbackQuery, state: FSMContext):
         logger.warning(f"Could not close support ticket: {e}")
     await safe_edit_text(
         callback.message,
-        "✅ <b>تم إنهاء محادثة الدعم.</b>\n\nيمكنك العودة للقائمة الرئيسية أو فتح محادثة جديدة في أي وقت.",
+        "✔️ <b>تم إنهاء محادثة الدعم.</b>\n\nيمكنك العودة للقائمة الرئيسية أو فتح محادثة جديدة في أي وقت.",
         reply_markup=get_user_menu_keyboard(callback.from_user.id),
         parse_mode="HTML"
     )
@@ -2239,12 +2239,12 @@ async def process_support_chat_message(message: Message, state: FSMContext):
     sent = await forward_support_message_to_admins(message)
     if sent:
         await message.answer(
-            "✅ تم إرسال رسالتك إلى الإدارة.\n\nيمكنك إرسال رسالة أخرى أو إنهاء المحادثة من الزر بالأسفل.",
+            "✔️ تم إرسال رسالتك إلى الإدارة.\n\nيمكنك إرسال رسالة أخرى أو إنهاء المحادثة من الزر بالأسفل.",
             reply_markup=get_support_chat_keyboard()
         )
     else:
         await message.answer(
-            "⚠️ تعذر إرسال رسالتك الآن. يرجى المحاولة لاحقاً أو فتح الدعم الرسمي.",
+            "🚧 تعذر إرسال رسالتك الآن. يرجى المحاولة لاحقاً أو فتح الدعم الرسمي.",
             reply_markup=get_support_chat_keyboard()
         )
 
@@ -2259,19 +2259,19 @@ async def process_admin_message(message: Message, state: FSMContext):
 @router.callback_query(F.data.startswith("reply_user_"))
 async def reply_user_callback(callback: CallbackQuery, state: FSMContext):
     if not is_admin_user(callback.from_user.id):
-        await safe_answer_callback(callback, "❌ هذا الزر للمشرفين فقط.", show_alert=True)
+        await safe_answer_callback(callback, "⛔ هذا الزر للمشرفين فقط.", show_alert=True)
         return
 
     target_user_id = callback.data.replace("reply_user_", "", 1).strip()
     if not target_user_id.isdigit():
-        await safe_answer_callback(callback, "⚠️ معرف المستخدم غير صالح.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 معرف المستخدم غير صالح.", show_alert=True)
         return
 
     await state.update_data(reply_target_user_id=target_user_id)
     await state.set_state(BotStates.replying_to_user)
     await callback.message.answer(
         f"↩️ <b>رد على المستخدم</b>\n\n"
-        f"🆔 Telegram ID: <code>{target_user_id}</code>\n\n"
+        f"🔖 Telegram ID: <code>{target_user_id}</code>\n\n"
         "اكتب الرد الآن، ويمكنك إرسال نص، صورة، أو ملف.",
         parse_mode="HTML"
     )
@@ -2282,20 +2282,20 @@ async def reply_user_callback(callback: CallbackQuery, state: FSMContext):
 async def process_admin_reply_to_user(message: Message, state: FSMContext):
     if not is_admin_user(message.from_user.id):
         await state.clear()
-        await message.answer("❌ غير مسموح لك باستخدام الرد الإداري.")
+        await message.answer("⛔ غير مسموح لك باستخدام الرد الإداري.")
         return
 
     data = await state.get_data()
     target_user_id = data.get('reply_target_user_id')
     if not target_user_id:
         await state.clear()
-        await message.answer("⚠️ انتهت صلاحية الرد. يرجى الضغط على زر الرد من جديد.")
+        await message.answer("🚧 انتهت صلاحية الرد. يرجى الضغط على زر الرد من جديد.")
         return
 
     try:
         await message.bot.send_message(
             chat_id=target_user_id,
-            text="📩 <b>رد من الإدارة</b>",
+            text="📨 <b>رد من الإدارة</b>",
             parse_mode="HTML"
         )
         await message.bot.copy_message(
@@ -2316,10 +2316,10 @@ async def process_admin_reply_to_user(message: Message, state: FSMContext):
                 )
         except Exception as e:
             logger.warning(f"Could not save admin support reply: {e}")
-        await message.answer("✅ تم إرسال الرد للمستخدم بنجاح.")
+        await message.answer("✔️ تم إرسال الرد للمستخدم بنجاح.")
     except Exception as e:
         logger.warning(f"process_admin_reply_to_user failed: {e}")
-        await message.answer("⚠️ تعذر إرسال الرد للمستخدم. قد يكون المستخدم حظر البوت أو لم يبدأ المحادثة.")
+        await message.answer("🚧 تعذر إرسال الرد للمستخدم. قد يكون المستخدم حظر البوت أو لم يبدأ المحادثة.")
     finally:
         await state.clear()
 
@@ -2327,14 +2327,14 @@ async def process_admin_reply_to_user(message: Message, state: FSMContext):
 @router.callback_query(F.data == "contact_us")
 async def contact_us_callback(callback: CallbackQuery):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🗳️ رسالة للإدارة", callback_data="message_admin")],
-        [InlineKeyboardButton(text="📞 فتح الدعم", url="https://t.me/Mega77_Support")],
-        [InlineKeyboardButton(text="🔙 رجوع", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="🗂️ رسالة للإدارة", callback_data="message_admin")],
+        [InlineKeyboardButton(text="☎️ فتح الدعم", url="https://t.me/Mega77_Support")],
+        [InlineKeyboardButton(text="↩️ رجوع", callback_data="back_to_main_menu")]
     ])
     await safe_edit_text(
         callback.message,
-        "✉️ <b>تواصل معنا</b>\n\n"
-        "نحن هنا لمساعدتك 👑\n"
+        "📨 <b>تواصل معنا</b>\n\n"
+        "نحن هنا لمساعدتك ✨\n"
         "اختر الطريقة المناسبة:",
         reply_markup=keyboard,
         parse_mode="HTML"
@@ -2348,7 +2348,7 @@ async def contests_menu_callback(callback: CallbackQuery):
     if not contests:
         await safe_edit_text(
             callback.message,
-            "👑 <b>مسابقات Jude Robert</b>\n\nلا توجد مسابقات مفتوحة حالياً. تابعنا قريباً ✨",
+            "✨ <b>مسابقات Jude Robert</b>\n\nلا توجد مسابقات مفتوحة حالياً. تابعنا قريباً ✨",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -2356,7 +2356,7 @@ async def contests_menu_callback(callback: CallbackQuery):
         return
     await safe_edit_text(
         callback.message,
-        "👑 <b>مسابقات Jude Robert</b>\n\nاختر المسابقة التي تريد المشاركة فيها:",
+        "✨ <b>مسابقات Jude Robert</b>\n\nاختر المسابقة التي تريد المشاركة فيها:",
         reply_markup=get_contests_list_keyboard(contests),
         parse_mode="HTML"
     )
@@ -2371,13 +2371,13 @@ async def contest_detail_callback(callback: CallbackQuery):
         await safe_answer_callback(callback, "المسابقة غير موجودة", show_alert=True)
         return
     my_entry = await asyncio.to_thread(repo.get_contest_entry, contest_id, str(callback.from_user.id))
-    joined_text = f"\n✅ لقد أرسلت مشاركتك بالفعل وحالتها: <code>{my_entry.get('status')}</code>\n" if my_entry else ""
+    joined_text = f"\n✔️ لقد أرسلت مشاركتك بالفعل وحالتها: <code>{my_entry.get('status')}</code>\n" if my_entry else ""
     text = (
-        f"👑 <b>{contest.get('title')}</b>\n\n"
-        f"📝 <b>الوصف:</b>\n{contest.get('description') or '—'}\n\n"
-        f"🏆 <b>نوع الجائزة:</b> <code>{contest.get('reward_type')}</code>\n"
-        f"💰 <b>قيمة الجائزة:</b> <code>{int(contest.get('reward_amount') or 0):,} ل.س جديدة</code>\n"
-        f"👥 <b>عدد الفائزين:</b> <code>{int(contest.get('winners_limit') or 1)}</code>\n"
+        f"✨ <b>{contest.get('title')}</b>\n\n"
+        f"🖋️ <b>الوصف:</b>\n{contest.get('description') or '—'}\n\n"
+        f"🏅 <b>نوع الجائزة:</b> <code>{contest.get('reward_type')}</code>\n"
+        f"🪙 <b>قيمة الجائزة:</b> <code>{int(contest.get('reward_amount') or 0):,} ل.س جديدة</code>\n"
+        f"🧑‍🤝‍🧑 <b>عدد الفائزين:</b> <code>{int(contest.get('winners_limit') or 1)}</code>\n"
         f"📎 <b>إثبات مطلوب:</b> <code>{'نعم' if contest.get('requires_proof') else 'لا'}</code>\n"
         f"{joined_text}"
     )
@@ -2396,7 +2396,7 @@ async def contest_submit_callback(callback: CallbackQuery, state: FSMContext):
     await state.update_data(contest_id=contest_id)
     await safe_edit_text(
         callback.message,
-        "📩 أرسل الآن مشاركتك أو إثباتك للمسابقة.\nيمكنك إرسال:\n- نص\n- رابط\n- صورة\n- ملف\n\nوسيتم حفظ المشاركة ومراجعتها من الإدارة.",
+        "📨 أرسل الآن مشاركتك أو إثباتك للمسابقة.\nيمكنك إرسال:\n- نص\n- رابط\n- صورة\n- ملف\n\nوسيتم حفظ المشاركة ومراجعتها من الإدارة.",
         reply_markup=get_user_menu_keyboard(callback.from_user.id),
         parse_mode="HTML"
     )
@@ -2409,7 +2409,7 @@ async def process_contest_proof(message: Message, state: FSMContext):
     data = await state.get_data()
     contest_id = int(data.get('contest_id') or 0)
     if not contest_id:
-        await message.answer("❌ تعذر تحديد المسابقة الحالية.")
+        await message.answer("⛔ تعذر تحديد المسابقة الحالية.")
         await state.clear()
         return
 
@@ -2430,7 +2430,7 @@ async def process_contest_proof(message: Message, state: FSMContext):
     elif message.text:
         proof_type = 'text'
     else:
-        await message.answer("❌ أرسل نصاً أو صورة أو ملفاً كمشاركة للمسابقة.")
+        await message.answer("⛔ أرسل نصاً أو صورة أو ملفاً كمشاركة للمسابقة.")
         return
 
     result = await asyncio.to_thread(repo.add_contest_entry, contest_id,
@@ -2446,11 +2446,11 @@ async def process_contest_proof(message: Message, state: FSMContext):
         'not_saved': 'تعذر حفظ المشاركة.'
     }
     if not result.get('ok'):
-        await message.answer(f"❌ {reasons.get(result.get('reason'), 'تعذر تسجيل المشاركة.')}")
+        await message.answer(f"⛔ {reasons.get(result.get('reason'), 'تعذر تسجيل المشاركة.')}")
         await state.clear()
         return
 
-    # ✅ إرسال إشعار إلى قناة المسابقات
+    # ✔️ إرسال إشعار إلى قناة المسابقات
     entry_id = result.get('entry_id')
     contest = await asyncio.to_thread(repo.get_contest, contest_id)
     user = await asyncio.to_thread(repo.get_user, str(message.from_user.id))
@@ -2464,31 +2464,31 @@ async def process_contest_proof(message: Message, state: FSMContext):
 
             admin_text = (
                 "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                "👑 <b>مشاركة جديدة في المسابقة</b>\n"
+                "✨ <b>مشاركة جديدة في المسابقة</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                f"🏆 <b>المسابقة:</b> {contest.get('title')}\n"
-                f"🆔 <b>رقم المسابقة:</b> <code>#{contest_id}</code>\n\n"
+                f"🏅 <b>المسابقة:</b> {contest.get('title')}\n"
+                f"🔖 <b>رقم المسابقة:</b> <code>#{contest_id}</code>\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                "👤 <b>بيانات المشارك:</b>\n"
-                f"├─ 📛 الاسم: {username_text}\n"
-                f"├─ 🆔 Telegram ID: <code>{message.from_user.id}</code>\n"
-                f"├─ 🎮 Player ID: <code>{user.get('player_id') or 'غير مرتبط'}</code>\n"
-                f"└─ 💎 رصيد البوت: <code>{int(user.get('bot_balance') or 0):,} ل.س جديدة</code>\n\n"
+                "🧑‍💼 <b>بيانات المشارك:</b>\n"
+                f"├─ 🏷️ الاسم: {username_text}\n"
+                f"├─ 🔖 Telegram ID: <code>{message.from_user.id}</code>\n"
+                f"├─ 🕹️ Player ID: <code>{user.get('player_id') or 'غير مرتبط'}</code>\n"
+                f"└─ 🔷 رصيد البوت: <code>{int(user.get('bot_balance') or 0):,} ل.س جديدة</code>\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
                 f"📎 <b>نوع المشاركة:</b> <code>{proof_type}</code>\n"
-                f"📝 <b>نص المشاركة:</b> {proof_text}\n\n"
+                f"🖋️ <b>نص المشاركة:</b> {proof_text}\n\n"
                 f"⏰ <b>الوقت:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-                f"📌 <b>رقم المشاركة:</b> <code>#{entry_id}</code>\n\n"
+                f"📍 <b>رقم المشاركة:</b> <code>#{entry_id}</code>\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━"
             )
 
             # أزرار القبول/الرفض
             admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="✅ قبول المشاركة", callback_data=f"approve_contest_{entry_id}"),
-                    InlineKeyboardButton(text="❌ رفض المشاركة", callback_data=f"reject_contest_{entry_id}")
+                    InlineKeyboardButton(text="✔️ قبول المشاركة", callback_data=f"approve_contest_{entry_id}"),
+                    InlineKeyboardButton(text="⛔ رفض المشاركة", callback_data=f"reject_contest_{entry_id}")
                 ],
-                [InlineKeyboardButton(text="👤 تفاصيل المستخدم", callback_data=f"user_details_{message.from_user.id}")]
+                [InlineKeyboardButton(text="🧑‍💼 تفاصيل المستخدم", callback_data=f"user_details_{message.from_user.id}")]
             ])
 
             try:
@@ -2520,7 +2520,7 @@ async def process_contest_proof(message: Message, state: FSMContext):
                 logger.warning(f"Failed to send contest notification to channel: {e}")
 
     await message.answer(
-        "✅ تم استلام مشاركتك بنجاح.\nسيتم مراجعتها من الإدارة، وعند الفوز ستصلك الجائزة أو كود الهدية مباشرة.",
+        "✔️ تم استلام مشاركتك بنجاح.\nسيتم مراجعتها من الإدارة، وعند الفوز ستصلك الجائزة أو كود الهدية مباشرة.",
         reply_markup=get_user_menu_keyboard(message.from_user.id)
     )
     await state.clear()
@@ -2528,7 +2528,7 @@ async def process_contest_proof(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "jackpot_menu")
 async def jackpot_menu_callback(callback: CallbackQuery):
-    await send_coming_soon(callback, "👑 مسابقات Jude Robert")
+    await send_coming_soon(callback, "✨ مسابقات Jude Robert")
 
 
 @router.callback_query(F.data == "offers_menu")
@@ -2542,7 +2542,7 @@ async def offers_menu_callback(callback: CallbackQuery):
 
     if not rules:
         text = (
-            "🎁 <b>العروض والبونصات</b>\n\n"
+            "🧧 <b>العروض والبونصات</b>\n\n"
             "لا توجد عروض فعّالة حالياً.\n"
             "تابعنا باستمرار، سيتم إضافة عروض جديدة قريباً ✨"
         )
@@ -2557,8 +2557,8 @@ async def offers_menu_callback(callback: CallbackQuery):
             'usdt_bep': 'USDT BEP20',
         }
         text = (
-            "🎁 <b>العروض والبونصات الفعّالة</b>\n\n"
-            "💡 يتم تطبيق البونص تلقائياً عند قبول طلب الإيداع إذا كانت شروط العرض مطابقة.\n"
+            "🧧 <b>العروض والبونصات الفعّالة</b>\n\n"
+            "🔆 يتم تطبيق البونص تلقائياً عند قبول طلب الإيداع إذا كانت شروط العرض مطابقة.\n"
             "إذا انطبق أكثر من عرض، تحصل على أعلى بونص فقط.\n\n"
         )
         for rule in rules[:10]:
@@ -2571,14 +2571,14 @@ async def offers_menu_callback(callback: CallbackQuery):
                 f"💳 طريقة الإيداع: <code>{method}</code>\n"
             )
             if min_amount > 0:
-                text += f"💰 الحد الأدنى: <code>{min_amount:,.0f} ل.س جديدة</code>\n"
+                text += f"🪙 الحد الأدنى: <code>{min_amount:,.0f} ل.س جديدة</code>\n"
             else:
-                text += "💰 الحد الأدنى: <code>بدون حد أدنى</code>\n"
+                text += "🪙 الحد الأدنى: <code>بدون حد أدنى</code>\n"
             if max_bonus > 0:
                 text += f"🛡️ الحد الأعلى للبونص: <code>{max_bonus:,.0f} ل.س جديدة</code>\n"
             text += "\n"
 
-        text += "📥 للاستفادة من العرض اختر <b>شحن رصيد</b> من القائمة الرئيسية."
+        text += "📨 للاستفادة من العرض اختر <b>شحن رصيد</b> من القائمة الرئيسية."
 
     await safe_edit_text(
         callback.message,
@@ -2592,10 +2592,10 @@ async def offers_menu_callback(callback: CallbackQuery):
 
 @router.callback_query(F.data == "weekly_leaderboard_menu")
 async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
-    """🆕 (Update 18) لوحة المتصدرين الأسبوعية حسب دوران المراهنات في iChancy."""
+    """🌟 (Update 18) لوحة المتصدرين الأسبوعية حسب دوران المراهنات في iChancy."""
     back_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔄 تحديث العرض", callback_data="weekly_leaderboard_menu")],
-        [InlineKeyboardButton(text="🏠 العودة للقائمة الرئيسية", callback_data="back_to_main_menu")],
+        [InlineKeyboardButton(text="🔁 تحديث العرض", callback_data="weekly_leaderboard_menu")],
+        [InlineKeyboardButton(text="🏡 العودة للقائمة الرئيسية", callback_data="back_to_main_menu")],
     ])
     try:
         feats = await asyncio.to_thread(repo.get_user_features_settings)
@@ -2605,7 +2605,7 @@ async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
 
         if not enabled or not weekly_mode:
             text = (
-                "🏆 <b>لوحة المتصدرين الأسبوعية</b>\n\n"
+                "🏅 <b>لوحة المتصدرين الأسبوعية</b>\n\n"
                 "المسابقة الأسبوعية غير مفعّلة حالياً.\n"
                 "ترقّب إعلان الإدارة لانطلاق جولات الدوران 🎲"
             )
@@ -2617,23 +2617,23 @@ async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
         last_refresh = await asyncio.to_thread(repo.get_lb_last_refresh)
         refresh_txt = last_refresh.strftime('%Y-%m-%d %H:%M') if last_refresh else 'قريباً بعد أول تحديث'
 
-        rank_emoji = {1: '🥇', 2: '🥈', 3: '🥉'}
+        rank_emoji = {1: '🏆', 2: '🎖️', 3: '🏵️'}
         text = (
-            "🏆 <b>المتصدرون الأسبوعيون — دوران المراهنات 🎲</b>\n"
-            f"🕒 آخر تحديث: <code>{refresh_txt}</code>\n"
+            "🏅 <b>المتصدرون الأسبوعيون — دوران المراهنات 🎲</b>\n"
+            f"🕰️ آخر تحديث: <code>{refresh_txt}</code>\n"
         )
         if cfg['min_weekly_turnover'] > 0:
-            text += f"🎯 حد التأهل: <code>{cfg['min_weekly_turnover']:,}</code> نقطة دوران\n"
+            text += f"🧿 حد التأهل: <code>{cfg['min_weekly_turnover']:,}</code> نقطة دوران\n"
 
         prizes = []
         if cfg['prize_1'] > 0:
-            prizes.append(f"🥇 {cfg['prize_1']:,}")
+            prizes.append(f"🏆 {cfg['prize_1']:,}")
         if cfg['prize_2'] > 0:
-            prizes.append(f"🥈 {cfg['prize_2']:,}")
+            prizes.append(f"🎖️ {cfg['prize_2']:,}")
         if cfg['prize_3'] > 0:
-            prizes.append(f"🥉 {cfg['prize_3']:,}")
+            prizes.append(f"🏵️ {cfg['prize_3']:,}")
         if prizes:
-            text += f"🎁 جوائز الأسبوع: <b>{' | '.join(prizes)}</b> SYP 💵\n"
+            text += f"🧧 جوائز الأسبوع: <b>{' | '.join(prizes)}</b> SYP 💳\n"
 
         top = lb.get('top') or []
         if not top:
@@ -2649,7 +2649,7 @@ async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
 
         my_rank = lb.get('my_rank')
         if my_rank:
-            qualify_txt = "✅ متأهل" if lb.get('qualifies') else "⏳ دون حد التأهل"
+            qualify_txt = "✔️ متأهل" if lb.get('qualifies') else "⏳ دون حد التأهل"
             text += f"\n📍 <b>مركزك:</b> #{my_rank} — <code>{lb.get('my_score', 0):,}</code> ({qualify_txt})"
         elif lb.get('my_score') is not None:
             text += "\n📍 لم تدخل السباق بعد — العب في iChancy لتحجز مقعدك!"
@@ -2661,14 +2661,14 @@ async def weekly_leaderboard_menu_callback(callback: CallbackQuery):
             text += f"\n\n━━━━ 🏅 نتائج الأسبوع الماضي ({wk_txt}) ━━━━\n"
             for r in last['results']:
                 medal = rank_emoji.get(r['rank'], f"#{r['rank']}")
-                prize_txt = f" (+{int(r['prize_syp']):,} 💵)" if r.get('prize_syp') else ""
+                prize_txt = f" (+{int(r['prize_syp']):,} 💳)" if r.get('prize_syp') else ""
                 text += f"{medal} {r['username']} — <code>{int(r['weekly_turnover']):,}</code>{prize_txt}\n"
 
         await safe_edit_text(callback.message, text, reply_markup=back_keyboard, parse_mode="HTML")
         await safe_answer_callback(callback)
     except Exception as e:
         logger.error(f"weekly_leaderboard_menu error: {e}", exc_info=True)
-        await safe_answer_callback(callback, "⚠️ تعذّر تحميل اللوحة الآن، حاول لاحقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 تعذّر تحميل اللوحة الآن، حاول لاحقاً.", show_alert=True)
 
 
 @router.callback_query(F.data == "prediction_cards_menu")
@@ -2677,7 +2677,7 @@ async def prediction_cards_menu_callback(callback: CallbackQuery):
     cards = await asyncio.to_thread(repo.get_open_prediction_cards, limit=10)
     if not cards:
         text = (
-            "🎫 <b>بطاقات التوقع</b>\n\n"
+            "🎟️ <b>بطاقات التوقع</b>\n\n"
             "لا توجد بطاقات توقع مفتوحة حالياً.\n"
             "تابعنا لاحقاً عند فتح مباريات جديدة ✨"
         )
@@ -2686,9 +2686,9 @@ async def prediction_cards_menu_callback(callback: CallbackQuery):
         return
 
     text = (
-        "🎫 <b>بطاقات التوقع المفتوحة</b>\n\n"
+        "🎟️ <b>بطاقات التوقع المفتوحة</b>\n\n"
         "اختر البطاقة التي تريد المشاركة فيها.\n"
-        "⚠️ يمكنك تثبيت توقع واحد فقط لكل بطاقة."
+        "🚧 يمكنك تثبيت توقع واحد فقط لكل بطاقة."
     )
     await safe_edit_text(
         callback.message,
@@ -2714,21 +2714,21 @@ async def prediction_card_detail_callback(callback: CallbackQuery):
     summary = await asyncio.to_thread(repo.get_prediction_card_summary, card_id)
     total_entries = sum(int(x.get('count') or 0) for x in summary)
     my_entry = await asyncio.to_thread(repo.get_user_prediction_entry, card_id, str(callback.from_user.id))
-    my_text = f"\n✅ توقعك الحالي: <code>{my_entry.get('selected_option')}</code>\n" if my_entry else "\n"
+    my_text = f"\n✔️ توقعك الحالي: <code>{my_entry.get('selected_option')}</code>\n" if my_entry else "\n"
     limit_text = f"{int(card.get('max_predictions') or 0):,}" if int(card.get('max_predictions') or 0) > 0 else "بدون حد"
     closes_at = card.get('closes_at')
     closes_label = closes_at.strftime('%Y-%m-%d %H:%M') if closes_at else 'غير محدد'
     options_text = "\n".join([f"• <code>{o}</code>" for o in options]) if options else "—"
     text = (
-        f"🎫 <b>{card.get('title')}</b>\n\n"
+        f"🎟️ <b>{card.get('title')}</b>\n\n"
         f"⚽ <b>المباراة:</b> <code>{card.get('team_a')}</code> × <code>{card.get('team_b')}</code>\n"
-        f"📌 <b>الحالة:</b> <code>{card.get('status')}</code>\n"
-        f"🎟️ <b>عدد البطاقات:</b> <code>{limit_text}</code>\n"
-        f"👥 <b>المشاركات الحالية:</b> <code>{total_entries}</code>\n"
-        f"💰 <b>الجائزة لكل فائز:</b> <code>{int(card.get('reward_syp') or 0):,} ل.س جديدة</code>\n"
-        f"🕒 <b>الإغلاق:</b> <code>{closes_label}</code>\n"
+        f"📍 <b>الحالة:</b> <code>{card.get('status')}</code>\n"
+        f"🎟️️ <b>عدد البطاقات:</b> <code>{limit_text}</code>\n"
+        f"🧑‍🤝‍🧑 <b>المشاركات الحالية:</b> <code>{total_entries}</code>\n"
+        f"🪙 <b>الجائزة لكل فائز:</b> <code>{int(card.get('reward_syp') or 0):,} ل.س جديدة</code>\n"
+        f"🕰️ <b>الإغلاق:</b> <code>{closes_label}</code>\n"
         f"{my_text}"
-        f"\n🎯 <b>خيارات التوقع:</b>\n{options_text}"
+        f"\n🧿 <b>خيارات التوقع:</b>\n{options_text}"
     )
     keyboard = get_user_menu_keyboard(callback.from_user.id) if my_entry or str(card.get('status')) != 'open' else get_prediction_card_options_keyboard(card_id, options, callback.from_user.id)
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
@@ -2751,7 +2751,7 @@ async def prediction_select_callback(callback: CallbackQuery):
         await safe_answer_callback(callback, reasons.get(result.get('reason'), 'تعذر تسجيل التوقع.'), show_alert=True)
         return
 
-    # ✅ إرسال إشعار إلى قناة المسابقات عند التوقع
+    # ✔️ إرسال إشعار إلى قناة المسابقات عند التوقع
     channel_id = getattr(settings, 'CONTEST_CHANNEL_ID', None)
     if channel_id:
         try:
@@ -2766,17 +2766,17 @@ async def prediction_select_callback(callback: CallbackQuery):
 
                 notification_text = (
                     "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    "🎫 <b>توقع جديد</b>\n"
+                    "🎟️ <b>توقع جديد</b>\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
                     f"⚽ <b>المباراة:</b> <code>{card.get('team_a')}</code> × <code>{card.get('team_b')}</code>\n"
-                    f"🎫 <b>البطاقة:</b> {card.get('title')}\n"
-                    f"🎯 <b>التوقع:</b> <code>{selected_option}</code>\n\n"
+                    f"🎟️ <b>البطاقة:</b> {card.get('title')}\n"
+                    f"🧿 <b>التوقع:</b> <code>{selected_option}</code>\n\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                    f"👤 <b>المشارك:</b> {username_text}\n"
-                    f"🆔 <b>Telegram ID:</b> <code>{callback.from_user.id}</code>\n"
-                    f"🎮 <b>Player ID:</b> <code>{user.get('player_id') or 'غير مرتبط'}</code>\n\n"
+                    f"🧑‍💼 <b>المشارك:</b> {username_text}\n"
+                    f"🔖 <b>Telegram ID:</b> <code>{callback.from_user.id}</code>\n"
+                    f"🕹️ <b>Player ID:</b> <code>{user.get('player_id') or 'غير مرتبط'}</code>\n\n"
                     f"⏰ <b>الوقت:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-                    f"👥 <b>إجمالي التوقعات:</b> <code>{total_entries}</code>\n\n"
+                    f"🧑‍🤝‍🧑 <b>إجمالي التوقعات:</b> <code>{total_entries}</code>\n\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━"
                 )
 
@@ -2788,7 +2788,7 @@ async def prediction_select_callback(callback: CallbackQuery):
         except Exception as e:
             logger.warning(f"Failed to send prediction notification to channel: {e}")
 
-    await safe_answer_callback(callback, '✅ تم تثبيت توقعك بنجاح', show_alert=True)
+    await safe_answer_callback(callback, '✔️ تم تثبيت توقعك بنجاح', show_alert=True)
     callback.data = f'prediction_card_detail:{card_id}'
     await prediction_card_detail_callback(callback)
 
@@ -2807,7 +2807,7 @@ async def deposit_game_acc_callback(callback: CallbackQuery, state: FSMContext):
     if not user or int(user.get('bot_balance', 0)) <= 0:
         await safe_edit_text(
             callback.message,
-            "❌ <b>لا يوجد رصيد في البوت حالياً.</b>\n\nيرجى تنفيذ عملية <b>شحن رصيد</b> داخل البوت أولاً، ثم العودة لشحن حساب اللعبة.",
+            "⛔ <b>لا يوجد رصيد في البوت حالياً.</b>\n\nيرجى تنفيذ عملية <b>شحن رصيد</b> داخل البوت أولاً، ثم العودة لشحن حساب اللعبة.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -2822,9 +2822,9 @@ async def deposit_game_acc_callback(callback: CallbackQuery, state: FSMContext):
     if bot_balance < game_min_deposit:
         await safe_edit_text(
             callback.message,
-            f"❌ <b>رصيدك الحالي لا يكفي لشحن حساب اللعبة.</b>\n\n"
-            f"💎 رصيدك في البوت: <code>{bot_balance:,} ل.س جديدة</code>\n"
-            f"⚠️ الحد الأدنى لشحن اللعبة: <code>{game_min_deposit:,} ل.س جديدة</code>\n\n"
+            f"⛔ <b>رصيدك الحالي لا يكفي لشحن حساب اللعبة.</b>\n\n"
+            f"🔷 رصيدك في البوت: <code>{bot_balance:,} ل.س جديدة</code>\n"
+            f"🚧 الحد الأدنى لشحن اللعبة: <code>{game_min_deposit:,} ل.س جديدة</code>\n\n"
             "يرجى شحن رصيد البوت أولاً ثم العودة لشحن حساب اللعبة.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
@@ -2835,13 +2835,13 @@ async def deposit_game_acc_callback(callback: CallbackQuery, state: FSMContext):
     await state.update_data(game_deposit_cached_balance=cached_game_balance, game_min_deposit_syp=game_min_deposit)
 
     text = (
-        f"📥 <b>شحن حساب اللعبة (iChancy)</b>\n\n"
-        f"💎 <b>رصيدك في البوت:</b> <code>{bot_balance:,} ل.س جديدة</code>\n"
-        f"🎮 <b>رصيد اللعبة المسجل:</b> <code>{cached_game_balance:,} NSP</code>\n"
-        f"💱 <b>التحويل:</b> <code>1 ل.س جديدة = 100 ل.س قديمة</code>\n"
-        f"⚠️ <b>الحد الأدنى للشحن:</b> <code>{format_new(game_min_deposit)} ل.س جديدة</code>\n\n"
-        f"📊 <b>أقصى مبلغ يمكنك شحنه الآن:</b> <code>{format_new(bot_balance)} ل.س جديدة</code>\n\n"
-        f"اكتب المبلغ الذي تريد تحويله <b>بالليرة السورية الجديدة</b> 👇\n"
+        f"📨 <b>شحن حساب اللعبة (iChancy)</b>\n\n"
+        f"🔷 <b>رصيدك في البوت:</b> <code>{bot_balance:,} ل.س جديدة</code>\n"
+        f"🕹️ <b>رصيد اللعبة المسجل:</b> <code>{cached_game_balance:,} NSP</code>\n"
+        f"💹 <b>التحويل:</b> <code>1 ل.س جديدة = 100 ل.س قديمة</code>\n"
+        f"🚧 <b>الحد الأدنى للشحن:</b> <code>{format_new(game_min_deposit)} ل.س جديدة</code>\n\n"
+        f"📈 <b>أقصى مبلغ يمكنك شحنه الآن:</b> <code>{format_new(bot_balance)} ل.س جديدة</code>\n\n"
+        f"اكتب المبلغ الذي تريد تحويله <b>بالليرة السورية الجديدة</b> ↘️\n"
         f"<i>ملاحظة: لا ننتظر تحديث رصيد اللعبة من الموقع هنا لتبقى العملية أسرع.</i>"
     )
     await safe_edit_text(callback.message, text, parse_mode="HTML")
@@ -2856,7 +2856,7 @@ async def process_game_deposit_amount(message: Message, state: FSMContext):
         if amount_syp <= 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال مبلغ رقمي صحيح:")
+        await message.answer("⛔ الرجاء إدخال مبلغ رقمي صحيح:")
         return
 
     telegram_id = str(message.from_user.id)
@@ -2866,13 +2866,13 @@ async def process_game_deposit_amount(message: Message, state: FSMContext):
     game_min_deposit = int(data.get('game_min_deposit_syp') or await asyncio.to_thread(repo.get_bot_settings).get('game_min_deposit_syp') or 20000)
     if amount_syp < game_min_deposit:
         await message.answer(
-            f"❌ الحد الأدنى لشحن حساب اللعبة هو <code>{game_min_deposit:,} ل.س جديدة</code>.\n\n"
+            f"⛔ الحد الأدنى لشحن حساب اللعبة هو <code>{game_min_deposit:,} ل.س جديدة</code>.\n\n"
             "يرجى إدخال مبلغ يساوي أو أكبر من الحد الأدنى:",
             parse_mode="HTML"
         )
         return
     if amount_syp > int(safe_balance(user)):
-        await message.answer(f"❌ رصيدك لا يكفي. رصيدك الحالي: {int(safe_balance(user)):,} ل.س جديدة. أعد الإدخال:")
+        await message.answer(f"⛔ رصيدك لا يكفي. رصيدك الحالي: {int(safe_balance(user)):,} ل.س جديدة. أعد الإدخال:")
         return
 
     # المبلغ داخل البوت جديد؛ Ichancy يستقبل القديم.
@@ -2896,31 +2896,31 @@ async def process_game_deposit_amount(message: Message, state: FSMContext):
 
     bonus_line = ""
     if bonus_to_apply > 0:
-        bonus_line = f"🎁 بونص اللعب المرفق: <code>{format_old(new_to_old(bonus_to_apply))} ل.س قديمة</code>\n"
+        bonus_line = f"🧧 بونص اللعب المرفق: <code>{format_old(new_to_old(bonus_to_apply))} ل.س قديمة</code>\n"
     elif bonus_available > 0:
         settings = await asyncio.to_thread(repo.get_bot_settings)
         if not settings.get('game_bonus_enabled', True) or float(settings.get('game_bonus_apply_percent') or 0) <= 0:
-            bonus_line = "🎁 لديك بونص متاح، لكن إرفاق بونص اللعب متوقف حالياً من الإدارة.\n"
+            bonus_line = "🧧 لديك بونص متاح، لكن إرفاق بونص اللعب متوقف حالياً من الإدارة.\n"
         elif bonus_base_balance <= 0:
-            bonus_line = "🎁 لديك بونص متاح، لكنه غير مرتبط بإيداع نقدي حالياً؛ سيتم استخدام نسبة الإرفاق الاحتياطية عند توفرها.\n"
+            bonus_line = "🧧 لديك بونص متاح، لكنه غير مرتبط بإيداع نقدي حالياً؛ سيتم استخدام نسبة الإرفاق الاحتياطية عند توفرها.\n"
         else:
-            bonus_line = "🎁 لديك بونص متاح، لكن لم تنطبق شروط إرفاقه على هذا الشحن.\n"
+            bonus_line = "🧧 لديك بونص متاح، لكن لم تنطبق شروط إرفاقه على هذا الشحن.\n"
     else:
-        bonus_line = "🎁 لا يوجد بونص لعب متاح حالياً لهذا الشحن.\n"
+        bonus_line = "🧧 لا يوجد بونص لعب متاح حالياً لهذا الشحن.\n"
 
     confirm_text = (
-        f"📋 <b>تأكيد شحن حساب اللعبة</b>\n\n"
-        f"💱 شحن من رصيدك: <code>{format_new(amount_syp)} ل.س جديدة</code> → <code>{format_old(amount_nsp)} ل.س قديمة</code>\n"
+        f"🗒️ <b>تأكيد شحن حساب اللعبة</b>\n\n"
+        f"💹 شحن من رصيدك: <code>{format_new(amount_syp)} ل.س جديدة</code> → <code>{format_old(amount_nsp)} ل.س قديمة</code>\n"
         f"{bonus_line}"
-        f"🎮 الإجمالي الذي سيصل للعبة: <code>{format_old(new_to_old(total_new))} ل.س قديمة</code>\n"
-        f"📊 التحويل: 1 ل.س جديدة = 100 ل.س قديمة\n"
-        f"💎 رصيدك النقدي بعد العملية: <code>{int(safe_balance(user)) - amount_syp:,} ل.س جديدة</code>\n"
-        f"🎁 رصيد البونص بعد العملية: <code>{max(0, bonus_available - bonus_to_apply):,} ل.س جديدة</code>\n\n"
-        f"⚠️ <b>بونص اللعب يُستخدم داخل اللعبة، وعند السحب يُخصم البونص النشط أولاً.</b>"
+        f"🕹️ الإجمالي الذي سيصل للعبة: <code>{format_old(new_to_old(total_new))} ل.س قديمة</code>\n"
+        f"📈 التحويل: 1 ل.س جديدة = 100 ل.س قديمة\n"
+        f"🔷 رصيدك النقدي بعد العملية: <code>{int(safe_balance(user)) - amount_syp:,} ل.س جديدة</code>\n"
+        f"🧧 رصيد البونص بعد العملية: <code>{max(0, bonus_available - bonus_to_apply):,} ل.س جديدة</code>\n\n"
+        f"🚧 <b>بونص اللعب يُستخدم داخل اللعبة، وعند السحب يُخصم البونص النشط أولاً.</b>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ تأكيد الشحن", callback_data="confirm_game_deposit")],
-        [InlineKeyboardButton(text="❌ إلغاء", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="✔️ تأكيد الشحن", callback_data="confirm_game_deposit")],
+        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="back_to_main_menu")]
     ])
     await message.answer(confirm_text, reply_markup=keyboard, parse_mode="HTML")
     await state.set_state(BotStates.confirming_game_deposit)
@@ -2938,7 +2938,7 @@ async def confirm_game_deposit_callback(callback: CallbackQuery, state: FSMConte
     if not data or 'game_deposit_syp' not in data:
         await send_expired_flow_message(callback.message, callback.from_user.id)
         await state.clear()
-        await safe_answer_callback(callback, "⚠️ انتهت صلاحية الطلب.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 انتهت صلاحية الطلب.", show_alert=True)
         return
 
     amount_syp = Decimal(str(data['game_deposit_syp']))
@@ -2962,17 +2962,17 @@ async def confirm_game_deposit_callback(callback: CallbackQuery, state: FSMConte
         cash_amount = int(result.get('cash_amount') or amount_syp) if isinstance(result, dict) else int(amount_syp)
         bonus_amount = int(result.get('bonus_amount') or 0) if isinstance(result, dict) else 0
         total_to_game = int(result.get('total_to_game') or data['game_deposit_nsp']) if isinstance(result, dict) else int(data['game_deposit_nsp'])
-        bonus_success_line = f"🎁 بونص اللعب المرفق: <code>{bonus_amount:,} NSP</code>\n" if bonus_amount > 0 else ""
+        bonus_success_line = f"🧧 بونص اللعب المرفق: <code>{bonus_amount:,} NSP</code>\n" if bonus_amount > 0 else ""
         await safe_edit_text(
             callback.message,
-            f"✅ <b>تم شحن حساب اللعبة بنجاح!</b>\n\n"
-            f"💱 من رصيدك: <code>{cash_amount:,} ل.س</code> → <code>{cash_amount:,} NSP</code>\n"
+            f"✔️ <b>تم شحن حساب اللعبة بنجاح!</b>\n\n"
+            f"💹 من رصيدك: <code>{cash_amount:,} ل.س</code> → <code>{cash_amount:,} NSP</code>\n"
             f"{bonus_success_line}"
-            f"🎮 الإجمالي الذي وصل للعبة: <code>{total_to_game:,} NSP</code>\n"
-            f"💎 رصيد البوت الآن: {_fmt_syp_dual(safe_balance(user))}\n"
-            f"🎁 بونص اللعب النشط داخل اللعبة: <code>{int(user.get('game_bonus_amount') or 0):,} ل.س جديدة</code>\n"
-            f"🎮 رصيد اللعبة المسجل: <code>{new_game:,} NSP</code>\n\n"
-            f"🏠 يمكنك العودة للقائمة الرئيسية من الأسفل.",
+            f"🕹️ الإجمالي الذي وصل للعبة: <code>{total_to_game:,} NSP</code>\n"
+            f"🔷 رصيد البوت الآن: {_fmt_syp_dual(safe_balance(user))}\n"
+            f"🧧 بونص اللعب النشط داخل اللعبة: <code>{int(user.get('game_bonus_amount') or 0):,} ل.س جديدة</code>\n"
+            f"🕹️ رصيد اللعبة المسجل: <code>{new_game:,} NSP</code>\n\n"
+            f"🏡 يمكنك العودة للقائمة الرئيسية من الأسفل.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -2981,7 +2981,7 @@ async def confirm_game_deposit_callback(callback: CallbackQuery, state: FSMConte
         if isinstance(result, dict) and result.get('uncertain'):
             await safe_edit_text(
                 callback.message,
-                "⚠️ <b>عملية الشحن قيد التحقق اليدوي</b>\n\n"
+                "🚧 <b>عملية الشحن قيد التحقق اليدوي</b>\n\n"
                 "أرسل iChancy نتيجة غير مؤكدة: قد يكون الشحن تم فعلاً لكن لم نتمكن من تأكيد تغير الرصيد فوراً.\n"
                 "تم إبقاء العملية معلّقة وسيقوم المشرف بمراجعتها. لم يتم رد الرصيد تلقائياً لحماية حسابك من أي تضارب.",
                 reply_markup=get_user_menu_keyboard(callback.from_user.id),
@@ -2991,7 +2991,7 @@ async def confirm_game_deposit_callback(callback: CallbackQuery, state: FSMConte
         else:
             await safe_edit_text(
                 callback.message,
-                "❌ <b>فشلت عملية الشحن!</b>\n\nتمت إعادة الرصيد إذا لم يتم تنفيذ العملية. قد يكون السبب:\n"
+                "⛔ <b>فشلت عملية الشحن!</b>\n\nتمت إعادة الرصيد إذا لم يتم تنفيذ العملية. قد يكون السبب:\n"
                 "• فشل الاتصال بخوادم iChancy\n• خطأ مؤقت في الجلسة أو الشبكة\n\nحاول مجدداً بعد قليل.",
                 reply_markup=get_user_menu_keyboard(callback.from_user.id),
                 parse_mode="HTML"
@@ -3029,7 +3029,7 @@ async def withdraw_game_acc_callback(callback: CallbackQuery, state: FSMContext)
     if game_balance <= 0:
         await safe_edit_text(
             callback.message,
-            f"❌ <b>لا يوجد رصيد في حساب اللعبة حالياً.</b>\n\nرصيدك في اللعبة: <code>{game_balance:,} NSP</code>\n"
+            f"⛔ <b>لا يوجد رصيد في حساب اللعبة حالياً.</b>\n\nرصيدك في اللعبة: <code>{game_balance:,} NSP</code>\n"
             "توجّه إلى اللعبة وحقق بعض النقاط، ثم عُد لسحبها إلى البوت.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
@@ -3041,16 +3041,16 @@ async def withdraw_game_acc_callback(callback: CallbackQuery, state: FSMContext)
     net_if_full = max(0, int(game_balance) - active_bonus)
     bonus_info_line = ""
     if active_bonus > 0:
-        bonus_info_line = f"🎁 <b>بونص لعب نشط:</b> <code>{active_bonus:,} ل.س جديدة</code> <i>(يُخصم أولاً عند السحب)</i>\n"
+        bonus_info_line = f"🧧 <b>بونص لعب نشط:</b> <code>{active_bonus:,} ل.س جديدة</code> <i>(يُخصم أولاً عند السحب)</i>\n"
 
     text = (
-        f"📤 <b>سحب من حساب اللعبة (iChancy)</b>\n\n"
-        f"🎮 <b>رصيدك الفعلي في اللعبة:</b> <code>{game_balance:,} NSP</code>\n"
+        f"📬 <b>سحب من حساب اللعبة (iChancy)</b>\n\n"
+        f"🕹️ <b>رصيدك الفعلي في اللعبة:</b> <code>{game_balance:,} NSP</code>\n"
         f"{bonus_info_line}"
-        f"💎 <b>رصيدك في البوت:</b> <code>{int(safe_balance(user)):,} ل.س جديدة</code>\n"
-        f"💱 <b>التحويل:</b> <code>100 ل.س قديمة = 1 ل.س جديدة</code>\n\n"
-        f"📊 <b>الصافي إذا سحبت كامل الرصيد:</b> <code>{net_if_full:,} ل.س جديدة</code>\n\n"
-        f"اكتب المبلغ الذي تريد سحبه <b>بنقاط اللعبة (NSP)</b> 👇"
+        f"🔷 <b>رصيدك في البوت:</b> <code>{int(safe_balance(user)):,} ل.س جديدة</code>\n"
+        f"💹 <b>التحويل:</b> <code>100 ل.س قديمة = 1 ل.س جديدة</code>\n\n"
+        f"📈 <b>الصافي إذا سحبت كامل الرصيد:</b> <code>{net_if_full:,} ل.س جديدة</code>\n\n"
+        f"اكتب المبلغ الذي تريد سحبه <b>بنقاط اللعبة (NSP)</b> ↘️"
     )
     await safe_edit_text(callback.message, text, parse_mode="HTML")
     await state.set_state(BotStates.entering_game_withdraw_amount)
@@ -3064,7 +3064,7 @@ async def process_game_withdraw_amount(message: Message, state: FSMContext):
         if amount_nsp <= 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال مبلغ رقمي صحيح (بنقاط NSP):")
+        await message.answer("⛔ الرجاء إدخال مبلغ رقمي صحيح (بنقاط NSP):")
         return
 
     telegram_id = str(message.from_user.id)
@@ -3074,7 +3074,7 @@ async def process_game_withdraw_amount(message: Message, state: FSMContext):
     game_balance = int(data.get('game_withdraw_balance') or await asyncio.to_thread(repo.get_user_game_balance, telegram_id))
 
     if amount_nsp > game_balance:
-        await message.answer(f"❌ رصيدك في اللعبة لا يكفي. رصيدك الفعلي: <code>{game_balance:,} NSP</code>. أعد الإدخال:", parse_mode="HTML")
+        await message.answer(f"⛔ رصيدك في اللعبة لا يكفي. رصيدك الفعلي: <code>{game_balance:,} NSP</code>. أعد الإدخال:", parse_mode="HTML")
         return
 
     # user enters old Ichancy SYP; bot is credited in new SYP
@@ -3082,7 +3082,7 @@ async def process_game_withdraw_amount(message: Message, state: FSMContext):
         require_old_multiple_of_rate(amount_nsp)
         amount_syp = int(old_to_new(amount_nsp))
     except ValueError:
-        await message.answer("❌ يجب أن يكون المبلغ بالليرة القديمة من مضاعفات 100 (مثال: 25000).")
+        await message.answer("⛔ يجب أن يكون المبلغ بالليرة القديمة من مضاعفات 100 (مثال: 25000).")
         return
     active_bonus = int(user.get('game_bonus_amount') or 0)
     bonus_deducted = min(active_bonus, amount_syp)
@@ -3097,20 +3097,20 @@ async def process_game_withdraw_amount(message: Message, state: FSMContext):
 
     bonus_line = ""
     if bonus_deducted > 0:
-        bonus_line = f"🎁 خصم بونص لعب نشط: <code>{bonus_deducted:,} ل.س جديدة</code>\n"
+        bonus_line = f"🧧 خصم بونص لعب نشط: <code>{bonus_deducted:,} ل.س جديدة</code>\n"
 
     confirm_text = (
-        f"📋 <b>تأكيد السحب من حساب اللعبة</b>\n\n"
-        f"💱 سيتم سحب: <code>{amount_nsp:,} NSP</code> من حساب اللعبة\n"
+        f"🗒️ <b>تأكيد السحب من حساب اللعبة</b>\n\n"
+        f"💹 سيتم سحب: <code>{amount_nsp:,} NSP</code> من حساب اللعبة\n"
         f"{bonus_line}"
-        f"💎 الصافي الذي سيضاف لرصيد البوت: <code>{format_new(cash_to_credit)} ل.س جديدة</code>\n"
-        f"📊 التحويل: 100 ل.س قديمة = 1 ل.س جديدة\n"
-        f"💎 رصيد البوت بعد العملية: <code>{format_new(int(safe_balance(user)) + cash_to_credit)} ل.س جديدة</code>\n\n"
-        f"⚠️ <b>بونص اللعب النشط غير قابل للسحب نقداً ويُخصم أولاً.</b>"
+        f"🔷 الصافي الذي سيضاف لرصيد البوت: <code>{format_new(cash_to_credit)} ل.س جديدة</code>\n"
+        f"📈 التحويل: 100 ل.س قديمة = 1 ل.س جديدة\n"
+        f"🔷 رصيد البوت بعد العملية: <code>{format_new(int(safe_balance(user)) + cash_to_credit)} ل.س جديدة</code>\n\n"
+        f"🚧 <b>بونص اللعب النشط غير قابل للسحب نقداً ويُخصم أولاً.</b>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ تأكيد السحب", callback_data="confirm_game_withdraw")],
-        [InlineKeyboardButton(text="❌ إلغاء", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="✔️ تأكيد السحب", callback_data="confirm_game_withdraw")],
+        [InlineKeyboardButton(text="⛔ إلغاء", callback_data="back_to_main_menu")]
     ])
     await message.answer(confirm_text, reply_markup=keyboard, parse_mode="HTML")
     await state.set_state(BotStates.confirming_game_withdraw)
@@ -3128,7 +3128,7 @@ async def confirm_game_withdraw_callback(callback: CallbackQuery, state: FSMCont
     if not data or 'game_withdraw_nsp' not in data:
         await send_expired_flow_message(callback.message, callback.from_user.id)
         await state.clear()
-        await safe_answer_callback(callback, "⚠️ انتهت صلاحية الطلب.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 انتهت صلاحية الطلب.", show_alert=True)
         return
 
     amount_nsp = Decimal(str(data['game_withdraw_nsp']))
@@ -3151,16 +3151,16 @@ async def confirm_game_withdraw_callback(callback: CallbackQuery, state: FSMCont
         new_game = await asyncio.to_thread(repo.get_user_game_balance, str(callback.from_user.id))
         cash_credited = int(result.get('cash_credited') or 0) if isinstance(result, dict) else int(data.get('game_withdraw_syp') or 0)
         bonus_deducted = int(result.get('bonus_deducted') or 0) if isinstance(result, dict) else int(data.get('game_withdraw_bonus_deducted') or 0)
-        bonus_line = f"🎁 خصم بونص لعب نشط: <code>{bonus_deducted:,} ل.س جديدة</code>\n" if bonus_deducted > 0 else ""
+        bonus_line = f"🧧 خصم بونص لعب نشط: <code>{bonus_deducted:,} ل.س جديدة</code>\n" if bonus_deducted > 0 else ""
         await safe_edit_text(
             callback.message,
-            f"✅ <b>تم سحب رصيد اللعبة بنجاح!</b>\n\n"
-            f"💱 تم سحب: <code>{int(amount_nsp):,} NSP</code> من اللعبة\n"
+            f"✔️ <b>تم سحب رصيد اللعبة بنجاح!</b>\n\n"
+            f"💹 تم سحب: <code>{int(amount_nsp):,} NSP</code> من اللعبة\n"
             f"{bonus_line}"
-            f"💎 الصافي المضاف لرصيد البوت: <code>{format_new(cash_credited)} ل.س جديدة</code>\n"
-            f"💎 رصيد البوت الآن: {_fmt_syp_dual(safe_balance(user))}\n"
-            f"🎮 رصيد اللعبة المسجل: <code>{new_game:,} NSP</code>\n\n"
-            f"🏠 يمكنك العودة للقائمة الرئيسية من الأسفل.",
+            f"🔷 الصافي المضاف لرصيد البوت: <code>{format_new(cash_credited)} ل.س جديدة</code>\n"
+            f"🔷 رصيد البوت الآن: {_fmt_syp_dual(safe_balance(user))}\n"
+            f"🕹️ رصيد اللعبة المسجل: <code>{new_game:,} NSP</code>\n\n"
+            f"🏡 يمكنك العودة للقائمة الرئيسية من الأسفل.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -3168,7 +3168,7 @@ async def confirm_game_withdraw_callback(callback: CallbackQuery, state: FSMCont
     else:
         await safe_edit_text(
             callback.message,
-            "❌ <b>فشلت عملية السحب من اللعبة!</b>\n\nلم يتم إضافة أي رصيد للبوت. قد يكون السبب:\n"
+            "⛔ <b>فشلت عملية السحب من اللعبة!</b>\n\nلم يتم إضافة أي رصيد للبوت. قد يكون السبب:\n"
             "• تغيّر رصيدك في اللعبة أثناء العملية\n• فشل الاتصال بخوادم iChancy\n\nحاول مجدداً بعد قليل.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
@@ -3177,7 +3177,7 @@ async def confirm_game_withdraw_callback(callback: CallbackQuery, state: FSMCont
 
 
 # ================================================================
-# ✅ معالجات الإحالات والسجل والهدايا (كانت مفقودة - أزرار ميتة)
+# ✔️ معالجات الإحالات والسجل والهدايا (كانت مفقودة - أزرار ميتة)
 # ================================================================
 
 @router.callback_query(F.data == "referral_menu")
@@ -3198,7 +3198,7 @@ async def referral_menu_callback(callback: CallbackQuery):
     me = await callback.bot.get_me()
     ref_link = f"https://t.me/{me.username}?start=ref_{telegram_id}"
 
-    status_text = "🟢 مفعّل" if referrals_enabled else "🔴 متوقف حالياً"
+    status_text = "🔹 مفعّل" if referrals_enabled else "🔻 متوقف حالياً"
     if active < 3:
         next_level = "تحتاج إلى 3 إحالات نشطة لبدء الربح"
     elif active < 5:
@@ -3206,30 +3206,30 @@ async def referral_menu_callback(callback: CallbackQuery):
     elif active < 10:
         next_level = "المستوى القادم: 10 إحالات نشطة = 2% من خسارة المحالين"
     else:
-        next_level = "أنت في أعلى مستوى إحالات حالياً 👑"
+        next_level = "أنت في أعلى مستوى إحالات حالياً ✨"
 
     text = (
         "🤝 <b>نظام الإحالات</b>\n\n"
         "شارك رابطك مع أصدقائك واربح من صافي خسارتهم الأسبوعية في اللعبة كأنك شريك في البوت.\n\n"
-        "🎯 <b>شرائح أرباح الإحالات القابلة للسحب:</b>\n"
+        "🧿 <b>شرائح أرباح الإحالات القابلة للسحب:</b>\n"
         "• 3 إحالات نشطة = 1% من خسارة المحالين\n"
         "• 5 إحالات نشطة = 1.5% من خسارة المحالين\n"
         "• 10 إحالات نشطة = 2% من خسارة المحالين\n\n"
-        "✅ <b>الإحالة النشطة:</b> من سجّل عبر رابطك وأكمل أول إيداع مقبول.\n"
-        "💡 الأرباح تُحسب أسبوعياً من خسارة المحالين في اللعبة، وتضاف إلى رصيد أرباح إحالات قابل للسحب.\n\n"
-        f"⚙️ <b>حالة النظام:</b> {status_text}\n"
-        f"👥 <b>الإحالات المسجلة:</b> <code>{registered}</code>\n"
-        f"✅ <b>الإحالات النشطة:</b> <code>{active}</code>\n"
+        "✔️ <b>الإحالة النشطة:</b> من سجّل عبر رابطك وأكمل أول إيداع مقبول.\n"
+        "🔆 الأرباح تُحسب أسبوعياً من خسارة المحالين في اللعبة، وتضاف إلى رصيد أرباح إحالات قابل للسحب.\n\n"
+        f"🛠️ <b>حالة النظام:</b> {status_text}\n"
+        f"🧑‍🤝‍🧑 <b>الإحالات المسجلة:</b> <code>{registered}</code>\n"
+        f"✔️ <b>الإحالات النشطة:</b> <code>{active}</code>\n"
         f"📈 <b>نسبتك الحالية:</b> <code>{percent}%</code>\n"
-        f"💵 <b>رصيد أرباح الإحالات القابل للسحب:</b> <code>{total_earnings:,} ل.س جديدة</code>\n"
-        f"🔜 <b>{next_level}</b>\n\n"
-        f"🔗 <b>رابط الإحالة الخاص بك:</b>\n<code>{ref_link}</code>\n\n"
-        "انسخ الرابط وشاركه مع أصدقائك 🚀"
+        f"💳 <b>رصيد أرباح الإحالات القابل للسحب:</b> <code>{total_earnings:,} ل.س جديدة</code>\n"
+        f"→ <b>{next_level}</b>\n\n"
+        f"🧷 <b>رابط الإحالة الخاص بك:</b>\n<code>{ref_link}</code>\n\n"
+        "انسخ الرابط وشاركه مع أصدقائك 🛫"
     )
     rows = []
     if total_earnings > 0:
-        rows.append([InlineKeyboardButton(text="💵 تحويل أرباح الإحالات إلى رصيد البوت للسحب", callback_data="transfer_affiliate_balance")])
-    rows.append([InlineKeyboardButton(text="🏠 القائمة الرئيسية", callback_data="back_to_main_menu")])
+        rows.append([InlineKeyboardButton(text="💳 تحويل أرباح الإحالات إلى رصيد البوت للسحب", callback_data="transfer_affiliate_balance")])
+    rows.append([InlineKeyboardButton(text="🏡 القائمة الرئيسية", callback_data="back_to_main_menu")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -3241,7 +3241,7 @@ async def transfer_affiliate_balance_callback(callback: CallbackQuery):
     if result.get('ok'):
         await safe_edit_text(
             callback.message,
-            f"✅ <b>تم تحويل أرباح الإحالات إلى رصيد البوت.</b>\n\n💵 المبلغ: <code>{int(result.get('amount') or 0):,} ل.س جديدة</code>\n💎 رصيد البوت الجديد: <code>{int(result.get('new_bot_balance') or 0):,} ل.س جديدة</code>",
+            f"✔️ <b>تم تحويل أرباح الإحالات إلى رصيد البوت.</b>\n\n💳 المبلغ: <code>{int(result.get('amount') or 0):,} ل.س جديدة</code>\n🔷 رصيد البوت الجديد: <code>{int(result.get('new_bot_balance') or 0):,} ل.س جديدة</code>",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -3257,10 +3257,10 @@ async def history_menu_callback(callback: CallbackQuery):
     history = await asyncio.to_thread(repo.get_user_transactions_history, telegram_id, limit=10)
 
     if not history:
-        text = "🔄 <b>سجل المعاملات</b>\n\nلا توجد معاملات بعد."
+        text = "🔁 <b>سجل المعاملات</b>\n\nلا توجد معاملات بعد."
     else:
-        status_emoji = {'approved': '🟢', 'pending': '🟡', 'rejected': '🔴'}
-        lines = ["🔄 <b>آخر معاملاتك:</b>\n"]
+        status_emoji = {'approved': '🔹', 'pending': '🔸', 'rejected': '🔻'}
+        lines = ["🔁 <b>آخر معاملاتك:</b>\n"]
         for tx in history:
             e = status_emoji.get(tx.get('status'), '⚪️')
             lines.append(
@@ -3292,23 +3292,23 @@ async def process_gift_amount(message: Message, state: FSMContext):
         if amount <= 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال مبلغ رقمي صحيح:")
+        await message.answer("⛔ الرجاء إدخال مبلغ رقمي صحيح:")
         return
     if amount < 1000:
-        await message.answer("❌ الحد الأدنى لكود الهدية هو 1,000 SYP:")
+        await message.answer("⛔ الحد الأدنى لكود الهدية هو 1,000 SYP:")
         return
 
     code = "JUDE-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
     success, msg = await asyncio.to_thread(repo.create_gift, str(message.from_user.id), amount, code)
     if not success:
-        await message.answer(f"❌ {msg}", reply_markup=get_user_menu_keyboard(message.from_user.id))
+        await message.answer(f"⛔ {msg}", reply_markup=get_user_menu_keyboard(message.from_user.id))
         await state.clear()
         return
 
     await message.answer(
-        f"✅ <b>تم إنشاء كود الهدية بنجاح!</b>\n\n"
-        f"🎫 <b>الكود:</b> <code>{code}</code>\n"
-        f"💰 <b>القيمة:</b> <code>{amount:,} ل.س جديدة</code>\n\n"
+        f"✔️ <b>تم إنشاء كود الهدية بنجاح!</b>\n\n"
+        f"🎟️ <b>الكود:</b> <code>{code}</code>\n"
+        f"🪙 <b>القيمة:</b> <code>{amount:,} ل.س جديدة</code>\n\n"
         "شارك هذا الكود مع من تريد. تم خصم المبلغ من رصيدك.",
         reply_markup=get_user_menu_keyboard(message.from_user.id),
         parse_mode="HTML"
@@ -3324,7 +3324,7 @@ async def gift_redeem_callback(callback: CallbackQuery, state: FSMContext):
         return
     await safe_edit_text(
         callback.message,
-        "🎫 <b>استرداد كود هدية</b>\n\nأرسل الآن كود الهدية الذي تريد استرداده:",
+        "🎟️ <b>استرداد كود هدية</b>\n\nأرسل الآن كود الهدية الذي تريد استرداده:",
         parse_mode="HTML"
     )
     await state.set_state(BotStates.entering_gift_code_to_redeem)
@@ -3348,22 +3348,22 @@ async def process_gift_redeem(message: Message, state: FSMContext):
             sender_id = gift_data.get('sender_telegram_id', 'Unknown')
             amount = gift_data.get('amount', 0)
             is_bonus = (str(code).upper().startswith('JUDE-BONUS-') or str(code).upper().startswith('CAESAR-BONUS-'))
-            type_label = "🎁 بونص لعب" if is_bonus else "💵 كاش قابل للسحب"
+            type_label = "🧧 بونص لعب" if is_bonus else "💳 كاش قابل للسحب"
             await send_log_message(
                 message.bot,
-                "🎫 <b>تم استرداد كود هدية جديد!</b>\n"
+                "🎟️ <b>تم استرداد كود هدية جديد!</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                f"👤 <b>المسترد:</b> @{username} (<code>{message.from_user.id}</code>)\n"
+                f"🧑‍💼 <b>المسترد:</b> @{username} (<code>{message.from_user.id}</code>)\n"
                 f"🏷️ <b>نوع الهدية:</b> <code>{type_label}</code>\n"
-                f"🎫 <b>الكود:</b> <code>{code}</code>\n"
-                f"💰 <b>القيمة:</b> <code>{amount:,} ل.س جديدة</code>\n"
-                f"👑 <b>المُصدر:</b> <code>{sender_id}</code>\n"
+                f"🎟️ <b>الكود:</b> <code>{code}</code>\n"
+                f"🪙 <b>القيمة:</b> <code>{amount:,} ل.س جديدة</code>\n"
+                f"✨ <b>المُصدر:</b> <code>{sender_id}</code>\n"
                 f"⏰ <b>الوقت:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}"
             )
         except Exception as log_err:
             logger.warning(f"Failed to log gift redemption: {log_err}")
 
-    emoji = "✅" if success else "❌"
+    emoji = "✔️" if success else "⛔"
     await message.answer(
         f"{emoji} {msg}",
         reply_markup=get_user_menu_keyboard(message.from_user.id),

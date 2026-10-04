@@ -140,7 +140,7 @@
     <!-- Refresh Button (Right) -->
     <g transform="translate(306, 8)">
       <circle cx="16" cy="16" r="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,215,0,0.12)" stroke-width="1"/>
-      <text x="16" y="21" text-anchor="middle" font-size="14" fill="#7a8a9a">🔄</text>
+      <text x="16" y="21" text-anchor="middle" font-size="14" fill="#7a8a9a">🔁</text>
     </g>
   </g>
 
@@ -157,7 +157,7 @@
     </line>
     
     <!-- Label -->
-    <text x="24" y="35" font-size="11" font-weight="700" fill="#7a8a9a">💎 رصيدك الحالي (قابل للسحب)</text>
+    <text x="24" y="35" font-size="11" font-weight="700" fill="#7a8a9a">🔷 رصيدك الحالي (قابل للسحب)</text>
     
     <!-- Main Amount -->
     <text x="24" y="72" font-family="'Segoe UI', 'Arial Black', sans-serif" 
@@ -168,7 +168,7 @@
     <line x1="24" y1="102" x2="334" y2="102" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
     
     <!-- Bonus Balance -->
-    <text x="24" y="122" font-size="12" font-weight="700" fill="url(#goldGrad)">🎁 رصيد المكافآت (للّعب فقط)</text>
+    <text x="24" y="122" font-size="12" font-weight="700" fill="url(#goldGrad)">🧧 رصيد المكافآت (للّعب فقط)</text>
     <text x="334" y="122" text-anchor="end" font-family="'Segoe UI', 'Arial Black', sans-serif" 
           font-size="16" font-weight="900" fill="url(#goldGrad)">250,000 ل.س</text>
     <text x="24" y="138" font-size="10" fill="#7a8a9a">≈ 2,500 ل.س جديدة — يُرفق تلقائياً عند شحن اللعبة</text>
@@ -185,7 +185,7 @@
   <!-- ============================================================ -->
   <g transform="translate(16, 258)" filter="url(#cardShadow)">
     <rect width="358" height="95" rx="20" fill="url(#vipGold)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
-    <text x="24" y="30" font-size="16" font-weight="900" fill="url(#goldGrad)">👑 Jude Robert</text>
+    <text x="24" y="30" font-size="16" font-weight="900" fill="url(#goldGrad)">✨ Jude Robert</text>
     <text x="334" y="30" text-anchor="end" font-size="11" fill="rgba(255,215,0,0.3)"
           style="background:rgba(255,215,0,0.2);padding:3px 10px;border-radius:20px;">+15% بونص</text>
     <text x="24" y="50" font-size="11" fill="#7a8a9a">إجمالي إيداعاتك: <tspan fill="#f0f0f0" font-weight="700">3,500,000</tspan> ل.س</text>
@@ -193,7 +193,7 @@
     <!-- Progress Bar -->
     <rect x="24" y="58" width="310" height="10" rx="5" fill="rgba(255,255,255,0.05)"/>
     <rect x="24" y="58" width="186" height="10" rx="5" fill="url(#goldGrad)"/>
-    <text x="24" y="82" font-size="10" fill="#7a8a9a">باقي <tspan fill="#f0f0f0" font-weight="700">1,500,000</tspan> ل.س للترقية إلى 🥇 نبيل</text>
+    <text x="24" y="82" font-size="10" fill="#7a8a9a">باقي <tspan fill="#f0f0f0" font-weight="700">1,500,000</tspan> ل.س للترقية إلى 🏆 نبيل</text>
   </g>
 
   <!-- ============================================================ -->
@@ -201,7 +201,7 @@
   <!-- ============================================================ -->
   <g transform="translate(16, 366)" filter="url(#cardShadow)">
     <rect width="358" height="95" rx="20" fill="url(#cashbackGrad)" stroke="rgba(0,214,143,0.1)" stroke-width="1"/>
-    <text x="24" y="28" font-size="13" font-weight="900" fill="url(#greenGrad)">💸 الكاش باك الأسبوعي</text>
+    <text x="24" y="28" font-size="13" font-weight="900" fill="url(#greenGrad)">💳 الكاش باك الأسبوعي</text>
     <text x="334" y="28" text-anchor="end" font-size="11" fill="rgba(0,214,143,0.3)"
           style="background:rgba(0,214,143,0.15);padding:3px 10px;border-radius:20px;">5%</text>
     
@@ -218,7 +218,7 @@
     </g>
     
     <text x="195" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="url(#goldGrad)">
-      🎁 كاش باك متوقع: 20,000 ل.س
+      🧧 كاش باك متوقع: 20,000 ل.س
     </text>
   </g>
 
@@ -329,8 +329,8 @@
       </g>
     </g>
     
-    <text x="24" y="74" font-size="10" fill="#7a8a9a">🎁 مكافأة الإكمال: <tspan fill="url(#goldGrad)" font-weight="700">20,000</tspan> ل.س</text>
-    <text x="24" y="86" font-size="10" fill="url(#greenGrad)">💰 شرط الصرف: 150,000 / 500,000 ل.س إيداعات</text>
+    <text x="24" y="74" font-size="10" fill="#7a8a9a">🧧 مكافأة الإكمال: <tspan fill="url(#goldGrad)" font-weight="700">20,000</tspan> ل.س</text>
+    <text x="24" y="86" font-size="10" fill="url(#greenGrad)">🪙 شرط الصرف: 150,000 / 500,000 ل.س إيداعات</text>
   </g>
 
   <!-- ============================================================ -->
@@ -341,25 +341,25 @@
       <!-- Deposit -->
       <g filter="url(#cardShadow)">
         <rect width="82" height="90" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-        <text x="41" y="28" text-anchor="middle" font-size="22">📥</text>
+        <text x="41" y="28" text-anchor="middle" font-size="22">📨</text>
         <text x="41" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#f0f0f0">شحن</text>
       </g>
       <!-- Withdraw -->
       <g transform="translate(92, 0)" filter="url(#cardShadow)">
         <rect width="82" height="90" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-        <text x="41" y="28" text-anchor="middle" font-size="22">📤</text>
+        <text x="41" y="28" text-anchor="middle" font-size="22">📬</text>
         <text x="41" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#f0f0f0">سحب</text>
       </g>
       <!-- Gift -->
       <g transform="translate(184, 0)" filter="url(#cardShadow)">
         <rect width="82" height="90" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-        <text x="41" y="28" text-anchor="middle" font-size="22">🎁</text>
+        <text x="41" y="28" text-anchor="middle" font-size="22">🧧</text>
         <text x="41" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#f0f0f0">إهداء</text>
       </g>
       <!-- Referral -->
       <g transform="translate(276, 0)" filter="url(#cardShadow)">
         <rect width="82" height="90" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-        <text x="41" y="28" text-anchor="middle" font-size="22">💰</text>
+        <text x="41" y="28" text-anchor="middle" font-size="22">🪙</text>
         <text x="41" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#f0f0f0">إحالات</text>
       </g>
     </g>
@@ -373,7 +373,7 @@
     
     <!-- Home (Active) -->
     <g transform="translate(32, 8)">
-      <text x="48" y="30" text-anchor="middle" font-size="24">🏠</text>
+      <text x="48" y="30" text-anchor="middle" font-size="24">🏡</text>
       <text x="48" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="url(#goldGrad)">الرئيسية</text>
       <circle cx="48" cy="62" r="3" fill="url(#goldGrad)"/>
     </g>
@@ -386,13 +386,13 @@
     
     <!-- Referral -->
     <g transform="translate(232, 8)">
-      <text x="48" y="30" text-anchor="middle" font-size="24">💰</text>
+      <text x="48" y="30" text-anchor="middle" font-size="24">🪙</text>
       <text x="48" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#7a8a9a">الإحالات</text>
     </g>
     
     <!-- Perks -->
     <g transform="translate(332, 8)">
-      <text x="48" y="30" text-anchor="middle" font-size="24">🏆</text>
+      <text x="48" y="30" text-anchor="middle" font-size="24">🏅</text>
       <text x="48" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#7a8a9a">المزايا</text>
     </g>
   </g>
@@ -406,7 +406,7 @@
       <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
     </path>
     <text x="205" y="75" font-size="11" font-weight="800" fill="url(#goldGrad)" style="filter:url(#textGlow);">
-      🆕 NEW LOGO
+      🌟 NEW LOGO
     </text>
     <text x="205" y="90" font-size="9" fill="#7a8a9a">شعار البوت في الترويسة</text>
   </g>

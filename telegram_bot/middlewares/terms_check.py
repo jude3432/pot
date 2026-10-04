@@ -7,10 +7,10 @@ import database.repository as repo
 from config import settings
 
 
-# 🔧 إصلاح: قائمة الأدمن ليتجاوزوا فحص الشروط
+# 🛠️ إصلاح: قائمة الأدمن ليتجاوزوا فحص الشروط
 ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
 
-# 🆕 (Update 20 / Perf) كاش قبول الشروط الإيجابي:
+# 🌟 (Update 20 / Perf) كاش قبول الشروط الإيجابي:
 # كان الميدلوير ينفّذ get_user على كل رسالة وكل نقرة زر لأي مستخدم.
 # نخزّن القبول فقط (الاتجاه الآمن): غير المقبول يُفحص دائماً من القاعدة،
 # فلا يوجد أي تأخير على من وافق للتو، والحذف يُبطل الكاش صراحةً.
@@ -32,13 +32,13 @@ def _is_admin(user_id) -> bool:
 
 def get_terms_text() -> str:
     return (
-        "📜 <b>الشروط والأحكام</b>\n\n"
-        "🚨 <b>يجب عليك الموافقة على الشروط قبل استخدام البوت:</b>\n\n"
+        "📃 <b>الشروط والأحكام</b>\n\n"
+        "🚧 <b>يجب عليك الموافقة على الشروط قبل استخدام البوت:</b>\n\n"
         "1️⃣ <b>المتابعة تعني الموافقة على الشروط:</b> أنت تقر بأنك قرأت الشروط وتوافق عليها بالكامل.\n"
         "2️⃣ <b>تبديل طرق الدفع غير مسموح:</b> لا يسمح بشحن رصيد وسحبه بطرق مختلفة بغرض التلاعب.\n"
         "3️⃣ <b>أرباح الإحالات:</b> تحتسب فقط بعد تسجيل 3 إحالات نشطة.\n"
         "4️⃣ <b>المسؤولية:</b> أي محاولة احتيال أو تلاعب تؤدي إلى حظر الحساب ومصادرة الرصيد.\n\n"
-        "⚠️ بمجرد المتابعة بعد الموافقة، فأنت تقر بأنك قرأت الشروط ووافقت عليها."
+        "🚧 بمجرد المتابعة بعد الموافقة، فأنت تقر بأنك قرأت الشروط ووافقت عليها."
     )
 
 
@@ -53,7 +53,7 @@ class TermsCheckMiddleware(BaseMiddleware):
         if not user:
             return await handler(event, data)
 
-        # 🔧 إصلاح: المشرفون يتجاوزون فحص الشروط بالكامل
+        # 🛠️ إصلاح: المشرفون يتجاوزون فحص الشروط بالكامل
         # (ضروري لأن أزرار الموافقة/الرفض تُنقر من داخل القنوات)
         if _is_admin(user.id):
             return await handler(event, data)
@@ -61,7 +61,7 @@ class TermsCheckMiddleware(BaseMiddleware):
         telegram_id = str(user.id)
         username = user.username
 
-        # 🆕 مسار الكاش السريع: مقبول مسبقاً خلال 60 ثانية → صفر استعلام
+        # 🌟 مسار الكاش السريع: مقبول مسبقاً خلال 60 ثانية → صفر استعلام
         if _terms_accepted_cache.get(telegram_id, 0) > time.time():
             return await handler(event, data)
 
@@ -103,7 +103,7 @@ class TermsCheckMiddleware(BaseMiddleware):
                 await event.answer("يرجى الموافقة على الشروط أولاً!", show_alert=True)
             return
 
-        # 🆕 المستخدم مقبول → خزّن القبول في الكاش لتتخطى الأحداث التالية الاستعلام
+        # 🌟 المستخدم مقبول → خزّن القبول في الكاش لتتخطى الأحداث التالية الاستعلام
         if db_user and db_user.get('terms_accepted'):
             _terms_accepted_cache[telegram_id] = time.time() + _TERMS_TTL
 

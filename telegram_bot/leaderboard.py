@@ -1,5 +1,5 @@
 # ============================================================
-# 🏆 محرك لوحة المتصدرين الأسبوعية (Turnover Leaderboard Engine)
+# 🏅 محرك لوحة المتصدرين الأسبوعية (Turnover Leaderboard Engine)
 # ------------------------------------------------------------
 # منطق خالص (Pure Logic) بدون قاعدة بيانات أو شبكة، ليكون:
 #   1) قابلاً للاختبار مباشرة في tests/simulate_weekly_leaderboard.py
@@ -13,7 +13,7 @@
 # ============================================================
 from datetime import datetime, timedelta, timezone, date
 
-# 🕒 توقيت سوريا الثابت (UTC+3) — يتطابق مع repository.get_syria_now
+# 🕰️ توقيت سوريا الثابت (UTC+3) — يتطابق مع repository.get_syria_now
 SYRIA_TZ = timezone(timedelta(hours=3), name="Asia/Damascus")
 
 # نافذة التسوية: أول 5 ثوانٍ من يوم الاثنين فصاعداً وحتى 48 ساعة

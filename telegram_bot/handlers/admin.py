@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
 
 
-# 🆕 دوال مساعدة لتحويل الليرة القديمة ↔ الجديدة (منسوخة من menu.py للاستخدام المحلي)
+# 🌟 دوال مساعدة لتحويل الليرة القديمة ↔ الجديدة (منسوخة من menu.py للاستخدام المحلي)
 def _syp_old_to_new(amount_old):
     return amount_old
 
@@ -34,7 +34,7 @@ def is_admin_user(user_id) -> bool:
 
 
 async def _send_with_retry(send_coro, label="send", max_retries=2, delay=1.0):
-    """🆕 إرسال آمن مع إعادة محاولة لمعالجة تقطّعات شبكة Render المؤقتة."""
+    """🌟 إرسال آمن مع إعادة محاولة لمعالجة تقطّعات شبكة Render المؤقتة."""
     for attempt in range(1, max_retries + 2):
         try:
             return await send_coro
@@ -63,7 +63,7 @@ async def safe_edit_text(target_message, text, reply_markup=None, parse_mode="HT
 
 async def safe_answer_callback(callback: CallbackQuery, text=None, show_alert=False):
     try:
-        await callback.answer(text or "✅", show_alert=show_alert)
+        await callback.answer(text or "✔️", show_alert=show_alert)
         return True
     except Exception as e:
         logger.warning(f"admin safe_answer_callback ignored: {e}")
@@ -72,7 +72,7 @@ async def safe_answer_callback(callback: CallbackQuery, text=None, show_alert=Fa
 
 async def ensure_admin_callback(callback: CallbackQuery) -> bool:
     if not is_admin_user(callback.from_user.id):
-        await safe_answer_callback(callback, "❌ غير مسموح لك باستخدام أدوات الإدارة.", show_alert=True)
+        await safe_answer_callback(callback, "⛔ غير مسموح لك باستخدام أدوات الإدارة.", show_alert=True)
         return False
     return True
 
@@ -81,12 +81,12 @@ async def ensure_admin_message(message: Message, state: FSMContext | None = None
     if not is_admin_user(message.from_user.id):
         if state:
             await state.clear()
-        await message.answer("❌ غير مسموح لك باستخدام أدوات الإدارة.")
+        await message.answer("⛔ غير مسموح لك باستخدام أدوات الإدارة.")
         return False
     return True
 
 
-# 🆕 فلتر يطابق رسائل المشرف فقط عند وجود طلب رفض مخصص معلّق (مع استثناء الأوامر)
+# 🌟 فلتر يطابق رسائل المشرف فقط عند وجود طلب رفض مخصص معلّق (مع استثناء الأوامر)
 class HasPendingRejection(Filter):
     async def __call__(self, message: Message) -> bool:
         if not is_admin_user(message.from_user.id):
@@ -101,35 +101,35 @@ class HasPendingRejection(Filter):
 
 @router.callback_query(F.data.startswith("user_details_"))
 async def user_details_callback(callback: CallbackQuery):
-    """✅ معالج زر 'تفاصيل المستخدم' - يرسل التفاصيل لمحادثة المشرف الخاصة."""
+    """✔️ معالج زر 'تفاصيل المستخدم' - يرسل التفاصيل لمحادثة المشرف الخاصة."""
     if not await ensure_admin_callback(callback):
         return
     telegram_id = callback.data.replace("user_details_", "")
     details = await asyncio.to_thread(repo.get_user_details, telegram_id)
     if not details:
-        await safe_answer_callback(callback, "⚠️ المستخدم غير موجود.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 المستخدم غير موجود.", show_alert=True)
         return
 
-    terms = "نعم ✅" if details.get('terms_accepted') else "لا ❌"
+    terms = "نعم ✔️" if details.get('terms_accepted') else "لا ⛔"
     text = (
-        f"👤 <b>تفاصيل المستخدم</b>\n\n"
-        f"🆔 <b>Telegram ID:</b> <code>{details['telegram_id']}</code>\n"
-        f"📛 <b>الاسم:</b> <code>{details.get('telegram_username') or 'بدون معرف'}</code>\n"
-        f"🎮 <b>اسم iChancy:</b> <code>{details.get('ichancy_username') or 'غير مرتبط'}</code>\n"
-        f"🔑 <b>Player ID:</b> <code>{details.get('player_id') or 'غير متوفر'}</code>\n"
-        f"💎 <b>رصيد البوت:</b> <code>{int(details.get('bot_balance', 0)):,} SYP</code>\n"
-        f"🎮 <b>رصيد اللعبة:</b> <code>{int(details.get('game_balance', 0)):,} NSP</code>\n"
-        f"📜 <b>وافق على الشروط:</b> {terms}\n\n"
-        f"📊 <b>إحصائيات المعاملات:</b>\n"
+        f"🧑‍💼 <b>تفاصيل المستخدم</b>\n\n"
+        f"🔖 <b>Telegram ID:</b> <code>{details['telegram_id']}</code>\n"
+        f"🏷️ <b>الاسم:</b> <code>{details.get('telegram_username') or 'بدون معرف'}</code>\n"
+        f"🕹️ <b>اسم iChancy:</b> <code>{details.get('ichancy_username') or 'غير مرتبط'}</code>\n"
+        f"🗝️ <b>Player ID:</b> <code>{details.get('player_id') or 'غير متوفر'}</code>\n"
+        f"🔷 <b>رصيد البوت:</b> <code>{int(details.get('bot_balance', 0)):,} SYP</code>\n"
+        f"🕹️ <b>رصيد اللعبة:</b> <code>{int(details.get('game_balance', 0)):,} NSP</code>\n"
+        f"📃 <b>وافق على الشروط:</b> {terms}\n\n"
+        f"📈 <b>إحصائيات المعاملات:</b>\n"
         f"• الإجمالي: <code>{details['tx_count']}</code>\n"
         f"• معلّقة: <code>{details['pending_count']}</code>\n"
         f"• موافَق عليها: <code>{details['approved_count']}</code>\n"
         f"• مرفوضة: <code>{details['rejected_count']}</code>\n"
-        f"👥 <b>الإحالات النشطة:</b> <code>{details['ref_count']}</code>"
+        f"🧑‍🤝‍🧑 <b>الإحالات النشطة:</b> <code>{details['ref_count']}</code>"
     )
     try:
         await callback.bot.send_message(callback.from_user.id, text, parse_mode="HTML")
-        await safe_answer_callback(callback, "✅ تم إرسال التفاصيل لمحادثتك الخاصة")
+        await safe_answer_callback(callback, "✔️ تم إرسال التفاصيل لمحادثتك الخاصة")
     except Exception:
         await safe_answer_callback(callback, text[:190], show_alert=True)
 
@@ -145,7 +145,7 @@ def get_rejection_reason_keyboard(prefix: str, tx_id: int):
             InlineKeyboardButton(text="بيانات ناقصة", callback_data=f"{prefix}|missing_data|{tx_id}")
         ],
         [InlineKeyboardButton(text="✍️ سبب مخصص", callback_data=f"{prefix}|custom|{tx_id}")],
-        [InlineKeyboardButton(text="🔙 إلغاء", callback_data="caesar_control_panel")]
+        [InlineKeyboardButton(text="↩️ إلغاء", callback_data="caesar_control_panel")]
     ])
 
 
@@ -169,10 +169,10 @@ class AdminStates(StatesGroup):
     entering_bonus_min_amount = State()
     entering_bonus_max_amount = State()
     editing_payment_address = State()
-    # 🆕 إدارة المستخدمين
+    # 🌟 إدارة المستخدمين
     searching_user = State()
     setting_balance = State()
-    # 🆕 (Update 18) لوحة المتصدرين الأسبوعية
+    # 🌟 (Update 18) لوحة المتصدرين الأسبوعية
     entering_lb_prize_1 = State()
     entering_lb_prize_2 = State()
     entering_lb_prize_3 = State()
@@ -182,25 +182,25 @@ class AdminStates(StatesGroup):
 
 def get_admin_keyboard():
     keyboard = [
-        [InlineKeyboardButton(text="👑 لوحة التحكم الرئيسية", callback_data="caesar_control_panel")],
+        [InlineKeyboardButton(text="✨ لوحة التحكم الرئيسية", callback_data="caesar_control_panel")],
         [
-            InlineKeyboardButton(text="🩺 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
-            InlineKeyboardButton(text="🔄 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
+            InlineKeyboardButton(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
+            InlineKeyboardButton(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
         ],
-        [InlineKeyboardButton(text="🗑️ تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
-        [InlineKeyboardButton(text="💱 تعديل أسعار الصرف", callback_data="adm_rates_menu")],
+        [InlineKeyboardButton(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
+        [InlineKeyboardButton(text="💹 تعديل أسعار الصرف", callback_data="adm_rates_menu")],
         [
             InlineKeyboardButton(text="🏷️ نسبة عمولة السحب", callback_data="adm_comm_menu"),
-            InlineKeyboardButton(text="🔑 تحديث كوكيز الموقع", callback_data="adm_cookie_menu")
+            InlineKeyboardButton(text="🗝️ تحديث كوكيز الموقع", callback_data="adm_cookie_menu")
         ],
-        [InlineKeyboardButton(text="🎮 رصيد محفظة الوكيل الفعلي", callback_data="adm_agent_bal")],
+        [InlineKeyboardButton(text="🕹️ رصيد محفظة الوكيل الفعلي", callback_data="adm_agent_bal")],
         [InlineKeyboardButton(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses")],
         [
-            InlineKeyboardButton(text="🎫 إنشاء كود هدية", callback_data="adm_create_bot_gift"),
-            InlineKeyboardButton(text="🎁 البونصات والعروض", callback_data="adm_bonus_menu")
+            InlineKeyboardButton(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
+            InlineKeyboardButton(text="🧧 البونصات والعروض", callback_data="adm_bonus_menu")
         ],
         [InlineKeyboardButton(text="🤝 تفعيل/إيقاف الإحالات", callback_data="adm_referrals_toggle")],
-        [InlineKeyboardButton(text="❌ إغلاق لوحة التحكم", callback_data="adm_close_panel")]
+        [InlineKeyboardButton(text="⛔ إغلاق لوحة التحكم", callback_data="adm_close_panel")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -209,31 +209,31 @@ def get_admin_dashboard_keyboard(refresh_callback="caesar_control_panel"):
     webapp_url = f"{getattr(settings, 'RENDER_EXTERNAL_URL', 'https://ichancy100.onrender.com')}/dashboard?v=admin-campaigns-v9-20260716"
     from aiogram.types import WebAppInfo
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 فتح لوحة التحكم المتقدمة", web_app=WebAppInfo(url=webapp_url))],
+        [InlineKeyboardButton(text="📈 فتح لوحة التحكم المتقدمة", web_app=WebAppInfo(url=webapp_url))],
         [
-            InlineKeyboardButton(text="🔎 إدارة المستخدمين", callback_data="adm_users_menu"),
-            InlineKeyboardButton(text="💱 أسعار الصرف", callback_data="adm_rates_menu")
+            InlineKeyboardButton(text="🔍 إدارة المستخدمين", callback_data="adm_users_menu"),
+            InlineKeyboardButton(text="💹 أسعار الصرف", callback_data="adm_rates_menu")
         ],
         [
-            InlineKeyboardButton(text="🎮 رصيد الوكيل", callback_data="adm_agent_bal"),
-            InlineKeyboardButton(text="🔑 الكوكيز", callback_data="adm_cookie_menu")
+            InlineKeyboardButton(text="🕹️ رصيد الوكيل", callback_data="adm_agent_bal"),
+            InlineKeyboardButton(text="🗝️ الكوكيز", callback_data="adm_cookie_menu")
         ],
         [
             InlineKeyboardButton(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses"),
             InlineKeyboardButton(text="📈 تحديث السيولة", callback_data="adm_sync_liquidity")
         ],
         [
-            InlineKeyboardButton(text="🩺 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
-            InlineKeyboardButton(text="🔄 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
+            InlineKeyboardButton(text="🧪 فحص النبض والمحاكاة", callback_data="adm_system_probe"),
+            InlineKeyboardButton(text="🔁 تصفير حسابي الاختباري", callback_data="adm_reset_my_test_balance")
         ],
-        [InlineKeyboardButton(text="🗑️ تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
+        [InlineKeyboardButton(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
         [
-            InlineKeyboardButton(text="🎫 إنشاء كود هدية", callback_data="adm_create_bot_gift"),
-            InlineKeyboardButton(text="🎁 البونصات", callback_data="adm_bonus_menu")
+            InlineKeyboardButton(text="🎟️ إنشاء كود هدية", callback_data="adm_create_bot_gift"),
+            InlineKeyboardButton(text="🧧 البونصات", callback_data="adm_bonus_menu")
         ],
         [InlineKeyboardButton(text="🤝 الإحالات", callback_data="adm_referrals_toggle")],
-        [InlineKeyboardButton(text="🏆 لوحة المتصدرين الأسبوعية", callback_data="adm_lb_menu")],
-        [InlineKeyboardButton(text="❌ إغلاق", callback_data="back_to_main_menu")]
+        [InlineKeyboardButton(text="🏅 لوحة المتصدرين الأسبوعية", callback_data="adm_lb_menu")],
+        [InlineKeyboardButton(text="⛔ إغلاق", callback_data="back_to_main_menu")]
     ])
 
 
@@ -257,7 +257,7 @@ async def get_total_bot_balance() -> int:
 
 
 def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance, pending, recent, total_users, new_users, today_tx, approved_volume):
-    cookie_status = "🟢 نشطة" if is_cookie_alive else "🔴 منتهية"
+    cookie_status = "🔹 نشطة" if is_cookie_alive else "🔻 منتهية"
     cookie_age = repo.get_cookie_age_minutes()
     if cookie_age is None:
         cookie_age_text = "—"
@@ -266,9 +266,9 @@ def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance,
     elif cookie_age < 1440:
         cookie_age_text = f"منذ {cookie_age // 60} ساعة"
     else:
-        cookie_age_text = f"منذ {cookie_age // 1440} يوم ⚠️"
+        cookie_age_text = f"منذ {cookie_age // 1440} يوم 🚧"
 
-    cookie_warn = " 🔴 يلزم تحديث!" if (cookie_age and cookie_age >= 720) else ""
+    cookie_warn = " 🔻 يلزم تحديث!" if (cookie_age and cookie_age >= 720) else ""
 
     agent_balance = bot_settings.get('agent_balance', 0)
     usd_buy_rate = float(bot_settings['usd_buy_rate'])
@@ -279,28 +279,28 @@ def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance,
     dep_pending = [tx for tx in pending if tx['type'] == 'deposit_bot']
     wit_pending = [tx for tx in pending if tx['type'] == 'withdraw_bot']
 
-    text = "👑 <b>═══ لوحة تحكم Jude Robert ═══</b>\n\n"
-    text += "📊 <b>══ الإحصائيات العامة ══</b>\n"
-    text += f"👥 <b>إجمالي المستخدمين:</b> <code>{total_users:,}</code>\n"
-    text += f"🆕 <b>جدد اليوم:</b> <code>{new_users}</code> | 🔄 <b>معاملات اليوم:</b> <code>{today_tx}</code>\n"
-    text += f"✅ <b>إجمالي المعاملات الموافَق عليها:</b> <code>{approved_volume:,} SYP</code>\n\n"
+    text = "✨ <b>═══ لوحة تحكم Jude Robert ═══</b>\n\n"
+    text += "📈 <b>══ الإحصائيات العامة ══</b>\n"
+    text += f"🧑‍🤝‍🧑 <b>إجمالي المستخدمين:</b> <code>{total_users:,}</code>\n"
+    text += f"🌟 <b>جدد اليوم:</b> <code>{new_users}</code> | 🔁 <b>معاملات اليوم:</b> <code>{today_tx}</code>\n"
+    text += f"✔️ <b>إجمالي المعاملات الموافَق عليها:</b> <code>{approved_volume:,} SYP</code>\n\n"
 
-    text += "💰 <b>══ الأرصدة المالية ══</b>\n"
-    text += f"💎 <b>رصيد البوت (مستخدمين):</b> <code>{total_bot_balance:,} SYP</code>\n"
-    text += f"🎮 <b>محفظة الوكيل (iChancy):</b> <code>{agent_balance:,} NSP</code>\n\n"
+    text += "🪙 <b>══ الأرصدة المالية ══</b>\n"
+    text += f"🔷 <b>رصيد البوت (مستخدمين):</b> <code>{total_bot_balance:,} SYP</code>\n"
+    text += f"🕹️ <b>محفظة الوكيل (iChancy):</b> <code>{agent_balance:,} NSP</code>\n\n"
 
-    text += "💱 <b>══ أسعار الصرف الحالية ══</b>\n"
+    text += "💹 <b>══ أسعار الصرف الحالية ══</b>\n"
     text += f"📈 <b>سعر الإيداع (شراء $):</b> <code>{usd_buy_rate:,.2f} ل.س</code>\n"
     text += f"📉 <b>سعر السحب (بيع $):</b> <code>{usd_sell_rate:,.2f} ل.س</code>\n"
-    text += f"🎮 <b>سعر اللعبة (NSP):</b> <code>1 NSP = {exchange_rate:,} ل.س</code>\n"
+    text += f"🕹️ <b>سعر اللعبة (NSP):</b> <code>1 NSP = {exchange_rate:,} ل.س</code>\n"
     text += f"🏷️ <b>عمولة السحب:</b> <code>{withdraw_commission:,.2f}%</code>\n\n"
 
-    text += "🔑 <b>══ حالة الجلسة ══</b>\n"
+    text += "🗝️ <b>══ حالة الجلسة ══</b>\n"
     text += f"🍪 <b>كوكيز iChancy:</b> {cookie_status}{cookie_warn}\n"
     text += f"🕐 <b>آخر تحديث:</b> {cookie_age_text}\n\n"
 
-    text += "📋 <b>══ الطلبات المعلّقة ══</b>\n"
-    text += f"📥 إيداع: <code>{len(dep_pending)}</code> | 📤 سحب: <code>{len(wit_pending)}</code>\n"
+    text += "🗒️ <b>══ الطلبات المعلّقة ══</b>\n"
+    text += f"📨 إيداع: <code>{len(dep_pending)}</code> | 📬 سحب: <code>{len(wit_pending)}</code>\n"
     if dep_pending:
         text += "<i>طلبات الإيداع:</i>\n"
         for tx in dep_pending[:5]:
@@ -310,9 +310,9 @@ def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance,
         for tx in wit_pending[:5]:
             text += f"  • <code>#{tx['id']}</code> - {tx['amount']:,.0f} SYP\n"
 
-    text += "\n🕒 <b>══ آخر 5 عمليات ══</b>\n"
+    text += "\n🕰️ <b>══ آخر 5 عمليات ══</b>\n"
     for tx in recent[:5]:
-        status_emoji = '🟢' if tx['status'] == 'approved' else '🟡' if tx['status'] == 'pending' else '🔴'
+        status_emoji = '🔹' if tx['status'] == 'approved' else '🔸' if tx['status'] == 'pending' else '🔻'
         text += f"{status_emoji} <code>#{tx['id']}</code> {tx['type']} - {tx['amount']:,.0f}\n"
 
     return text
@@ -401,17 +401,17 @@ def build_withdraw_approved_details(tx):
     username = user.get('telegram_username')
     username_text = f"@{username}" if username else "@None"
     return (
-        "📤 <b>طلب سحب جديد!</b>\n\n"
-        f"🔑 <b>رمز المعاملة:</b> <code>{code}</code>\n"
-        f"🆔 <b>رقم الطلب:</b> <code>#{tx['id']}</code>\n"
-        f"👤 <b>العضو:</b> {username_text} (<code>{tx['user_telegram_id']}</code>)\n"
+        "📬 <b>طلب سحب جديد!</b>\n\n"
+        f"🗝️ <b>رمز المعاملة:</b> <code>{code}</code>\n"
+        f"🔖 <b>رقم الطلب:</b> <code>#{tx['id']}</code>\n"
+        f"🧑‍💼 <b>العضو:</b> {username_text} (<code>{tx['user_telegram_id']}</code>)\n"
         f"💳 <b>بوابة السحب:</b> <code>{gateway}</code>\n"
-        f"📱 <b>العنوان:</b> <code>{recipient}</code>\n"
-        f"💰 <b>المبلغ المخصوم:</b> <code>{amount_syp:,.0f} SYP</code>\n"
+        f"📲 <b>العنوان:</b> <code>{recipient}</code>\n"
+        f"🪙 <b>المبلغ المخصوم:</b> <code>{amount_syp:,.0f} SYP</code>\n"
         f"📈 <b>القيمة قبل العمولة:</b> <code>{gross_label}</code>\n"
         f"🏷️ <b>العمولة:</b> <code>{commission_label}</code>\n"
-        f"🎁 <b>الصافي المطلوب تحويله:</b> <code>{net_label}</code>\n\n"
-        "✅ <b>تم تأكيد التحويل.</b>"
+        f"🧧 <b>الصافي المطلوب تحويله:</b> <code>{net_label}</code>\n\n"
+        "✔️ <b>تم تأكيد التحويل.</b>"
     )
 
 
@@ -450,8 +450,8 @@ async def caesar_control_panel(callback: CallbackQuery):
         s['today_tx'], s['approved_volume']
     )
     keyboard = get_admin_dashboard_keyboard(refresh_callback="caesar_control_panel")
-    # 🆕 إضافة زر توزيع الكاش باك الأسبوعي
-    keyboard.inline_keyboard.append([InlineKeyboardButton(text="💸 توزيع الكاش باك الأسبوعي", callback_data="adm_trigger_cashback")])
+    # 🌟 إضافة زر توزيع الكاش باك الأسبوعي
+    keyboard.inline_keyboard.append([InlineKeyboardButton(text="💳 توزيع الكاش باك الأسبوعي", callback_data="adm_trigger_cashback")])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -461,14 +461,14 @@ async def adm_trigger_cashback_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     await safe_answer_callback(callback, "⏳ جاري معالجة الكاش باك لجميع المستخدمين...", show_alert=True)
-    await callback.message.answer("💸 <b>بدأت عملية توزيع الكاش باك الأسبوعي...</b>\nسيتم إشعار المستخدمين المؤهلين تلقائياً.")
+    await callback.message.answer("💳 <b>بدأت عملية توزيع الكاش باك الأسبوعي...</b>\nسيتم إشعار المستخدمين المؤهلين تلقائياً.")
     
     result = await asyncio.to_thread(repo.process_all_weekly_cashbacks, bot=callback.bot)
     
     summary = (
-        f"✅ <b>اكتمل توزيع الكاش باك!</b>\n\n"
-        f"👥 مستخدمون مؤهلون: <code>{result['processed']}</code>\n"
-        f"💰 إجمالي المبالغ الموزعة: <code>{result['total_paid']:,} SYP</code>"
+        f"✔️ <b>اكتمل توزيع الكاش باك!</b>\n\n"
+        f"🧑‍🤝‍🧑 مستخدمون مؤهلون: <code>{result['processed']}</code>\n"
+        f"🪙 إجمالي المبالغ الموزعة: <code>{result['total_paid']:,} SYP</code>"
     )
     await callback.message.answer(summary, parse_mode="HTML")
 
@@ -481,13 +481,13 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
     
     await safe_answer_callback(callback, "⏳ جاري مزامنة السيولة وتوليد التقرير...", show_alert=True)
     
-    status_msg = await callback.message.answer("🔄 <b>بدأت عملية مزامنة أرصدة اللاعبين...</b>\nيرجى الانتظار، يتم جلب البيانات على دفعات لتجنب الحظر.")
+    status_msg = await callback.message.answer("🔁 <b>بدأت عملية مزامنة أرصدة اللاعبين...</b>\nيرجى الانتظار، يتم جلب البيانات على دفعات لتجنب الحظر.")
     
     try:
         players = await asyncio.to_thread(repo.get_all_player_ids)
         total_players = len(players)
         if total_players == 0:
-            await status_msg.edit_text("❌ لا يوجد لاعبون مرتبطون بالبوت حالياً.")
+            await status_msg.edit_text("⛔ لا يوجد لاعبون مرتبطون بالبوت حالياً.")
             return
 
         batch_size = 15
@@ -505,10 +505,10 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
             
             # تحديث رسالة التقدم كل دفعة
             processed = min(i + batch_size, total_players)
-            await status_msg.edit_text(f"🔄 جاري المزامنة: <code>{processed}/{total_players}</code> لاعب...")
+            await status_msg.edit_text(f"🔁 جاري المزامنة: <code>{processed}/{total_players}</code> لاعب...")
             await asyncio.sleep(1) # فاصل زمني لتجنب Rate Limit
 
-        # 📊 حساب الإجماليات للتقرير
+        # 📈 حساب الإجماليات للتقرير
         bot_liquidity = await asyncio.to_thread(repo.get_total_bot_balances)
         game_liquidity = await asyncio.to_thread(repo.get_total_game_balances)
         agent_wallet = await ichancy_api_client.get_admin_balance()
@@ -518,20 +518,20 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
         coverage_ratio = (agent_wallet / game_liquidity * 100) if game_liquidity > 0 else 100.0
         
         # تحديد حالة الأمان
-        security_status = "🟢 آمن جداً" if agent_wallet >= game_liquidity else "🔴 عجز في السيولة"
-        risk_note = "" if agent_wallet >= game_liquidity else f"⚠️ تحتاج لشحن محفظة الوكيل بمبلغ <code>{game_liquidity - agent_wallet:,} NSP</code> لتغطية كافة الأرصدة."
+        security_status = "🔹 آمن جداً" if agent_wallet >= game_liquidity else "🔻 عجز في السيولة"
+        risk_note = "" if agent_wallet >= game_liquidity else f"🚧 تحتاج لشحن محفظة الوكيل بمبلغ <code>{game_liquidity - agent_wallet:,} NSP</code> لتغطية كافة الأرصدة."
 
         report_text = (
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📊 <b>تقرير السيولة الشامل</b>\n"
+            "📈 <b>تقرير السيولة الشامل</b>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"💎 <b>سيولة البوت (نقد):</b>\n<code>{bot_liquidity:,} SYP</code>\n"
-            f"🎮 <b>سيولة المنصة (أرصدة لاعبين):</b>\n<code>{game_liquidity:,} NSP</code>\n"
-            f"🏦 <b>رصيد محفظة الوكيل (احتياطي):</b>\n<code>{agent_wallet:,} NSP</code>\n\n"
+            f"🔷 <b>سيولة البوت (نقد):</b>\n<code>{bot_liquidity:,} SYP</code>\n"
+            f"🕹️ <b>سيولة المنصة (أرصدة لاعبين):</b>\n<code>{game_liquidity:,} NSP</code>\n"
+            f"🏛️ <b>رصيد محفظة الوكيل (احتياطي):</b>\n<code>{agent_wallet:,} NSP</code>\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"📉 <b>صافي الالتزامات الإجمالية:</b>\n<code>{net_liabilities:,} SYP/NSP</code>\n"
             f"🛡️ <b>نسبة التغطية:</b> <code>{coverage_ratio:.2f}%</code>\n"
-            f"🏁 <b>حالة الأمان:</b> {security_status}\n"
+            f"🚩 <b>حالة الأمان:</b> {security_status}\n"
             f"{risk_note}\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"⏰ <i>تاريخ التقرير: {datetime.now().strftime('%Y-%m-%d %H:%M')}</i>"
@@ -542,7 +542,7 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
         
     except Exception as e:
         logger.error(f"Liquidity sync error: {e}", exc_info=True)
-        await status_msg.edit_text(f"❌ حدث خطأ أثناء توليد التقرير:\n<code>{str(e)}</code>", parse_mode="HTML")
+        await status_msg.edit_text(f"⛔ حدث خطأ أثناء توليد التقرير:\n<code>{str(e)}</code>", parse_mode="HTML")
 
 
 @router.callback_query(F.data == "adm_system_probe")
@@ -578,7 +578,7 @@ async def adm_system_probe_callback(callback: CallbackQuery):
         row = c.fetchone()
         if row is not None:
             c.execute("UPDATE users SET bot_balance = bot_balance + 10000 WHERE telegram_id = %s", (str(callback.from_user.id),))
-            conn.rollback() # 🔒 تراجع فوري حتى لا يتغير الرقم الفعلي!
+            conn.rollback() # 🔐 تراجع فوري حتى لا يتغير الرقم الفعلي!
             dry_run_ok = True
         else:
             conn.rollback()
@@ -586,22 +586,22 @@ async def adm_system_probe_callback(callback: CallbackQuery):
         logger.warning(f"Probe Dry-Run error: {e}")
 
     report = (
-        "🩺 <b>تقرير فحص النبض والمحاكاة الشاملة الخاصة بـ Jude Robert</b>\n"
+        "🧪 <b>تقرير فحص النبض والمحاكاة الشاملة الخاصة بـ Jude Robert</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"💾 <b>قاعدة بيانات Neon (PostgreSQL):</b>\n"
-        f"└ الحالة: {'🟢 متصل بكفاءة' if db_ok else '🔴 تعذر الاتصال'}\n"
+        f"💿 <b>قاعدة بيانات Neon (PostgreSQL):</b>\n"
+        f"└ الحالة: {'🔹 متصل بكفاءة' if db_ok else '🔻 تعذر الاتصال'}\n"
         f"└ سرعة الاستجابة (Latency): <code>{db_latency} ms</code>\n\n"
         f"🍪 <b>جلسة وكيل iChancy (Agent Session):</b>\n"
-        f"└ الحالة: {'🟢 نشطة وفعالة' if session_ok else '🔴 تحتاج تحديث'}\n"
+        f"└ الحالة: {'🔹 نشطة وفعالة' if session_ok else '🔻 تحتاج تحديث'}\n"
         f"└ سرعة الاتصال (API): <code>{api_latency} ms</code>\n\n"
         f"🧪 <b>محاكاة المعاملات الذرية (Dry-Run Test):</b>\n"
-        f"└ فحص القفل الذري والتراجع: {'🟢 ناجح (بدون زيادة أرصدة)' if dry_run_ok else '🟡 يحتاج تحقق'}\n\n"
+        f"└ فحص القفل الذري والتراجع: {'🔹 ناجح (بدون زيادة أرصدة)' if dry_run_ok else '🔸 يحتاج تحقق'}\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "💡 <i>تم فحص الاتصال والتزامن وحسابات Jude Robert بسلاسة وبون أي تضخم أو تغيير في الأرصدة الحقيقية!</i>"
+        "🔆 <i>تم فحص الاتصال والتزامن وحسابات Jude Robert بسلاسة وبون أي تضخم أو تغيير في الأرصدة الحقيقية!</i>"
     )
     await safe_edit_text(callback.message, report, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔄 إعادة الفحص الآن", callback_data="adm_system_probe")],
-        [InlineKeyboardButton(text="🔙 عودة للوحة التحكم", callback_data="caesar_control_panel")]
+        [InlineKeyboardButton(text="🔁 إعادة الفحص الآن", callback_data="adm_system_probe")],
+        [InlineKeyboardButton(text="↩️ عودة للوحة التحكم", callback_data="caesar_control_panel")]
     ]), parse_mode="HTML")
 
 
@@ -621,11 +621,11 @@ async def adm_reset_my_test_balance_callback(callback: CallbackQuery):
         )
         if hasattr(DatabaseManager, 'invalidate_settings_cache'):
             await asyncio.to_thread(DatabaseManager.invalidate_settings_cache)
-        await safe_answer_callback(callback, "✅ تم تصفير حسابك الاختباري وتنظيف المعاملات التجريبية بنجاح!", show_alert=True)
+        await safe_answer_callback(callback, "✔️ تم تصفير حسابك الاختباري وتنظيف المعاملات التجريبية بنجاح!", show_alert=True)
         await caesar_control_panel(callback)
     except Exception as e:
         logger.error(f"Reset test balance error: {e}")
-        await safe_answer_callback(callback, "❌ تعذر تصفير الرصيد الاختباري", show_alert=True)
+        await safe_answer_callback(callback, "⛔ تعذر تصفير الرصيد الاختباري", show_alert=True)
 
 
 @router.callback_query(F.data == "adm_reset_all_db")
@@ -634,12 +634,12 @@ async def adm_reset_all_db_confirm(callback: CallbackQuery):
         return
     await safe_edit_text(
         callback.message,
-        "⚠️ <b>تنبيه حاسم: تصفير شامل لكل قاعدة البيانات (إنهاء المرحلة التجريبية)</b>\n\n"
+        "🚧 <b>تنبيه حاسم: تصفير شامل لكل قاعدة البيانات (إنهاء المرحلة التجريبية)</b>\n\n"
         "هل أنت متأكد من رغبتك في تصفير مسح جميع الأرصدة، وسجلات الإيداع والسحب، وسجلات الهدايا والحضور والعجلة، وإجمالي الإيداعات ومستويات VIP لجميع المستخدمين في قاعدة البيانات؟\n\n"
         "🛡️ <i>سيتم الاحتفاظ بحسابات وأسماء المستخدمين وربطهم بـ iChancy كما هي بأمان تام، مع إعادة كل الأرصدة والبيانات إلى الصفر!</i>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⚠️ نعم، انتقل للتأكيد النهائي", callback_data="adm_reset_all_db_step2")],
-            [InlineKeyboardButton(text="❌ إلغاء وعودة", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="🚧 نعم، انتقل للتأكيد النهائي", callback_data="adm_reset_all_db_step2")],
+            [InlineKeyboardButton(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -652,12 +652,12 @@ async def adm_reset_all_db_confirm_step2(callback: CallbackQuery):
         return
     await safe_edit_text(
         callback.message,
-        "🚨 <b>التأكيد النهائي والأخير (Double Confirmation)</b>\n\n"
+        "🚧 <b>التأكيد النهائي والأخير (Double Confirmation)</b>\n\n"
         "أنت على وشك تنفيذ تصفير كامل ومسح لجميع الجداول المالية والإحصائية في قاعدة البيانات للبدء من الصفر.\n"
         "هل تنفذ أمر التصفير الشامل الآن؟",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="💥 تنفيذ التصفير الشامل الآن (EXECUTE)", callback_data="adm_reset_all_db_confirmed")],
-            [InlineKeyboardButton(text="❌ تراجع وإلغاء", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="💫 تنفيذ التصفير الشامل الآن (EXECUTE)", callback_data="adm_reset_all_db_confirmed")],
+            [InlineKeyboardButton(text="⛔ تراجع وإلغاء", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -706,13 +706,13 @@ async def adm_reset_all_db_execute(callback: CallbackQuery):
         
         await safe_edit_text(
             callback.message,
-            "💥 <b>تم التصفير الشامل بنجاح 100% (Beta Reset Completed)!</b>\n\n"
-            "✅ تم تصفير جميع الأرصدة النقديّة والمكافآت وإجمالي الإيداعات ومستويات VIP لجميع المستخدمين إلى <code>0 ل.س</code>.\n"
-            "✅ تم مسح جميع سجلات الإيداع والسحب والهدايا والحضور والعجلة والكاش باك وتصفير الجداول بالكامل.\n"
+            "💫 <b>تم التصفير الشامل بنجاح 100% (Beta Reset Completed)!</b>\n\n"
+            "✔️ تم تصفير جميع الأرصدة النقديّة والمكافآت وإجمالي الإيداعات ومستويات VIP لجميع المستخدمين إلى <code>0 ل.س</code>.\n"
+            "✔️ تم مسح جميع سجلات الإيداع والسحب والهدايا والحضور والعجلة والكاش باك وتصفير الجداول بالكامل.\n"
             "🛡️ تم الاحتفاظ بحسابات وأسماء المستخدمين وربطهم بـ iChancy كما هي بأمان.\n\n"
             "<i>النظام الآن مصَفّر بالكامل وجاهز للانطلاق الفعلي بعد انتهاء المرحلة التجريبية!</i>",
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="🏠 عودة للوحة التحكم الرئيسية", callback_data="caesar_control_panel")]
+                [InlineKeyboardButton(text="🏡 عودة للوحة التحكم الرئيسية", callback_data="caesar_control_panel")]
             ]),
             parse_mode="HTML"
         )
@@ -720,7 +720,7 @@ async def adm_reset_all_db_execute(callback: CallbackQuery):
         logger.error(f"Reset all DB error: {e}", exc_info=True)
         await safe_edit_text(
             callback.message,
-            f"❌ تعذر إتمام التصفير الشامل:\n<code>{str(e)}</code>",
+            f"⛔ تعذر إتمام التصفير الشامل:\n<code>{str(e)}</code>",
             parse_mode="HTML"
         )
 
@@ -730,10 +730,10 @@ async def reset_db_cmd(message: Message):
     if not is_admin_user(message.from_user.id):
         return
     await message.answer(
-        "⚠️ <b>تصفير شامل لكل قاعدة البيانات (إنهاء المرحلة التجريبية)</b>\n\nاضغط للبدء بخطوات التأكيد المزدوج:",
+        "🚧 <b>تصفير شامل لكل قاعدة البيانات (إنهاء المرحلة التجريبية)</b>\n\nاضغط للبدء بخطوات التأكيد المزدوج:",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🗑️ نعم، صَفّر كل الأرصدة والتاريخ الآن", callback_data="adm_reset_all_db")],
-            [InlineKeyboardButton(text="❌ إلغاء وعودة", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="🧹 نعم، صَفّر كل الأرصدة والتاريخ الآن", callback_data="adm_reset_all_db")],
+            [InlineKeyboardButton(text="⛔ إلغاء وعودة", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -742,7 +742,7 @@ async def reset_db_cmd(message: Message):
 @router.message(Command("admin"))
 async def admin_panel_cmd(message: Message):
     if not is_admin_user(message.from_user.id):
-        await message.answer("❌ عذراً، لا تمتلك صلاحيات الأدمن للدخول لهذه القائمة!")
+        await message.answer("⛔ عذراً، لا تمتلك صلاحيات الأدمن للدخول لهذه القائمة!")
         return
     s = await _gather_dashboard_stats()
     text = build_admin_dashboard_text(
@@ -759,10 +759,10 @@ async def approve_dep_callback(callback: CallbackQuery):
     tx_id = int(callback.data.split("_")[-1])
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
 
-    # 🆕 الرد على الـ callback فوراً (قبل أي عملية شبكة بطيئة) لتفادي خطأ "query is too old"
+    # 🌟 الرد على الـ callback فوراً (قبل أي عملية شبكة بطيئة) لتفادي خطأ "query is too old"
     await safe_answer_callback(callback, "⏳ جاري قبول الطلب...")
 
     # حساب البونص أولاً (قراءة فقط، آمنة خارج المعاملة)
@@ -804,7 +804,7 @@ async def approve_dep_callback(callback: CallbackQuery):
     bonus_amount = public_bonus_amount + vip_deposit_bonus + vip_upgrade_reward
     # ملاحظة: الإيداع والبونص لم يعودا يُجمعان — الإيداع → bot_balance ، كل البونصات → bonus_balance
 
-    # 🔒 اعتماد ذري كامل (Update 4): قفل + إضافة على الرصيد الفعلي + تعليم المعاملة
+    # 🔐 اعتماد ذري كامل (Update 4): قفل + إضافة على الرصيد الفعلي + تعليم المعاملة
     # في معاملة واحدة — يمنع 'الكتابة فوق' والقبول المزدوج.
     result = await asyncio.to_thread(repo.approve_deposit_atomic, telegram_id=tx['user_telegram_id'],
         deposit_amount=deposit_amount,
@@ -817,12 +817,12 @@ async def approve_dep_callback(callback: CallbackQuery):
         logger.error(f"approve_deposit_atomic failed for tx #{tx_id}: {result.get('reason')}")
         return
     if result.get('already_approved'):
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
 
     new_balance = int(result.get('new_balance') or 0)
 
-    # 🏆 تثبيت طبقة VIP الجديدة بعد قبول الإيداع (المكافأة احتُسبت ضمن bonus_amount أعلاه)
+    # 🏅 تثبيت طبقة VIP الجديدة بعد قبول الإيداع (المكافأة احتُسبت ضمن bonus_amount أعلاه)
     try:
         if vip_upgrade.get('upgraded'):
             await asyncio.to_thread(DatabaseManager.execute_query, "UPDATE users SET vip_tier = %s WHERE telegram_id = %s",
@@ -833,9 +833,9 @@ async def approve_dep_callback(callback: CallbackQuery):
                 await callback.bot.send_message(
                     chat_id=tx['user_telegram_id'],
                     text=(
-                        f"🎉 <b>مبروك! تمت ترقيتك إلى {vip_upgrade.get('new_tier')}!</b>\n\n"
-                        f"💎 مكافأة الترقية: <code>{vip_upgrade_reward:,} ل.س</code>\n"
-                        f"(أُضيفت لرصيد المكافآت 🎁 للاستخدام في اللعبة)"
+                        f"✨ <b>مبروك! تمت ترقيتك إلى {vip_upgrade.get('new_tier')}!</b>\n\n"
+                        f"🔷 مكافأة الترقية: <code>{vip_upgrade_reward:,} ل.س</code>\n"
+                        f"(أُضيفت لرصيد المكافآت 🧧 للاستخدام في اللعبة)"
                     ),
                     parse_mode="HTML"
                 )
@@ -857,24 +857,24 @@ async def approve_dep_callback(callback: CallbackQuery):
         user_bonus_parts = []
         log_bonus_parts = []
         if public_bonus_amount > 0 and bonus_rule:
-            user_bonus_parts.append(f"🎁 <b>بونص العرض:</b> <code>{public_bonus_amount:,} SYP</code> — <code>{bonus_rule.get('title')}</code>")
-            log_bonus_parts.append(f"🎁 بونص العرض: <code>{public_bonus_amount:,} SYP</code> — <code>{bonus_rule.get('title')}</code>")
+            user_bonus_parts.append(f"🧧 <b>بونص العرض:</b> <code>{public_bonus_amount:,} SYP</code> — <code>{bonus_rule.get('title')}</code>")
+            log_bonus_parts.append(f"🧧 بونص العرض: <code>{public_bonus_amount:,} SYP</code> — <code>{bonus_rule.get('title')}</code>")
         if vip_deposit_bonus > 0:
-            user_bonus_parts.append(f"🏆 <b>بونص VIP {vip_current_tier_name or ''}:</b> <code>{vip_deposit_bonus:,} SYP</code> (<code>{vip_deposit_pct:g}%</code>)")
-            log_bonus_parts.append(f"🏆 بونص VIP: <code>{vip_deposit_bonus:,} SYP</code> (<code>{vip_deposit_pct:g}%</code>)")
+            user_bonus_parts.append(f"🏅 <b>بونص VIP {vip_current_tier_name or ''}:</b> <code>{vip_deposit_bonus:,} SYP</code> (<code>{vip_deposit_pct:g}%</code>)")
+            log_bonus_parts.append(f"🏅 بونص VIP: <code>{vip_deposit_bonus:,} SYP</code> (<code>{vip_deposit_pct:g}%</code>)")
         if vip_upgrade_reward > 0:
-            user_bonus_parts.append(f"🎉 <b>مكافأة ترقية VIP:</b> <code>{vip_upgrade_reward:,} SYP</code> — <code>{vip_upgrade.get('new_tier')}</code>")
-            log_bonus_parts.append(f"🎉 مكافأة ترقية VIP: <code>{vip_upgrade_reward:,} SYP</code> — <code>{vip_upgrade.get('new_tier')}</code>")
+            user_bonus_parts.append(f"✨ <b>مكافأة ترقية VIP:</b> <code>{vip_upgrade_reward:,} SYP</code> — <code>{vip_upgrade.get('new_tier')}</code>")
+            log_bonus_parts.append(f"✨ مكافأة ترقية VIP: <code>{vip_upgrade_reward:,} SYP</code> — <code>{vip_upgrade.get('new_tier')}</code>")
 
         bonus_user_line = (
             "\n" + "\n".join(user_bonus_parts) +
-            f"\n🎁 <b>إجمالي البونص المضاف:</b> <code>{bonus_amount:,} SYP</code>" +
-            "\n🎁 <b>أُضيف إلى رصيد المكافآت</b> (للاستخدام في اللعبة)"
+            f"\n🧧 <b>إجمالي البونص المضاف:</b> <code>{bonus_amount:,} SYP</code>" +
+            "\n🧧 <b>أُضيف إلى رصيد المكافآت</b> (للاستخدام في اللعبة)"
         )
-        risk_flag = "🔴" if bonus_net_risk > bonus_recovered_by_commission else "🟡"
+        risk_flag = "🔻" if bonus_net_risk > bonus_recovered_by_commission else "🔸"
         bonus_log_line = (
             "\n" + "\n".join(log_bonus_parts) +
-            f"\n🎁 إجمالي البونص: <code>{bonus_amount:,} SYP</code> → رصيد المكافآت (مقيّد)" +
+            f"\n🧧 إجمالي البونص: <code>{bonus_amount:,} SYP</code> → رصيد المكافآت (مقيّد)" +
             f"\n{risk_flag} صافي مخاطرة البونص: <code>{bonus_net_risk:,} SYP</code> "
             f"(يُسترد من العمولة: <code>{bonus_recovered_by_commission:,}</code>)"
         )
@@ -894,9 +894,9 @@ async def approve_dep_callback(callback: CallbackQuery):
                     await callback.bot.send_message(
                         chat_id=referrer_id,
                         text=(
-                            "🎉 <b>إحالة نشطة جديدة!</b>\n\n"
+                            "✨ <b>إحالة نشطة جديدة!</b>\n\n"
                             "قام أحد أصدقائك بإكمال أول إيداع مقبول.\n"
-                            f"✅ إحالاتك النشطة الآن: <code>{active_count}</code>\n"
+                            f"✔️ إحالاتك النشطة الآن: <code>{active_count}</code>\n"
                             f"📈 نسبتك الحالية: <code>{await asyncio.to_thread(repo.get_referral_percent_by_active_count, active_count)}%</code>"
                         ),
                         parse_mode="HTML"
@@ -914,11 +914,11 @@ async def approve_dep_callback(callback: CallbackQuery):
 
     # تحديث رسالة قناة الإيداع مع الحفاظ على تفاصيل الطلب الأصلية
     deposit_status = (
-        f"✅ <b>تم قبول طلب الإيداع #{tx_id} بنجاح.</b>\n"
-        f"💰 <b>مبلغ الإيداع:</b> <code>{deposit_amount:,} SYP</code>"
+        f"✔️ <b>تم قبول طلب الإيداع #{tx_id} بنجاح.</b>\n"
+        f"🪙 <b>مبلغ الإيداع:</b> <code>{deposit_amount:,} SYP</code>"
         f"{bonus_log_line}"
         f"{referral_log_line}\n"
-        f"💵 <b>الرصيد النقدي الجديد:</b> <code>{new_balance:,} SYP</code>"
+        f"💳 <b>الرصيد النقدي الجديد:</b> <code>{new_balance:,} SYP</code>"
     )
     original_text = getattr(callback.message, 'html_text', None) or getattr(callback.message, 'caption', None) or ''
     await safe_edit_status_message(
@@ -930,24 +930,24 @@ async def approve_dep_callback(callback: CallbackQuery):
         notify_user_about_transaction(
             callback.bot,
             tx,
-            f"✅ <b>تم قبول طلب الإيداع الخاص بك</b>\n\n"
-            f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
-            f"💰 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
+            f"✔️ <b>تم قبول طلب الإيداع الخاص بك</b>\n\n"
+            f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
+            f"🪙 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
             f"{bonus_user_line}\n"
-            f"💵 رصيدك النقدي: {_fmt_syp_dual(new_balance)}"
+            f"💳 رصيدك النقدي: {_fmt_syp_dual(new_balance)}"
         ),
         label="notify_user(deposit approve)"
     )
     await _send_with_retry(
         send_log_message(
             callback.bot,
-            f"✅ <b>تم قبول إيداع</b>\n\n"
-            f"📌 الطلب: <code>#{tx_id}</code>\n"
-            f"👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
-            f"💰 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
+            f"✔️ <b>تم قبول إيداع</b>\n\n"
+            f"📍 الطلب: <code>#{tx_id}</code>\n"
+            f"🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
+            f"🪙 مبلغ الإيداع: {_fmt_syp_dual(deposit_amount)}"
             f"{bonus_log_line}"
             f"{referral_log_line}\n"
-            f"💵 الرصيد النقدي الجديد: {_fmt_syp_dual(new_balance)}"
+            f"💳 الرصيد النقدي الجديد: {_fmt_syp_dual(new_balance)}"
         ),
         label="send_log(deposit approve)"
     )
@@ -960,11 +960,11 @@ async def reject_dep_callback(callback: CallbackQuery, state: FSMContext):
     tx_id = int(callback.data.split("_")[-1])
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
     await safe_edit_text(
         callback.message,
-        f"❌ اختر سبب رفض طلب الإيداع <code>#{tx_id}</code>",
+        f"⛔ اختر سبب رفض طلب الإيداع <code>#{tx_id}</code>",
         reply_markup=get_rejection_reason_keyboard("dep_reject_reason", tx_id),
         parse_mode="HTML"
     )
@@ -978,10 +978,10 @@ async def approve_withdraw_callback(callback: CallbackQuery):
     tx_id = int(callback.data.split("_")[-1])
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
 
-    # 🆕 الرد على الـ callback فوراً لتفادي خطأ "query is too old"
+    # 🌟 الرد على الـ callback فوراً لتفادي خطأ "query is too old"
     await safe_answer_callback(callback, "⏳ جاري اعتماد السحب...")
 
     # العمليات السريعة (قاعدة البيانات)
@@ -989,7 +989,7 @@ async def approve_withdraw_callback(callback: CallbackQuery):
 
     # تحديث رسالة قناة السحب مع إبقاء كل التفاصيل المالية، بدل اختصارها بسطر واحد.
     original_text = getattr(callback.message, 'html_text', None) or getattr(callback.message, 'caption', None) or ''
-    final_text = append_final_status(original_text, "✅ <b>تم تأكيد التحويل.</b>") if original_text else build_withdraw_approved_details(tx)
+    final_text = append_final_status(original_text, "✔️ <b>تم تأكيد التحويل.</b>") if original_text else build_withdraw_approved_details(tx)
     await safe_edit_status_message(
         callback.message,
         final_text,
@@ -999,14 +999,14 @@ async def approve_withdraw_callback(callback: CallbackQuery):
         notify_user_about_transaction(
             callback.bot,
             tx,
-            f"✅ <b>تمت الموافقة على طلب السحب الخاص بك</b>\n\n📌 رقم الطلب: <code>#{tx_id}</code>\n💰 المبلغ: <code>{int(float(tx['amount'])):,} SYP</code>"
+            f"✔️ <b>تمت الموافقة على طلب السحب الخاص بك</b>\n\n📍 رقم الطلب: <code>#{tx_id}</code>\n🪙 المبلغ: <code>{int(float(tx['amount'])):,} SYP</code>"
         ),
         label="notify_user(withdraw approve)"
     )
     await _send_with_retry(
         send_log_message(
             callback.bot,
-            f"✅ <b>تم قبول سحب</b>\n\n📌 الطلب: <code>#{tx_id}</code>\n👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n💰 المبلغ: <code>{int(float(tx['amount'])):,} SYP</code>"
+            f"✔️ <b>تم قبول سحب</b>\n\n📍 الطلب: <code>#{tx_id}</code>\n🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n🪙 المبلغ: <code>{int(float(tx['amount'])):,} SYP</code>"
         ),
         label="send_log(withdraw approve)"
     )
@@ -1019,11 +1019,11 @@ async def reject_withdraw_callback(callback: CallbackQuery, state: FSMContext):
     tx_id = int(callback.data.split("_")[-1])
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
     await safe_edit_text(
         callback.message,
-        f"❌ اختر سبب رفض طلب السحب <code>#{tx_id}</code>",
+        f"⛔ اختر سبب رفض طلب السحب <code>#{tx_id}</code>",
         reply_markup=get_rejection_reason_keyboard("withdraw_reject_reason", tx_id),
         parse_mode="HTML"
     )
@@ -1032,7 +1032,7 @@ async def reject_withdraw_callback(callback: CallbackQuery, state: FSMContext):
 
 @router.message(HasPendingRejection())
 async def process_custom_rejection(message: Message):
-    """✅ معالج الرفض المخصص - يعمل من محادثة المشرف الخاصة (يعبر مشكلة FSM عبر القنوات)."""
+    """✔️ معالج الرفض المخصص - يعمل من محادثة المشرف الخاصة (يعبر مشكلة FSM عبر القنوات)."""
     pending = await asyncio.to_thread(repo.get_pending_rejection, message.from_user.id)
     if not pending:
         return
@@ -1041,17 +1041,17 @@ async def process_custom_rejection(message: Message):
     if reason.startswith('/'):
         if reason.lower() in ('/cancel', '/cancel_rejection', '/home', '/admin'):
             await asyncio.to_thread(repo.clear_pending_rejection, message.from_user.id)
-            await message.answer("❌ تم إلغاء عملية الرفض المخصص.")
+            await message.answer("⛔ تم إلغاء عملية الرفض المخصص.")
         return
     if not reason:
-        await message.answer("❌ الرجاء إرسال سبب رفض واضح (نص):")
+        await message.answer("⛔ الرجاء إرسال سبب رفض واضح (نص):")
         return
 
     tx_id = pending['tx_id']
     tx_type = pending['tx_type']
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await message.answer("⚠️ هذا الطلب تمت معالجته مسبقاً أو لم يعد متاحاً.")
+        await message.answer("🚧 هذا الطلب تمت معالجته مسبقاً أو لم يعد متاحاً.")
         await asyncio.to_thread(repo.clear_pending_rejection, message.from_user.id)
         return
 
@@ -1073,11 +1073,11 @@ async def process_custom_rejection(message: Message):
 
                 user_text = (
                     "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    "❌ <b>تم رفض مشاركتك</b>\n"
+                    "⛔ <b>تم رفض مشاركتك</b>\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                    f"👑 <b>المسابقة:</b> {contest_title}\n"
-                    f"📝 <b>السبب:</b> {reason}\n\n"
-                    "💡 يمكنك المحاولة مجدداً بمشاركة صحيحة.\n\n"
+                    f"✨ <b>المسابقة:</b> {contest_title}\n"
+                    f"🖋️ <b>السبب:</b> {reason}\n\n"
+                    "🔆 يمكنك المحاولة مجدداً بمشاركة صحيحة.\n\n"
                     "━━━━━━━━━━━━━━━━━━━━━━━"
                 )
                 await notify_user_about_transaction(message.bot, {'user_telegram_id': user_telegram_id}, user_text)
@@ -1090,22 +1090,22 @@ async def process_custom_rejection(message: Message):
                 await message.bot.edit_message_text(
                     chat_id=pending['channel_chat_id'],
                     message_id=pending['channel_message_id'],
-                    text=f"❌ <b>تم رفض المشاركة #{tx_id}</b>\n📝 السبب: {reason}",
+                    text=f"⛔ <b>تم رفض المشاركة #{tx_id}</b>\n🖋️ السبب: {reason}",
                     parse_mode="HTML"
                 )
             except Exception as e:
                 logger.warning(f"Could not update channel message after custom contest rejection: {e}")
 
-        await message.answer(f"✅ تم رفض المشاركة <code>#{tx_id}</code> وحفظ السبب وإشعار المستخدم بنجاح.", parse_mode="HTML")
+        await message.answer(f"✔️ تم رفض المشاركة <code>#{tx_id}</code> وحفظ السبب وإشعار المستخدم بنجاح.", parse_mode="HTML")
         await asyncio.to_thread(repo.clear_pending_rejection, message.from_user.id)
 
         # إرسال سجل
         await send_log_message(
             message.bot,
-            f"❌ <b>تم رفض مشاركة مسابقة (سبب مخصص)</b>\n\n"
-            f"📌 المشاركة: <code>#{tx_id}</code>\n"
-            f"📝 السبب: {reason}\n"
-            f"👤 المشرف: <code>{message.from_user.id}</code>"
+            f"⛔ <b>تم رفض مشاركة مسابقة (سبب مخصص)</b>\n\n"
+            f"📍 المشاركة: <code>#{tx_id}</code>\n"
+            f"🖋️ السبب: {reason}\n"
+            f"🧑‍💼 المشرف: <code>{message.from_user.id}</code>"
         )
         return
 
@@ -1113,32 +1113,32 @@ async def process_custom_rejection(message: Message):
     await asyncio.to_thread(repo.update_transaction_rejection_reason, tx_id, reason)
 
     if tx_type == 'withdraw_bot':
-        # 🔒 إعادة ذرّية للرصيد (Update 4) — تُضاف على الرصيد الفعلي مباشرة
+        # 🔐 إعادة ذرّية للرصيد (Update 4) — تُضاف على الرصيد الفعلي مباشرة
         await asyncio.to_thread(repo.credit_balance_atomic, tx['user_telegram_id'], int(float(tx['amount'])))
         user_text = (
-            f"❌ <b>تم رفض طلب السحب الخاص بك</b>\n\n"
-            f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
-            f"📝 السبب: {reason}\n"
-            f"💎 تم إعادة الرصيد إلى حسابك: <code>{int(float(tx['amount'])):,} SYP</code>"
+            f"⛔ <b>تم رفض طلب السحب الخاص بك</b>\n\n"
+            f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
+            f"🖋️ السبب: {reason}\n"
+            f"🔷 تم إعادة الرصيد إلى حسابك: <code>{int(float(tx['amount'])):,} SYP</code>"
         )
         log_text = (
-            f"❌ <b>تم رفض سحب (سبب مخصص)</b>\n\n"
-            f"📌 الطلب: <code>#{tx_id}</code>\n"
-            f"👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
-            f"💰 المبلغ المعاد: <code>{int(float(tx['amount'])):,} SYP</code>\n"
-            f"📝 السبب: {reason}"
+            f"⛔ <b>تم رفض سحب (سبب مخصص)</b>\n\n"
+            f"📍 الطلب: <code>#{tx_id}</code>\n"
+            f"🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
+            f"🪙 المبلغ المعاد: <code>{int(float(tx['amount'])):,} SYP</code>\n"
+            f"🖋️ السبب: {reason}"
         )
     else:
         user_text = (
-            f"❌ <b>تم رفض طلب الإيداع الخاص بك</b>\n\n"
-            f"📌 رقم الطلب: <code>#{tx_id}</code>\n"
-            f"📝 السبب: {reason}"
+            f"⛔ <b>تم رفض طلب الإيداع الخاص بك</b>\n\n"
+            f"📍 رقم الطلب: <code>#{tx_id}</code>\n"
+            f"🖋️ السبب: {reason}"
         )
         log_text = (
-            f"❌ <b>تم رفض إيداع (سبب مخصص)</b>\n\n"
-            f"📌 الطلب: <code>#{tx_id}</code>\n"
-            f"👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
-            f"📝 السبب: {reason}"
+            f"⛔ <b>تم رفض إيداع (سبب مخصص)</b>\n\n"
+            f"📍 الطلب: <code>#{tx_id}</code>\n"
+            f"🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n"
+            f"🖋️ السبب: {reason}"
         )
 
     # إشعار المستخدم + السجل
@@ -1151,13 +1151,13 @@ async def process_custom_rejection(message: Message):
             await message.bot.edit_message_text(
                 chat_id=pending['channel_chat_id'],
                 message_id=pending['channel_message_id'],
-                text=f"❌ <b>تم رفض الطلب #{tx_id}</b>\n📝 السبب: {reason}",
+                text=f"⛔ <b>تم رفض الطلب #{tx_id}</b>\n🖋️ السبب: {reason}",
                 parse_mode="HTML"
             )
         except Exception as e:
             logger.warning(f"Could not update channel message after rejection: {e}")
 
-    await message.answer(f"✅ تم رفض الطلب <code>#{tx_id}</code> وحفظ السبب وإشعار المستخدم بنجاح.", parse_mode="HTML")
+    await message.answer(f"✔️ تم رفض الطلب <code>#{tx_id}</code> وحفظ السبب وإشعار المستخدم بنجاح.", parse_mode="HTML")
     await asyncio.to_thread(repo.clear_pending_rejection, message.from_user.id)
 
 
@@ -1166,7 +1166,7 @@ async def adm_cancel_rejection_callback(callback: CallbackQuery):
     if not is_admin_user(callback.from_user.id):
         return
     await asyncio.to_thread(repo.clear_pending_rejection, callback.from_user.id)
-    await safe_edit_text(callback.message, "❌ تم إلغاء طلب الرفض المخصص.", parse_mode="HTML")
+    await safe_edit_text(callback.message, "⛔ تم إلغاء طلب الرفض المخصص.", parse_mode="HTML")
     await safe_answer_callback(callback, "تم الإلغاء")
 
 
@@ -1180,40 +1180,40 @@ async def dep_reject_reason_callback(callback: CallbackQuery, state: FSMContext)
     tx_id = int(tx_id_text)
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
     if reason_code == 'custom':
         await asyncio.to_thread(repo.set_pending_rejection, callback.from_user.id, tx_id, 'deposit_bot', callback.message.chat.id, callback.message.message_id)
-        await safe_edit_text(callback.message, f"✍️ <b>طلب رفض مخصص للإيداع #{tx_id}</b>\n\nأرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن 👇", parse_mode="HTML")
+        await safe_edit_text(callback.message, f"✍️ <b>طلب رفض مخصص للإيداع #{tx_id}</b>\n\nأرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن ↘️", parse_mode="HTML")
         try:
             await callback.bot.send_message(
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص لطلب الإيداع #{tx_id}</b>\n\nأرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❌ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
             logger.warning(f"Could not DM admin for custom rejection: {e}")
-        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة ✉️")
+        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة 📨")
         return
     reason = map_reason_code(reason_code)
-    # 🆕 الرد على الـ callback فوراً
+    # 🌟 الرد على الـ callback فوراً
     await safe_answer_callback(callback, "⏳ جاري رفض الإيداع...")
     await asyncio.to_thread(repo.update_transaction_status, tx_id, 'rejected', reviewed_by=callback.from_user.id)
     await asyncio.to_thread(repo.update_transaction_rejection_reason, tx_id, reason)
-    await safe_edit_text(callback.message, f"❌ تم رفض طلب الإيداع <code>#{tx_id}</code>\n📝 السبب: {reason}", parse_mode="HTML")
+    await safe_edit_text(callback.message, f"⛔ تم رفض طلب الإيداع <code>#{tx_id}</code>\n🖋️ السبب: {reason}", parse_mode="HTML")
     await _send_with_retry(
         notify_user_about_transaction(
             callback.bot,
             tx,
-            f"❌ <b>تم رفض طلب الإيداع الخاص بك</b>\n\n📌 رقم الطلب: <code>#{tx_id}</code>\n📝 السبب: {reason}"
+            f"⛔ <b>تم رفض طلب الإيداع الخاص بك</b>\n\n📍 رقم الطلب: <code>#{tx_id}</code>\n🖋️ السبب: {reason}"
         ),
         label="notify_user(dep reject)"
     )
     await _send_with_retry(
         send_log_message(
             callback.bot,
-            f"❌ <b>تم رفض إيداع</b>\n\n📌 الطلب: <code>#{tx_id}</code>\n👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n📝 السبب: {reason}"
+            f"⛔ <b>تم رفض إيداع</b>\n\n📍 الطلب: <code>#{tx_id}</code>\n🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n🖋️ السبب: {reason}"
         ),
         label="send_log(dep reject)"
     )
@@ -1227,42 +1227,42 @@ async def withdraw_reject_reason_callback(callback: CallbackQuery, state: FSMCon
     tx_id = int(tx_id_text)
     tx = await asyncio.to_thread(repo.get_transaction_by_id, tx_id)
     if not tx or tx.get('status') != 'pending':
-        await safe_answer_callback(callback, "⚠️ هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 هذا الطلب تمت معالجته مسبقاً.", show_alert=True)
         return
     if reason_code == 'custom':
         await asyncio.to_thread(repo.set_pending_rejection, callback.from_user.id, tx_id, 'withdraw_bot', callback.message.chat.id, callback.message.message_id)
-        await safe_edit_text(callback.message, f"✍️ <b>طلب رفض مخصص للسحب #{tx_id}</b>\n\nأرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن 👇", parse_mode="HTML")
+        await safe_edit_text(callback.message, f"✍️ <b>طلب رفض مخصص للسحب #{tx_id}</b>\n\nأرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن ↘️", parse_mode="HTML")
         try:
             await callback.bot.send_message(
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص لطلب السحب #{tx_id}</b>\n\nأرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❌ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
             logger.warning(f"Could not DM admin for custom rejection: {e}")
-        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة ✉️")
+        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة 📨")
         return
     reason = map_reason_code(reason_code)
-    # 🆕 الرد على الـ callback فوراً
+    # 🌟 الرد على الـ callback فوراً
     await safe_answer_callback(callback, "⏳ جاري رفض السحب...")
     await asyncio.to_thread(repo.update_transaction_status, tx_id, 'rejected', reviewed_by=callback.from_user.id)
     await asyncio.to_thread(repo.update_transaction_rejection_reason, tx_id, reason)
-    # 🔒 إعادة ذرّية للرصيد (Update 4) — تُضاف على الرصيد الفعلي مباشرة
+    # 🔐 إعادة ذرّية للرصيد (Update 4) — تُضاف على الرصيد الفعلي مباشرة
     await asyncio.to_thread(repo.credit_balance_atomic, tx['user_telegram_id'], int(float(tx['amount'])))
-    await safe_edit_text(callback.message, f"❌ تم رفض طلب السحب <code>#{tx_id}</code>\n📝 السبب: {reason}", parse_mode="HTML")
+    await safe_edit_text(callback.message, f"⛔ تم رفض طلب السحب <code>#{tx_id}</code>\n🖋️ السبب: {reason}", parse_mode="HTML")
     await _send_with_retry(
         notify_user_about_transaction(
             callback.bot,
             tx,
-            f"❌ <b>تم رفض طلب السحب الخاص بك</b>\n\n📌 رقم الطلب: <code>#{tx_id}</code>\n📝 السبب: {reason}\n💎 تم إعادة الرصيد إلى حسابك: <code>{int(float(tx['amount'])):,} SYP</code>"
+            f"⛔ <b>تم رفض طلب السحب الخاص بك</b>\n\n📍 رقم الطلب: <code>#{tx_id}</code>\n🖋️ السبب: {reason}\n🔷 تم إعادة الرصيد إلى حسابك: <code>{int(float(tx['amount'])):,} SYP</code>"
         ),
         label="notify_user(withdraw reject)"
     )
     await _send_with_retry(
         send_log_message(
             callback.bot,
-            f"❌ <b>تم رفض سحب</b>\n\n📌 الطلب: <code>#{tx_id}</code>\n👤 المستخدم: <code>{tx['user_telegram_id']}</code>\n💰 المبلغ المعاد: <code>{int(float(tx['amount'])):,} SYP</code>\n📝 السبب: {reason}"
+            f"⛔ <b>تم رفض سحب</b>\n\n📍 الطلب: <code>#{tx_id}</code>\n🧑‍💼 المستخدم: <code>{tx['user_telegram_id']}</code>\n🪙 المبلغ المعاد: <code>{int(float(tx['amount'])):,} SYP</code>\n🖋️ السبب: {reason}"
         ),
         label="send_log(withdraw reject)"
     )
@@ -1282,12 +1282,12 @@ async def adm_payment_addresses_callback(callback: CallbackQuery, state: FSMCont
         text += (
             f"{item['label']}\n"
             f"<code>{item['address'] or 'غير محدد'}</code>\n"
-            f"📌 المصدر: <b>{source}</b>\n\n"
+            f"📍 المصدر: <b>{source}</b>\n\n"
         )
-        rows.append([InlineKeyboardButton(text=f"✏️ تعديل {item['label']}", callback_data=f"adm_pay_edit_{item['method']}")])
+        rows.append([InlineKeyboardButton(text=f"🖋️ تعديل {item['label']}", callback_data=f"adm_pay_edit_{item['method']}")])
 
-    rows.append([InlineKeyboardButton(text="♻️ إعادة عنوان لقيمة Render", callback_data="adm_pay_reset_menu")])
-    rows.append([InlineKeyboardButton(text="🔙 عودة للوحة الأدمن", callback_data="back_to_admin_main")])
+    rows.append([InlineKeyboardButton(text="🔁 إعادة عنوان لقيمة Render", callback_data="adm_pay_reset_menu")])
+    rows.append([InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1298,7 +1298,7 @@ async def adm_pay_edit_callback(callback: CallbackQuery, state: FSMContext):
         return
     method = callback.data.replace("adm_pay_edit_", "", 1)
     if method not in repo.PAYMENT_METHOD_LABELS:
-        await safe_answer_callback(callback, "⚠️ طريقة الدفع غير معروفة.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 طريقة الدفع غير معروفة.", show_alert=True)
         return
 
     label = repo.PAYMENT_METHOD_LABELS[method]
@@ -1308,12 +1308,12 @@ async def adm_pay_edit_callback(callback: CallbackQuery, state: FSMContext):
     await state.update_data(payment_method=method)
     await safe_edit_text(
         callback.message,
-        f"✏️ <b>تعديل عنوان الإيداع</b>\n\n"
+        f"🖋️ <b>تعديل عنوان الإيداع</b>\n\n"
         f"💳 الطريقة: <b>{label}</b>\n"
-        f"📌 المصدر الحالي: <b>{source}</b>\n"
+        f"📍 المصدر الحالي: <b>{source}</b>\n"
         f"📍 العنوان الحالي:\n<code>{current or 'غير محدد'}</code>\n\n"
         f"🔁 قيمة Render الاحتياطية:\n<code>{fallback or 'غير محددة'}</code>\n\n"
-        "أرسل العنوان/الأرقام الجديدة الآن كما تريد أن تظهر للمستخدمين 👇",
+        "أرسل العنوان/الأرقام الجديدة الآن كما تريد أن تظهر للمستخدمين ↘️",
         parse_mode="HTML"
     )
     await state.set_state(AdminStates.editing_payment_address)
@@ -1328,21 +1328,21 @@ async def process_payment_address_update(message: Message, state: FSMContext):
     method = data.get('payment_method')
     if method not in repo.PAYMENT_METHOD_LABELS:
         await state.clear()
-        await message.answer("⚠️ انتهت صلاحية العملية. افتح لوحة عناوين الإيداع من جديد.")
+        await message.answer("🚧 انتهت صلاحية العملية. افتح لوحة عناوين الإيداع من جديد.")
         return
 
     address = (message.text or '').strip()
     if not address:
-        await message.answer("❌ الرجاء إرسال عنوان/رقم صحيح غير فارغ:")
+        await message.answer("⛔ الرجاء إرسال عنوان/رقم صحيح غير فارغ:")
         return
     if len(address) > 900:
-        await message.answer("❌ العنوان طويل جداً. الرجاء اختصاره وإعادة الإرسال:")
+        await message.answer("⛔ العنوان طويل جداً. الرجاء اختصاره وإعادة الإرسال:")
         return
 
     await asyncio.to_thread(repo.set_payment_address, method, address, updated_by=message.from_user.id)
     label = repo.PAYMENT_METHOD_LABELS[method]
     await message.answer(
-        f"✅ تم تحديث عنوان <b>{label}</b> بنجاح.\n\n"
+        f"✔️ تم تحديث عنوان <b>{label}</b> بنجاح.\n\n"
         f"العنوان الجديد الذي سيظهر للمستخدمين فوراً:\n<code>{address}</code>",
         parse_mode="HTML"
     )
@@ -1354,13 +1354,13 @@ async def adm_pay_reset_menu_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     rows = []
-    text = "♻️ <b>إعادة عنوان إيداع لقيمة Render</b>\n\nاختر الطريقة التي تريد حذف تعديل لوحة الأدمن عنها:\n\n"
+    text = "🔁 <b>إعادة عنوان إيداع لقيمة Render</b>\n\nاختر الطريقة التي تريد حذف تعديل لوحة الأدمن عنها:\n\n"
     for method, label in repo.PAYMENT_METHOD_LABELS.items():
         source = await asyncio.to_thread(repo.get_payment_address_source, method)
         source_text = "لوحة الأدمن" if source == 'database' else "Render أصلاً"
         text += f"{label}: <b>{source_text}</b>\n"
-        rows.append([InlineKeyboardButton(text=f"♻️ {label}", callback_data=f"adm_pay_reset_{method}")])
-    rows.append([InlineKeyboardButton(text="🔙 رجوع", callback_data="adm_payment_addresses")])
+        rows.append([InlineKeyboardButton(text=f"🔁 {label}", callback_data=f"adm_pay_reset_{method}")])
+    rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_payment_addresses")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1371,18 +1371,18 @@ async def adm_pay_reset_callback(callback: CallbackQuery):
         return
     method = callback.data.replace("adm_pay_reset_", "", 1)
     if method not in repo.PAYMENT_METHOD_LABELS:
-        await safe_answer_callback(callback, "⚠️ طريقة الدفع غير معروفة.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 طريقة الدفع غير معروفة.", show_alert=True)
         return
     await asyncio.to_thread(repo.reset_payment_address, method)
     label = repo.PAYMENT_METHOD_LABELS[method]
     fallback = await asyncio.to_thread(repo.get_payment_address_fallback, method)
     await safe_edit_text(
         callback.message,
-        f"✅ تم إعادة <b>{label}</b> إلى قيمة Render الاحتياطية.\n\n"
+        f"✔️ تم إعادة <b>{label}</b> إلى قيمة Render الاحتياطية.\n\n"
         f"القيمة الحالية الآن:\n<code>{fallback or 'غير محددة'}</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔙 عناوين الإيداع", callback_data="adm_payment_addresses")],
-            [InlineKeyboardButton(text="👑 لوحة الأدمن", callback_data="back_to_admin_main")]
+            [InlineKeyboardButton(text="↩️ عناوين الإيداع", callback_data="adm_payment_addresses")],
+            [InlineKeyboardButton(text="✨ لوحة الأدمن", callback_data="back_to_admin_main")]
         ]),
         parse_mode="HTML"
     )
@@ -1394,18 +1394,18 @@ async def adm_rates_menu_callback(callback: CallbackQuery):
         return
     bot_settings = await asyncio.to_thread(repo.get_bot_settings)
     text = (
-        "💱 <b>تعديل أسعار الصرف الحالية:</b>\n\n"
+        "💹 <b>تعديل أسعار الصرف الحالية:</b>\n\n"
         f"1️⃣ <b>سعر صرف نقاط iChancy (NSP):</b><code>1 NSP = {int(bot_settings['exchange_rate']):,} ل.س</code>\n"
         f"2️⃣ <b>سعر شراء الدولار (عند الإيداع):</b><code>{float(bot_settings['usd_buy_rate']):,.2f} ل.س</code>\n"
         f"3️⃣ <b>سعر بيع الدولار (عند السحب):</b><code>{float(bot_settings['usd_sell_rate']):,.2f} ل.س</code>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✏️ تعديل سعر صرف اللعبة (NSP)", callback_data="edit_rate_game")],
+        [InlineKeyboardButton(text="🖋️ تعديل سعر صرف اللعبة (NSP)", callback_data="edit_rate_game")],
         [
-            InlineKeyboardButton(text="✏️ تعديل سعر الإيداع (شراء)", callback_data="edit_rate_buy"),
-            InlineKeyboardButton(text="✏️ تعديل سعر السحب (بيع)", callback_data="edit_rate_sell")
+            InlineKeyboardButton(text="🖋️ تعديل سعر الإيداع (شراء)", callback_data="edit_rate_buy"),
+            InlineKeyboardButton(text="🖋️ تعديل سعر السحب (بيع)", callback_data="edit_rate_sell")
         ],
-        [InlineKeyboardButton(text="🔙 عودة للوحة الأدمن", callback_data="back_to_admin_main")]
+        [InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="back_to_admin_main")]
     ])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
@@ -1423,7 +1423,7 @@ async def back_to_admin_main_callback(callback: CallbackQuery, state: FSMContext
 async def edit_rate_game_callback(callback: CallbackQuery, state: FSMContext):
     if not await ensure_admin_callback(callback):
         return
-    await safe_edit_text(callback.message, "✏️ الرجاء إدخال <b>سعر صرف نقاط iChancy (NSP) الجديد بالليرة السورية</b> (أرقام فقط):")
+    await safe_edit_text(callback.message, "🖋️ الرجاء إدخال <b>سعر صرف نقاط iChancy (NSP) الجديد بالليرة السورية</b> (أرقام فقط):")
     await state.set_state(AdminStates.entering_exchange_rate)
     await safe_answer_callback(callback)
 
@@ -1434,11 +1434,11 @@ async def process_new_exchange_rate(message: Message, state: FSMContext):
         return
     text = message.text.strip().replace(',', '')
     if not text.isdigit():
-        await message.answer("❌ الرجاء إدخال أرقام صحيحة فقط:")
+        await message.answer("⛔ الرجاء إدخال أرقام صحيحة فقط:")
         return
     rate = int(text)
     await asyncio.to_thread(repo.update_bot_settings, exchange_rate=rate)
-    await message.answer(f"✅ تم تحديث سعر صرف اللعبة بنجاح إلى: <code>{rate:,} ل.س</code> لـ 1 NSP", parse_mode="HTML")
+    await message.answer(f"✔️ تم تحديث سعر صرف اللعبة بنجاح إلى: <code>{rate:,} ل.س</code> لـ 1 NSP", parse_mode="HTML")
     await state.clear()
 
 
@@ -1446,7 +1446,7 @@ async def process_new_exchange_rate(message: Message, state: FSMContext):
 async def edit_rate_buy_callback(callback: CallbackQuery, state: FSMContext):
     if not await ensure_admin_callback(callback):
         return
-    await safe_edit_text(callback.message, "✏️ الرجاء إدخال <b>سعر شراء الدولار الجديد عند الإيداع بالليرة السورية</b> (أرقام فقط):")
+    await safe_edit_text(callback.message, "🖋️ الرجاء إدخال <b>سعر شراء الدولار الجديد عند الإيداع بالليرة السورية</b> (أرقام فقط):")
     await state.set_state(AdminStates.entering_buy_rate)
     await safe_answer_callback(callback)
 
@@ -1459,10 +1459,10 @@ async def process_new_buy_rate(message: Message, state: FSMContext):
     try:
         rate = float(text)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال قيمة عددية صحيحة:")
+        await message.answer("⛔ الرجاء إدخال قيمة عددية صحيحة:")
         return
     await asyncio.to_thread(repo.update_bot_settings, usd_buy_rate=rate)
-    await message.answer(f"✅ تم تحديث سعر الشراء عند الإيداع بنجاح إلى: <code>{rate:,} ل.س</code> للدولار", parse_mode="HTML")
+    await message.answer(f"✔️ تم تحديث سعر الشراء عند الإيداع بنجاح إلى: <code>{rate:,} ل.س</code> للدولار", parse_mode="HTML")
     await state.clear()
 
 
@@ -1470,7 +1470,7 @@ async def process_new_buy_rate(message: Message, state: FSMContext):
 async def edit_rate_sell_callback(callback: CallbackQuery, state: FSMContext):
     if not await ensure_admin_callback(callback):
         return
-    await safe_edit_text(callback.message, "✏️ الرجاء إدخال <b>سعر بيع الدولار الجديد عند السحب بالليرة السورية</b> (أرقام فقط):")
+    await safe_edit_text(callback.message, "🖋️ الرجاء إدخال <b>سعر بيع الدولار الجديد عند السحب بالليرة السورية</b> (أرقام فقط):")
     await state.set_state(AdminStates.entering_sell_rate)
     await safe_answer_callback(callback)
 
@@ -1483,10 +1483,10 @@ async def process_new_sell_rate(message: Message, state: FSMContext):
     try:
         rate = float(text)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال قيمة عددية صحيحة:")
+        await message.answer("⛔ الرجاء إدخال قيمة عددية صحيحة:")
         return
     await asyncio.to_thread(repo.update_bot_settings, usd_sell_rate=rate)
-    await message.answer(f"✅ تم تحديث سعر البيع عند السحب بنجاح إلى: <code>{rate:,} ل.س</code> للدولار", parse_mode="HTML")
+    await message.answer(f"✔️ تم تحديث سعر البيع عند السحب بنجاح إلى: <code>{rate:,} ل.س</code> للدولار", parse_mode="HTML")
     await state.clear()
 
 
@@ -1512,10 +1512,10 @@ async def process_new_commission(message: Message, state: FSMContext):
     try:
         comm = float(text)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال نسبة مئوية عددية صحيحة:")
+        await message.answer("⛔ الرجاء إدخال نسبة مئوية عددية صحيحة:")
         return
     await asyncio.to_thread(repo.update_bot_settings, withdraw_commission=comm)
-    await message.answer(f"✅ تم تحديث نسبة عمولة السحب بنجاح إلى: <code>{comm}%</code>", parse_mode="HTML")
+    await message.answer(f"✔️ تم تحديث نسبة عمولة السحب بنجاح إلى: <code>{comm}%</code>", parse_mode="HTML")
     await state.clear()
 
 
@@ -1525,8 +1525,8 @@ async def adm_cookie_menu_callback(callback: CallbackQuery, state: FSMContext):
         return
     await safe_edit_text(
         callback.message,
-        "🔑 <b>تحديث كوكيز iChancy يدوياً:</b>\n\n"
-        "لضمان استقرار العمليات، يرجى تسجيل الدخول الفعلي من متصفحك ونسخ كوكيز الجلسة ولصقها بالكامل هنا 👇:"
+        "🗝️ <b>تحديث كوكيز iChancy يدوياً:</b>\n\n"
+        "لضمان استقرار العمليات، يرجى تسجيل الدخول الفعلي من متصفحك ونسخ كوكيز الجلسة ولصقها بالكامل هنا ↘️:"
     )
     await state.set_state(AdminStates.entering_cookies)
     await safe_answer_callback(callback)
@@ -1543,10 +1543,10 @@ async def process_new_cookies(message: Message, state: FSMContext):
     await message.answer("⏳ جاري فحص ومطابقة الكوكيز الجديدة مع المنصة...")
     is_alive = await ichancy_api_client.check_session_validity()
     if is_alive:
-        await message.answer("✅ <b>رائع جداً! الكوكيز حية ونشطة 🟢</b>\nتم حفظ الجلسة الجديدة وتحديث النظام بالكامل بنجاح!\n🕐 سيتم تذكيرك تلقائياً بتحديثها كل 12 ساعة.")
+        await message.answer("✔️ <b>رائع جداً! الكوكيز حية ونشطة 🔹</b>\nتم حفظ الجلسة الجديدة وتحديث النظام بالكامل بنجاح!\n🕐 سيتم تذكيرك تلقائياً بتحديثها كل 12 ساعة.")
     else:
         await message.answer(
-            "⚠️ <b>تنبيه:</b> تم حفظ الكوكيز ولكن <b>فحص الاتصال مع المنصة فشل (EXPIRED 🔴)</b>!\n"
+            "🚧 <b>تنبيه:</b> تم حفظ الكوكيز ولكن <b>فحص الاتصال مع المنصة فشل (EXPIRED 🔻)</b>!\n"
             "يرجى التحقق من أنك قمت بنسخ الكوكيز بعد تسجيل الدخول الفعلي والكامل لشبكة الداشبورد."
         )
     await state.clear()
@@ -1562,8 +1562,8 @@ async def adm_agent_bal_callback(callback: CallbackQuery):
         await asyncio.to_thread(repo.update_bot_settings, agent_balance=int(balance))
         await safe_edit_text(
             callback.message,
-            f"🎮 <b>رصيد محفظة الوكيل الحالي على iChancy:</b>\n\n"
-            f"💰 الرصيد الفعلي: <code>{balance:,} NSP</code>\n\n"
+            f"🕹️ <b>رصيد محفظة الوكيل الحالي على iChancy:</b>\n\n"
+            f"🪙 الرصيد الفعلي: <code>{balance:,} NSP</code>\n\n"
             "تأكد دائماً من وجود رصيد كافٍ لتلبية طلبات شحن حسابات اللاعبين الفورية.",
             reply_markup=get_admin_keyboard(),
             parse_mode="HTML"
@@ -1571,7 +1571,7 @@ async def adm_agent_bal_callback(callback: CallbackQuery):
     else:
         await safe_edit_text(
             callback.message,
-            "❌ <b>فشل الاتصال بالداشبورد لجلب الرصيد!</b>\n"
+            "⛔ <b>فشل الاتصال بالداشبورد لجلب الرصيد!</b>\n"
             "يرجى التحقق من كوكيز الجلسة عبر خيار تحديث الكوكيز يدوياً.",
             reply_markup=get_admin_keyboard(),
             parse_mode="HTML"
@@ -1588,7 +1588,7 @@ async def adm_referrals_toggle_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     enabled = await asyncio.to_thread(repo.are_referrals_enabled)
-    status = "🟢 مفعّلة" if enabled else "🔴 متوقفة"
+    status = "🔹 مفعّلة" if enabled else "🔻 متوقفة"
     text = (
         "🤝 <b>نظام الإحالات</b>\n\n"
         f"الحالة الحالية: <b>{status}</b>\n\n"
@@ -1600,10 +1600,10 @@ async def adm_referrals_toggle_callback(callback: CallbackQuery):
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text="🔴 إيقاف الإحالات" if enabled else "🟢 تفعيل الإحالات",
+            text="🔻 إيقاف الإحالات" if enabled else "🔹 تفعيل الإحالات",
             callback_data="adm_referrals_disable" if enabled else "adm_referrals_enable"
         )],
-        [InlineKeyboardButton(text="🔙 لوحة التحكم", callback_data="caesar_control_panel")]
+        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
     ])
     await safe_edit_text(callback.message, text, reply_markup=keyboard, parse_mode="HTML")
     await safe_answer_callback(callback)
@@ -1614,7 +1614,7 @@ async def adm_referrals_enable_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     await asyncio.to_thread(repo.set_referrals_enabled, True)
-    await safe_answer_callback(callback, "تم تفعيل الإحالات ✅")
+    await safe_answer_callback(callback, "تم تفعيل الإحالات ✔️")
     await adm_referrals_toggle_callback(callback)
 
 
@@ -1623,13 +1623,13 @@ async def adm_referrals_disable_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
     await asyncio.to_thread(repo.set_referrals_enabled, False)
-    await safe_answer_callback(callback, "تم إيقاف الإحالات مؤقتاً 🔴")
+    await safe_answer_callback(callback, "تم إيقاف الإحالات مؤقتاً 🔻")
     await adm_referrals_toggle_callback(callback)
 
 
 
 # ================================================================
-# 🎁 البونصات والعروض على طرق الإيداع
+# 🧧 البونصات والعروض على طرق الإيداع
 # ================================================================
 
 BONUS_PAYMENT_METHOD_LABELS = {
@@ -1645,9 +1645,9 @@ BONUS_PAYMENT_METHOD_LABELS = {
 
 def get_bonus_menu_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="➕ إنشاء عرض بونص", callback_data="bonus_create")],
-        [InlineKeyboardButton(text="📋 العروض الحالية", callback_data="bonus_list")],
-        [InlineKeyboardButton(text="🔙 لوحة التحكم", callback_data="caesar_control_panel")]
+        [InlineKeyboardButton(text="⊕ إنشاء عرض بونص", callback_data="bonus_create")],
+        [InlineKeyboardButton(text="🗒️ العروض الحالية", callback_data="bonus_list")],
+        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")]
     ])
 
 
@@ -1659,10 +1659,10 @@ async def adm_bonus_menu_callback(callback: CallbackQuery, state: FSMContext):
     active_count = len(await asyncio.to_thread(repo.get_active_bonus_rules))
     await safe_edit_text(
         callback.message,
-        "🎁 <b>البونصات والعروض</b>\n\n"
+        "🧧 <b>البونصات والعروض</b>\n\n"
         "تُطبّق البونصات فقط على <b>طرق الإيداع</b> عند قبول طلب الإيداع من المشرف.\n"
         "إذا انطبق أكثر من عرض، يحصل المستخدم على <b>أعلى بونص فقط</b>.\n\n"
-        f"📌 العروض الفعالة حالياً: <code>{active_count}</code>",
+        f"📍 العروض الفعالة حالياً: <code>{active_count}</code>",
         reply_markup=get_bonus_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -1676,7 +1676,7 @@ async def bonus_create_callback(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await safe_edit_text(
         callback.message,
-        "➕ <b>إنشاء عرض بونص جديد</b>\n\n"
+        "⊕ <b>إنشاء عرض بونص جديد</b>\n\n"
         "أرسل اسم العرض.\n"
         "مثال: <code>عرض شام كاش 10%</code>",
         parse_mode="HTML"
@@ -1691,7 +1691,7 @@ async def process_bonus_title(message: Message, state: FSMContext):
         return
     title = (message.text or '').strip()
     if len(title) < 3:
-        await message.answer("❌ اسم العرض قصير جداً. أرسل اسماً أوضح:")
+        await message.answer("⛔ اسم العرض قصير جداً. أرسل اسماً أوضح:")
         return
     await state.update_data(bonus_title=title[:150])
     await message.answer(
@@ -1710,16 +1710,16 @@ async def process_bonus_percent(message: Message, state: FSMContext):
     try:
         percent = float(raw)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال نسبة رقمية صحيحة. مثال: <code>10</code>", parse_mode="HTML")
+        await message.answer("⛔ الرجاء إدخال نسبة رقمية صحيحة. مثال: <code>10</code>", parse_mode="HTML")
         return
     if percent <= 0 or percent > 100:
-        await message.answer("❌ النسبة يجب أن تكون أكبر من 0 وأقل أو تساوي 100.")
+        await message.answer("⛔ النسبة يجب أن تكون أكبر من 0 وأقل أو تساوي 100.")
         return
     await state.update_data(bonus_percent=percent)
 
     rows = [[InlineKeyboardButton(text=label, callback_data=f"bonus_method_{key}")]
             for key, label in BONUS_PAYMENT_METHOD_LABELS.items()]
-    rows.append([InlineKeyboardButton(text="❌ إلغاء", callback_data="adm_bonus_menu")])
+    rows.append([InlineKeyboardButton(text="⛔ إلغاء", callback_data="adm_bonus_menu")])
     await message.answer(
         "💳 اختر طريقة الإيداع التي يطبق عليها البونص:",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=rows)
@@ -1737,7 +1737,7 @@ async def bonus_method_callback(callback: CallbackQuery, state: FSMContext):
     await state.update_data(bonus_payment_method=method)
     await safe_edit_text(
         callback.message,
-        "💰 أرسل الحد الأدنى للإيداع بالليرة السورية.\n"
+        "🪙 أرسل الحد الأدنى للإيداع بالليرة السورية.\n"
         "مثال: <code>100000</code>\n"
         "أرسل <code>0</code> إذا بدون حد أدنى.",
         parse_mode="HTML"
@@ -1754,10 +1754,10 @@ async def process_bonus_min_amount(message: Message, state: FSMContext):
     try:
         min_amount = int(raw)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال رقم صحيح. مثال: <code>100000</code>", parse_mode="HTML")
+        await message.answer("⛔ الرجاء إدخال رقم صحيح. مثال: <code>100000</code>", parse_mode="HTML")
         return
     if min_amount < 0:
-        await message.answer("❌ الحد الأدنى لا يمكن أن يكون سالباً.")
+        await message.answer("⛔ الحد الأدنى لا يمكن أن يكون سالباً.")
         return
     await state.update_data(bonus_min_amount=min_amount)
     await message.answer(
@@ -1777,10 +1777,10 @@ async def process_bonus_max_amount(message: Message, state: FSMContext):
     try:
         max_amount = int(raw)
     except ValueError:
-        await message.answer("❌ الرجاء إدخال رقم صحيح. مثال: <code>50000</code>", parse_mode="HTML")
+        await message.answer("⛔ الرجاء إدخال رقم صحيح. مثال: <code>50000</code>", parse_mode="HTML")
         return
     if max_amount < 0:
-        await message.answer("❌ الحد الأعلى لا يمكن أن يكون سالباً.")
+        await message.answer("⛔ الحد الأعلى لا يمكن أن يكون سالباً.")
         return
 
     data = await state.get_data()
@@ -1798,17 +1798,17 @@ async def process_bonus_max_amount(message: Message, state: FSMContext):
     )
 
     if not rule_id:
-        await message.answer("❌ تعذر إنشاء العرض. يرجى المحاولة لاحقاً.")
+        await message.answer("⛔ تعذر إنشاء العرض. يرجى المحاولة لاحقاً.")
         await state.clear()
         return
 
     await message.answer(
-        "✅ <b>تم إنشاء عرض البونص وتفعيله!</b>\n\n"
-        f"🆔 رقم العرض: <code>#{rule_id}</code>\n"
+        "✔️ <b>تم إنشاء عرض البونص وتفعيله!</b>\n\n"
+        f"🔖 رقم العرض: <code>#{rule_id}</code>\n"
         f"🏷️ الاسم: <b>{title}</b>\n"
         f"📈 النسبة: <code>{percent:g}%</code>\n"
         f"💳 الطريقة: <code>{BONUS_PAYMENT_METHOD_LABELS.get(method, method)}</code>\n"
-        f"💰 الحد الأدنى: <code>{min_amount:,} SYP</code>\n"
+        f"🪙 الحد الأدنى: <code>{min_amount:,} SYP</code>\n"
         f"🛡️ الحد الأعلى للبونص: <code>{max_amount:,} SYP</code>\n\n"
         "سيتم تطبيق العرض تلقائياً عند قبول الإيداعات المطابقة.",
         reply_markup=get_bonus_menu_keyboard(),
@@ -1825,17 +1825,17 @@ async def bonus_list_callback(callback: CallbackQuery):
     if not rules:
         await safe_edit_text(
             callback.message,
-            "📋 <b>العروض الحالية</b>\n\nلا توجد عروض بونص بعد.",
+            "🗒️ <b>العروض الحالية</b>\n\nلا توجد عروض بونص بعد.",
             reply_markup=get_bonus_menu_keyboard(),
             parse_mode="HTML"
         )
         await safe_answer_callback(callback)
         return
 
-    text = "📋 <b>آخر عروض البونص:</b>\n\n"
+    text = "🗒️ <b>آخر عروض البونص:</b>\n\n"
     rows = []
     for r in rules:
-        status = "🟢 فعال" if r.get('is_active') else "🔴 متوقف"
+        status = "🔹 فعال" if r.get('is_active') else "🔻 متوقف"
         method_label = BONUS_PAYMENT_METHOD_LABELS.get(r.get('payment_method'), r.get('payment_method'))
         text += (
             f"<b>#{r['id']} - {r['title']}</b>\n"
@@ -1844,8 +1844,8 @@ async def bonus_list_callback(callback: CallbackQuery):
             f"حد أعلى: {float(r.get('max_bonus_syp') or 0):,.0f} SYP\n\n"
         )
         if r.get('is_active'):
-            rows.append([InlineKeyboardButton(text=f"🛑 إيقاف #{r['id']}", callback_data=f"bonus_disable_{r['id']}")])
-    rows.append([InlineKeyboardButton(text="🔙 رجوع", callback_data="adm_bonus_menu")])
+            rows.append([InlineKeyboardButton(text=f"⛔ إيقاف #{r['id']}", callback_data=f"bonus_disable_{r['id']}")])
+    rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_bonus_menu")])
     await safe_edit_text(callback.message, text, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows), parse_mode="HTML")
     await safe_answer_callback(callback)
 
@@ -1862,7 +1862,7 @@ async def bonus_disable_callback(callback: CallbackQuery):
 
 
 # ================================================================
-# 🎫 إنشاء كود هدية من البوت للمستخدمين
+# 🎟️ إنشاء كود هدية من البوت للمستخدمين
 # ================================================================
 
 @router.callback_query(F.data == "adm_create_bot_gift")
@@ -1872,15 +1872,15 @@ async def adm_create_bot_gift_callback(callback: CallbackQuery, state: FSMContex
     await state.clear()
     await safe_edit_text(
         callback.message,
-        "🎫 <b>إنشاء كود هدية من المشرف</b>\n\n"
+        "🎟️ <b>إنشاء كود هدية من المشرف</b>\n\n"
         "اختر نوع الكود الذي تريد إنشاءه:\n\n"
-        "🎁 <b>كود بونص:</b> يبدأ بـ <code>JUDE-BONUS-</code> ويضاف إلى رصيد مكافآت اللعب.\n"
-        "💵 <b>كود كاش:</b> يبدأ بـ <code>JUDE-CASH-</code> ويضاف إلى رصيد البوت القابل للسحب.\n\n"
+        "🧧 <b>كود بونص:</b> يبدأ بـ <code>JUDE-BONUS-</code> ويضاف إلى رصيد مكافآت اللعب.\n"
+        "💳 <b>كود كاش:</b> يبدأ بـ <code>JUDE-CASH-</code> ويضاف إلى رصيد البوت القابل للسحب.\n\n"
         "ملاحظة: الكود يستخدم مرة واحدة فقط، ولا يتم خصم قيمته من رصيد الأدمن.",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🎁 كود بونص للعب", callback_data="adm_bot_gift_type_bonus")],
-            [InlineKeyboardButton(text="💵 كود كاش قابل للسحب", callback_data="adm_bot_gift_type_cash")],
-            [InlineKeyboardButton(text="🔙 عودة للوحة الأدمن", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="🧧 كود بونص للعب", callback_data="adm_bot_gift_type_bonus")],
+            [InlineKeyboardButton(text="💳 كود كاش قابل للسحب", callback_data="adm_bot_gift_type_cash")],
+            [InlineKeyboardButton(text="↩️ عودة للوحة الأدمن", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -1900,11 +1900,11 @@ async def adm_bot_gift_type_callback(callback: CallbackQuery, state: FSMContext)
     label = "بونص للعب" if gift_type == "bonus" else "كاش قابل للسحب"
     await safe_edit_text(
         callback.message,
-        f"🎫 <b>إنشاء كود {label}</b>\n\n"
+        f"🎟️ <b>إنشاء كود {label}</b>\n\n"
         f"أرسل قيمة الكود بالليرة السورية. مثال: <code>50000</code>\n\n"
         f"سيتم إنشاء كود يبدأ بـ: <code>{prefix}</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔙 اختيار نوع آخر", callback_data="adm_create_bot_gift")]
+            [InlineKeyboardButton(text="↩️ اختيار نوع آخر", callback_data="adm_create_bot_gift")]
         ]),
         parse_mode="HTML"
     )
@@ -1923,11 +1923,11 @@ async def process_bot_gift_amount(message: Message, state: FSMContext):
         if amount <= 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال مبلغ صحيح بالأرقام فقط. مثال: <code>50000</code>", parse_mode="HTML")
+        await message.answer("⛔ الرجاء إدخال مبلغ صحيح بالأرقام فقط. مثال: <code>50000</code>", parse_mode="HTML")
         return
 
     if amount < 1000:
-        await message.answer("❌ الحد الأدنى لكود الهدية هو <code>1,000 SYP</code>.", parse_mode="HTML")
+        await message.answer("⛔ الحد الأدنى لكود الهدية هو <code>1,000 SYP</code>.", parse_mode="HTML")
         return
 
     data = await state.get_data()
@@ -1938,39 +1938,39 @@ async def process_bot_gift_amount(message: Message, state: FSMContext):
 
     success, msg = await asyncio.to_thread(repo.create_bot_gift, message.from_user.id, amount, code)
     if not success:
-        await message.answer(f"❌ {msg}")
+        await message.answer(f"⛔ {msg}")
         await state.clear()
         return
 
     result_text = (
-        "✅ <b>تم إنشاء كود هدية من المشرف بنجاح!</b>\n\n"
+        "✔️ <b>تم إنشاء كود هدية من المشرف بنجاح!</b>\n\n"
         f"🏷️ <b>النوع:</b> <code>{type_label}</code>\n"
-        f"🎫 <b>الكود:</b> <code>{code}</code>\n"
-        f"💰 <b>القيمة:</b> <code>{amount:,} SYP</code>\n"
+        f"🎟️ <b>الكود:</b> <code>{code}</code>\n"
+        f"🪙 <b>القيمة:</b> <code>{amount:,} SYP</code>\n"
         "🔁 <b>عدد الاستخدامات:</b> مرة واحدة فقط\n\n"
         "يمكنك الآن إرسال هذا الكود للمستخدم المطلوب أو نشره في القناة."
     )
     await message.answer(
         result_text,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🎫 إنشاء كود آخر", callback_data="adm_create_bot_gift")],
-            [InlineKeyboardButton(text="🏠 لوحة التحكم", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="🎟️ إنشاء كود آخر", callback_data="adm_create_bot_gift")],
+            [InlineKeyboardButton(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
 
     await send_log_message(
         message.bot,
-        "🎫 <b>إنشاء كود هدية من البوت</b>\n\n"
-        f"👑 الأدمن: <code>{message.from_user.id}</code>\n"
-        f"🎫 الكود: <code>{code}</code>\n"
-        f"💰 القيمة: <code>{amount:,} SYP</code>"
+        "🎟️ <b>إنشاء كود هدية من البوت</b>\n\n"
+        f"✨ الأدمن: <code>{message.from_user.id}</code>\n"
+        f"🎟️ الكود: <code>{code}</code>\n"
+        f"🪙 القيمة: <code>{amount:,} SYP</code>"
     )
     await state.clear()
 
 
 # ================================================================
-# 🆕 إدارة المستخدمين (بحث + تعديل رصيد)
+# 🌟 إدارة المستخدمين (بحث + تعديل رصيد)
 # ================================================================
 
 @router.callback_query(F.data == "adm_users_menu")
@@ -1982,10 +1982,10 @@ async def adm_users_menu_callback(callback: CallbackQuery, state: FSMContext):
     today = await asyncio.to_thread(repo.get_new_users_today)
     await safe_edit_text(
         callback.message,
-        f"🔎 <b>إدارة المستخدمين</b>\n\n"
-        f"👥 <b>إجمالي المسجّلين:</b> <code>{total:,}</code>\n"
-        f"🆕 <b>جدد اليوم:</b> <code>{today}</code>\n\n"
-        f"أرسل الآن <b>Telegram ID</b> أو <b>اسم المستخدم</b> للبحث عنه 👇",
+        f"🔍 <b>إدارة المستخدمين</b>\n\n"
+        f"🧑‍🤝‍🧑 <b>إجمالي المسجّلين:</b> <code>{total:,}</code>\n"
+        f"🌟 <b>جدد اليوم:</b> <code>{today}</code>\n\n"
+        f"أرسل الآن <b>Telegram ID</b> أو <b>اسم المستخدم</b> للبحث عنه ↘️",
         parse_mode="HTML"
     )
     await state.set_state(AdminStates.searching_user)
@@ -1998,34 +1998,34 @@ async def process_user_search(message: Message, state: FSMContext):
         return
     query = (message.text or '').strip()
     if not query:
-        await message.answer("❌ الرجاء إدخال قيمة للبحث:")
+        await message.answer("⛔ الرجاء إدخال قيمة للبحث:")
         return
 
     users = await asyncio.to_thread(repo.search_user, query)
     if not users:
         await message.answer(
-            f"❌ لم يتم العثور على مستخدم بـ: <code>{query}</code>\n\nحاول مرة أخرى أو اضغط /admin للعودة.",
+            f"⛔ لم يتم العثور على مستخدم بـ: <code>{query}</code>\n\nحاول مرة أخرى أو اضغط /admin للعودة.",
             parse_mode="HTML"
         )
         return
 
-    text = f"🔎 <b>نتائج البحث ({len(users)}):</b>\n\n"
+    text = f"🔍 <b>نتائج البحث ({len(users)}):</b>\n\n"
     keyboard_rows = []
     for u in users:
         tid = u['telegram_id']
         uname = u.get('telegram_username') or 'بدون معرف'
         bal = int(u.get('bot_balance', 0))
         text += (
-            f"👤 <code>{tid}</code> | {uname}\n"
-            f"   💎 <code>{bal:,} SYP</code>"
-            f" | 🎮 <code>{u.get('ichancy_username') or '—'}</code>\n\n"
+            f"🧑‍💼 <code>{tid}</code> | {uname}\n"
+            f"   🔷 <code>{bal:,} SYP</code>"
+            f" | 🕹️ <code>{u.get('ichancy_username') or '—'}</code>\n\n"
         )
         keyboard_rows.append([InlineKeyboardButton(
-            text=f"✏️ تعديل {uname[:15]} ({bal:,})",
+            text=f"🖋️ تعديل {uname[:15]} ({bal:,})",
             callback_data=f"setbal_{tid}"
         )])
 
-    keyboard_rows.append([InlineKeyboardButton(text="🔙 رجوع", callback_data="adm_users_menu")])
+    keyboard_rows.append([InlineKeyboardButton(text="↩️ رجوع", callback_data="adm_users_menu")])
     await message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows), parse_mode="HTML")
 
 
@@ -2036,14 +2036,14 @@ async def set_balance_callback(callback: CallbackQuery, state: FSMContext):
     telegram_id = callback.data.replace("setbal_", "")
     user = await asyncio.to_thread(repo.get_user, telegram_id)
     if not user:
-        await safe_answer_callback(callback, "⚠️ المستخدم غير موجود.", show_alert=True)
+        await safe_answer_callback(callback, "🚧 المستخدم غير موجود.", show_alert=True)
         return
     await state.update_data(target_user_id=telegram_id)
     await safe_edit_text(
         callback.message,
-        f"✏️ <b>تعديل رصيد المستخدم</b>\n\n"
-        f"👤 <code>{telegram_id}</code> ({user.get('telegram_username') or 'بدون اسم'})\n"
-        f"💎 <b>الرصيد الحالي:</b> <code>{int(user.get('bot_balance', 0)):,} SYP</code>\n\n"
+        f"🖋️ <b>تعديل رصيد المستخدم</b>\n\n"
+        f"🧑‍💼 <code>{telegram_id}</code> ({user.get('telegram_username') or 'بدون اسم'})\n"
+        f"🔷 <b>الرصيد الحالي:</b> <code>{int(user.get('bot_balance', 0)):,} SYP</code>\n\n"
         f"أرسل الرصيد الجديد بالـ SYP (مثال: <code>50000</code>):\n"
         f"<i>يمكن استخدام +5000 أو -3000 لإضافة/خصم نسبي</i>",
         parse_mode="HTML"
@@ -2060,7 +2060,7 @@ async def process_set_balance(message: Message, state: FSMContext):
     telegram_id = data.get('target_user_id')
     user = await asyncio.to_thread(repo.get_user, telegram_id)
     if not user:
-        await message.answer("⚠️ المستخدم لم يعد موجوداً.")
+        await message.answer("🚧 المستخدم لم يعد موجوداً.")
         await state.clear()
         return
 
@@ -2071,7 +2071,7 @@ async def process_set_balance(message: Message, state: FSMContext):
         if value < 0:
             raise ValueError
     except ValueError:
-        await message.answer("❌ الرجاء إدخال رقم صحيح:")
+        await message.answer("⛔ الرجاء إدخال رقم صحيح:")
         return
 
     old_balance = int(user.get('bot_balance', 0))
@@ -2083,19 +2083,19 @@ async def process_set_balance(message: Message, state: FSMContext):
         action = f"تعيين إلى {value:,}"
 
     if new_balance < 0:
-        await message.answer(f"❌ الرصيد الناتج سالب ({new_balance:,}). غير مسموح.")
+        await message.answer(f"⛔ الرصيد الناتج سالب ({new_balance:,}). غير مسموح.")
         return
 
     await asyncio.to_thread(repo.set_user_balance, telegram_id, new_balance)
     await message.answer(
-        f"✅ <b>تم تحديث الرصيد بنجاح!</b>\n\n"
-        f"👤 <code>{telegram_id}</code>\n"
-        f"📝 <b>العملية:</b> {action} SYP\n"
-        f"💎 <b>الرصيد القديم:</b> <code>{old_balance:,} SYP</code>\n"
-        f"💎 <b>الرصيد الجديد:</b> <code>{new_balance:,} SYP</code>",
+        f"✔️ <b>تم تحديث الرصيد بنجاح!</b>\n\n"
+        f"🧑‍💼 <code>{telegram_id}</code>\n"
+        f"🖋️ <b>العملية:</b> {action} SYP\n"
+        f"🔷 <b>الرصيد القديم:</b> <code>{old_balance:,} SYP</code>\n"
+        f"🔷 <b>الرصيد الجديد:</b> <code>{new_balance:,} SYP</code>",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔎 بحث عن مستخدم آخر", callback_data="adm_users_menu")],
-            [InlineKeyboardButton(text="🏠 لوحة التحكم", callback_data="caesar_control_panel")]
+            [InlineKeyboardButton(text="🔍 بحث عن مستخدم آخر", callback_data="adm_users_menu")],
+            [InlineKeyboardButton(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")]
         ]),
         parse_mode="HTML"
     )
@@ -2106,27 +2106,27 @@ async def process_set_balance(message: Message, state: FSMContext):
 async def adm_close_panel_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
-    await safe_edit_text(callback.message, "🔒 تم إغلاق لوحة تحكم الأدمن بنجاح.")
+    await safe_edit_text(callback.message, "🔐 تم إغلاق لوحة تحكم الأدمن بنجاح.")
     await safe_answer_callback(callback)
 
 
 # ================================================================
-# 👑 مسابقات Jude Robert - أزرار القبول/الرفض من القناة
+# ✨ مسابقات Jude Robert - أزرار القبول/الرفض من القناة
 # ================================================================
 
 def get_contest_rejection_reason_keyboard(entry_id: int):
     """قائمة أسباب رفض المشاركة في المسابقة."""
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="📸 صورة غير واضحة", callback_data=f"contest_reject_reason|receipt_unclear|{entry_id}"),
-            InlineKeyboardButton(text="🔗 الرابط غير صحيح", callback_data=f"contest_reject_reason|wrong_link|{entry_id}")
+            InlineKeyboardButton(text="📷 صورة غير واضحة", callback_data=f"contest_reject_reason|receipt_unclear|{entry_id}"),
+            InlineKeyboardButton(text="🧷 الرابط غير صحيح", callback_data=f"contest_reject_reason|wrong_link|{entry_id}")
         ],
         [
-            InlineKeyboardButton(text="🚫 مشاركة مكررة", callback_data=f"contest_reject_reason|duplicate|{entry_id}"),
-            InlineKeyboardButton(text="📝 محتوى غير مرتبط", callback_data=f"contest_reject_reason|irrelevant|{entry_id}")
+            InlineKeyboardButton(text="⛔ مشاركة مكررة", callback_data=f"contest_reject_reason|duplicate|{entry_id}"),
+            InlineKeyboardButton(text="🖋️ محتوى غير مرتبط", callback_data=f"contest_reject_reason|irrelevant|{entry_id}")
         ],
         [InlineKeyboardButton(text="✍️ سبب مخصص (من المحادثة)", callback_data=f"contest_reject_reason|custom|{entry_id}")],
-        [InlineKeyboardButton(text="🔙 إلغاء", callback_data="caesar_control_panel")]
+        [InlineKeyboardButton(text="↩️ إلغاء", callback_data="caesar_control_panel")]
     ])
 
 def map_contest_rejection_reason(reason_code: str) -> str:
@@ -2156,11 +2156,11 @@ async def approve_contest_callback(callback: CallbackQuery):
             'contest_not_found': 'المسابقة غير موجودة.',
             'winners_limit_reached': 'تم الوصول للحد الأقصى من الفائزين.',
         }
-        await safe_answer_callback(callback, f"❌ {reasons.get(reason, 'تعذر قبول المشاركة.')}", show_alert=True)
+        await safe_answer_callback(callback, f"⛔ {reasons.get(reason, 'تعذر قبول المشاركة.')}", show_alert=True)
         return
 
     # الرد على الـ callback فوراً
-    await safe_answer_callback(callback, "✅ تم قبول المشاركة!")
+    await safe_answer_callback(callback, "✔️ تم قبول المشاركة!")
 
     # تحديث رسالة القناة
     user_telegram_id = result.get('user_telegram_id')
@@ -2170,11 +2170,11 @@ async def approve_contest_callback(callback: CallbackQuery):
 
     # تحديث نص الرسالة
     original_text = getattr(callback.message, 'html_text', None) or getattr(callback.message, 'caption', None) or ''
-    status_text = "✅ <b>تم قبول المشاركة</b>"
+    status_text = "✔️ <b>تم قبول المشاركة</b>"
     if gift_code:
-        status_text += f"\n🎁 <b>كود الهدية:</b> <code>{gift_code}</code>"
+        status_text += f"\n🧧 <b>كود الهدية:</b> <code>{gift_code}</code>"
     elif reward_amount and reward_amount > 0:
-        status_text += f"\n💰 <b>تم إضافة:</b> <code>{reward_amount:,} SYP</code> إلى رصيد المستخدم"
+        status_text += f"\n🪙 <b>تم إضافة:</b> <code>{reward_amount:,} SYP</code> إلى رصيد المستخدم"
 
     try:
         if getattr(callback.message, 'photo', None):
@@ -2197,25 +2197,25 @@ async def approve_contest_callback(callback: CallbackQuery):
 
         user_text = (
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "✅ <b>تم قبول مشاركتك!</b>\n"
+            "✔️ <b>تم قبول مشاركتك!</b>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"👑 <b>المسابقة:</b> {contest_title}\n\n"
+            f"✨ <b>المسابقة:</b> {contest_title}\n\n"
         )
         if gift_code:
             user_text += (
-                f"🎁 <b>كود الجائزة:</b> <code>{gift_code}</code>\n\n"
-                "💡 يمكنك استرداد الكود من زر <b>🎫 كود هدية</b> في القائمة الرئيسية."
+                f"🧧 <b>كود الجائزة:</b> <code>{gift_code}</code>\n\n"
+                "🔆 يمكنك استرداد الكود من زر <b>🎟️ كود هدية</b> في القائمة الرئيسية."
             )
         elif reward_amount and reward_amount > 0:
             user = await asyncio.to_thread(repo.get_user, user_telegram_id)
             new_balance = int(user.get('bot_balance') or 0) if user else 0
             user_text += (
-                f"💰 <b>قيمة الجائزة:</b> <code>{reward_amount:,} SYP</code>\n\n"
-                f"💎 <b>رصيدك الحالي:</b> <code>{new_balance:,} SYP</code>\n\n"
-                "🎉 تهانينا! تم إضافة الجائزة إلى رصيدك."
+                f"🪙 <b>قيمة الجائزة:</b> <code>{reward_amount:,} SYP</code>\n\n"
+                f"🔷 <b>رصيدك الحالي:</b> <code>{new_balance:,} SYP</code>\n\n"
+                "✨ تهانينا! تم إضافة الجائزة إلى رصيدك."
             )
         else:
-            user_text += "🎉 تهانينا! مشاركتك مقبولة ومؤهلة للفوز."
+            user_text += "✨ تهانينا! مشاركتك مقبولة ومؤهلة للفوز."
 
         user_text += "\n\n━━━━━━━━━━━━━━━━━━━━━━━"
 
@@ -2231,10 +2231,10 @@ async def approve_contest_callback(callback: CallbackQuery):
     # إرسال سجل
     await send_log_message(
         callback.bot,
-        f"✅ <b>تم قبول مشاركة مسابقة</b>\n\n"
-        f"📌 المشاركة: <code>#{entry_id}</code>\n"
-        f"👑 المسابقة: <code>#{contest_id}</code>\n"
-        f"👤 المشرف: <code>{callback.from_user.id}</code>"
+        f"✔️ <b>تم قبول مشاركة مسابقة</b>\n\n"
+        f"📍 المشاركة: <code>#{entry_id}</code>\n"
+        f"✨ المسابقة: <code>#{contest_id}</code>\n"
+        f"🧑‍💼 المشرف: <code>{callback.from_user.id}</code>"
     )
 
 
@@ -2248,7 +2248,7 @@ async def reject_contest_callback(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_text(
         callback.message,
-        f"❌ <b>اختر سبب رفض المشاركة</b> <code>#{entry_id}</code>",
+        f"⛔ <b>اختر سبب رفض المشاركة</b> <code>#{entry_id}</code>",
         reply_markup=get_contest_rejection_reason_keyboard(entry_id),
         parse_mode="HTML"
     )
@@ -2271,7 +2271,7 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
         await safe_edit_text(
             callback.message,
             f"✍️ <b>طلب رفض مخصص للمشاركة #{entry_id}</b>\n\n"
-            "أرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن 👇",
+            "أرسل سبب الرفض في <b>محادثتك الخاصة</b> مع البوت الآن ↘️",
             parse_mode="HTML"
         )
         try:
@@ -2279,12 +2279,12 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
                 callback.from_user.id,
                 f"✍️ <b>سبب رفض مخصص للمشاركة #{entry_id}</b>\n\n"
                 "أرسل الآن نص السبب (سيُرسل للمستخدم فوراً):",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="❌ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⛔ إلغاء الرفض المخصص", callback_data="adm_cancel_rejection")]]),
                 parse_mode="HTML"
             )
         except Exception as e:
             logger.warning(f"Could not DM admin for custom contest rejection: {e}")
-        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة ✉️")
+        await safe_answer_callback(callback, "أرسل السبب في المحادثة الخاصة 📨")
         return
 
     reason = map_contest_rejection_reason(reason_code)
@@ -2297,7 +2297,7 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
 
     # تحديث رسالة القناة
     original_text = getattr(callback.message, 'html_text', None) or getattr(callback.message, 'caption', None) or ''
-    status_text = f"❌ <b>تم رفض المشاركة</b>\n📝 <b>السبب:</b> {reason}"
+    status_text = f"⛔ <b>تم رفض المشاركة</b>\n🖋️ <b>السبب:</b> {reason}"
 
     try:
         if getattr(callback.message, 'photo', None):
@@ -2329,11 +2329,11 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
 
             user_text = (
                 "━━━━━━━━━━━━━━━━━━━━━━━\n"
-                "❌ <b>تم رفض مشاركتك</b>\n"
+                "⛔ <b>تم رفض مشاركتك</b>\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                f"👑 <b>المسابقة:</b> {contest_title}\n"
-                f"📝 <b>السبب:</b> {reason}\n\n"
-                "💡 يمكنك المحاولة مجدداً بمشاركة صحيحة.\n\n"
+                f"✨ <b>المسابقة:</b> {contest_title}\n"
+                f"🖋️ <b>السبب:</b> {reason}\n\n"
+                "🔆 يمكنك المحاولة مجدداً بمشاركة صحيحة.\n\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━"
             )
 
@@ -2351,15 +2351,15 @@ async def contest_reject_reason_callback(callback: CallbackQuery, state: FSMCont
     # إرسال سجل
     await send_log_message(
         callback.bot,
-        f"❌ <b>تم رفض مشاركة مسابقة</b>\n\n"
-        f"📌 المشاركة: <code>#{entry_id}</code>\n"
-        f"📝 السبب: {reason}\n"
-        f"👤 المشرف: <code>{callback.from_user.id}</code>"
+        f"⛔ <b>تم رفض مشاركة مسابقة</b>\n\n"
+        f"📍 المشاركة: <code>#{entry_id}</code>\n"
+        f"🖋️ السبب: {reason}\n"
+        f"🧑‍💼 المشرف: <code>{callback.from_user.id}</code>"
     )
 
 
 # ================================================================
-# 🆕 (Update 18) قسم لوحة المتصدرين الأسبوعية (Turnover Leaderboard)
+# 🌟 (Update 18) قسم لوحة المتصدرين الأسبوعية (Turnover Leaderboard)
 # ================================================================
 
 def _lb_status_text():
@@ -2368,7 +2368,7 @@ def _lb_status_text():
     cfg = repo.get_lb_config()
     enabled = bool(feats.get('leaderboard_enabled', True))
     lb_type = str(feats.get('leaderboard_type') or 'all_time')
-    type_label = {'weekly': '🗓️ أسبوعي (دوران مراهنات حقيقي)', 'monthly': '📆 شهري', 'all_time': '♾️ كلي (رصيد البوت)'}.get(lb_type, lb_type)
+    type_label = {'weekly': '🗓️ أسبوعي (دوران مراهنات حقيقي)', 'monthly': '🗓️ شهري', 'all_time': '∞ كلي (رصيد البوت)'}.get(lb_type, lb_type)
     tracked = repo.get_lb_tracked_count()
     last_refresh = repo.get_lb_last_refresh()
     refresh_txt = last_refresh.strftime('%Y-%m-%d %H:%M') if last_refresh else 'لم يتم بعد'
@@ -2376,19 +2376,19 @@ def _lb_status_text():
     qualified_hint = f"{cfg['min_weekly_turnover']:,}" if cfg['min_weekly_turnover'] > 0 else "بدون حد"
 
     return (
-        "🏆 <b>إدارة لوحة المتصدرين الأسبوعية</b>\n\n"
-        f"🔌 ظهور اللوحة للمستخدمين: <b>{'🟢 مفعّل' if enabled else '🔴 متوقف'}</b>\n"
-        f"📊 نوع الترتيب: <b>{type_label}</b>\n"
-        f"👥 لاعبون متتبَّعون: <code>{tracked}</code>\n"
-        f"🕒 آخر تحديث إحصائيات: <code>{refresh_txt}</code>\n"
-        f"🏁 آخر أسبوع مُسوّى: <code>{last_done}</code>\n\n"
-        "🎁 <b>الجوائز (SYP):</b>\n"
-        f"🥇 الأول: <code>{cfg['prize_1']:,}</code>\n"
-        f"🥈 الثاني: <code>{cfg['prize_2']:,}</code>\n"
-        f"🥉 الثالث: <code>{cfg['prize_3']:,}</code>\n"
-        f"🎯 حد التأهل الأسبوعي: <code>{qualified_hint}</code>\n"
-        f"🤖 قيد الجوائز تلقائياً: <b>{'🟢 مفعّل' if cfg['auto_credit'] else '🔴 متوقف (أرشفة فقط)'}</b>\n\n"
-        "💡 الترتيب بالوضع الأسبوعي يعتمد على دوران المراهنات الفعلي في iChancy، "
+        "🏅 <b>إدارة لوحة المتصدرين الأسبوعية</b>\n\n"
+        f"🔋 ظهور اللوحة للمستخدمين: <b>{'🔹 مفعّل' if enabled else '🔻 متوقف'}</b>\n"
+        f"📈 نوع الترتيب: <b>{type_label}</b>\n"
+        f"🧑‍🤝‍🧑 لاعبون متتبَّعون: <code>{tracked}</code>\n"
+        f"🕰️ آخر تحديث إحصائيات: <code>{refresh_txt}</code>\n"
+        f"🚩 آخر أسبوع مُسوّى: <code>{last_done}</code>\n\n"
+        "🧧 <b>الجوائز (SYP):</b>\n"
+        f"🏆 الأول: <code>{cfg['prize_1']:,}</code>\n"
+        f"🎖️ الثاني: <code>{cfg['prize_2']:,}</code>\n"
+        f"🏵️ الثالث: <code>{cfg['prize_3']:,}</code>\n"
+        f"🧿 حد التأهل الأسبوعي: <code>{qualified_hint}</code>\n"
+        f"🧠 قيد الجوائز تلقائياً: <b>{'🔹 مفعّل' if cfg['auto_credit'] else '🔻 متوقف (أرشفة فقط)'}</b>\n\n"
+        "🔆 الترتيب بالوضع الأسبوعي يعتمد على دوران المراهنات الفعلي في iChancy، "
         "وتُسوّى الجوائز آلياً اثنين 00:05 بتوقيت سوريا. التفعيل والنوع يُداران أيضاً "
         "من لوحة الميزات في الـ Mini App."
     )
@@ -2402,32 +2402,32 @@ def _lb_menu_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="🔴 إيقاف الظهور" if enabled else "🟢 تفعيل الظهور",
+                text="🔻 إيقاف الظهور" if enabled else "🔹 تفعيل الظهور",
                 callback_data="adm_lb_toggle_visible"
             ),
             InlineKeyboardButton(
-                text="🔀 إلغاء الوضع الأسبوعي" if weekly_mode else "🗓️ تفعيل الوضع الأسبوعي",
+                text="🔁 إلغاء الوضع الأسبوعي" if weekly_mode else "🗓️ تفعيل الوضع الأسبوعي",
                 callback_data="adm_lb_toggle_type"
             ),
         ],
         [
-            InlineKeyboardButton(text="🥇 جائزة الأول", callback_data="adm_lb_set_p1"),
-            InlineKeyboardButton(text="🥈 جائزة الثاني", callback_data="adm_lb_set_p2"),
-            InlineKeyboardButton(text="🥉 جائزة الثالث", callback_data="adm_lb_set_p3"),
+            InlineKeyboardButton(text="🏆 جائزة الأول", callback_data="adm_lb_set_p1"),
+            InlineKeyboardButton(text="🎖️ جائزة الثاني", callback_data="adm_lb_set_p2"),
+            InlineKeyboardButton(text="🏵️ جائزة الثالث", callback_data="adm_lb_set_p3"),
         ],
         [
-            InlineKeyboardButton(text="🎯 حد التأهل", callback_data="adm_lb_set_min"),
+            InlineKeyboardButton(text="🧿 حد التأهل", callback_data="adm_lb_set_min"),
             InlineKeyboardButton(
-                text="🤖 إيقاف القيد التلقائي" if cfg['auto_credit'] else "🤖 تفعيل القيد التلقائي",
+                text="🧠 إيقاف القيد التلقائي" if cfg['auto_credit'] else "🧠 تفعيل القيد التلقائي",
                 callback_data="adm_lb_toggle_autocredit"
             ),
         ],
         [
-            InlineKeyboardButton(text="🔄 تحديث الإحصائيات الآن", callback_data="adm_lb_refresh_now"),
+            InlineKeyboardButton(text="🔁 تحديث الإحصائيات الآن", callback_data="adm_lb_refresh_now"),
             InlineKeyboardButton(text="🏅 تسوية الأسبوع الآن", callback_data="adm_lb_settle_now"),
         ],
-        [InlineKeyboardButton(text="📜 آخر النتائج", callback_data="adm_lb_history")],
-        [InlineKeyboardButton(text="🔙 لوحة التحكم", callback_data="caesar_control_panel")],
+        [InlineKeyboardButton(text="📃 آخر النتائج", callback_data="adm_lb_history")],
+        [InlineKeyboardButton(text="↩️ لوحة التحكم", callback_data="caesar_control_panel")],
     ])
 
 
@@ -2446,7 +2446,7 @@ async def adm_lb_toggle_visible_callback(callback: CallbackQuery, state: FSMCont
         return
     feats = await asyncio.to_thread(repo.get_user_features_settings)
     await asyncio.to_thread(repo.update_user_features_settings, leaderboard_enabled=not bool(feats.get('leaderboard_enabled', True)))
-    await safe_answer_callback(callback, "تم تحديث حالة الظهور ✅")
+    await safe_answer_callback(callback, "تم تحديث حالة الظهور ✔️")
     await adm_lb_menu_callback(callback, state)
 
 
@@ -2461,7 +2461,7 @@ async def adm_lb_toggle_type_callback(callback: CallbackQuery, state: FSMContext
     if new_type == 'weekly':
         await safe_answer_callback(callback, "🗓️ الوضع الأسبوعي مفعّل — سيبدأ التتبع عند أول تحديث إحصائيات")
     else:
-        await safe_answer_callback(callback, "🔀 عدنا للترتيب الكلي (رصيد البوت)")
+        await safe_answer_callback(callback, "🔁 عدنا للترتيب الكلي (رصيد البوت)")
     await adm_lb_menu_callback(callback, state)
 
 
@@ -2471,7 +2471,7 @@ async def adm_lb_toggle_autocredit_callback(callback: CallbackQuery, state: FSMC
         return
     cfg = await asyncio.to_thread(repo.get_lb_config)
     await asyncio.to_thread(repo.update_lb_settings, auto_credit=not cfg['auto_credit'])
-    await safe_answer_callback(callback, "تم تحديث القيد التلقائي 🤖")
+    await safe_answer_callback(callback, "تم تحديث القيد التلقائي 🧠")
     await adm_lb_menu_callback(callback, state)
 
 
@@ -2480,10 +2480,10 @@ async def adm_lb_prompt_value_callback(callback: CallbackQuery, state: FSMContex
     if not await ensure_admin_callback(callback):
         return
     prompts = {
-        "adm_lb_set_p1": ("🥇 جائزة المركز الأول", AdminStates.entering_lb_prize_1),
-        "adm_lb_set_p2": ("🥈 جائزة المركز الثاني", AdminStates.entering_lb_prize_2),
-        "adm_lb_set_p3": ("🥉 جائزة المركز الثالث", AdminStates.entering_lb_prize_3),
-        "adm_lb_set_min": ("🎯 الحد الأدنى لنقاط الدوران الأسبوعية للتأهل", AdminStates.entering_lb_min_turnover),
+        "adm_lb_set_p1": ("🏆 جائزة المركز الأول", AdminStates.entering_lb_prize_1),
+        "adm_lb_set_p2": ("🎖️ جائزة المركز الثاني", AdminStates.entering_lb_prize_2),
+        "adm_lb_set_p3": ("🏵️ جائزة المركز الثالث", AdminStates.entering_lb_prize_3),
+        "adm_lb_set_min": ("🧿 الحد الأدنى لنقاط الدوران الأسبوعية للتأهل", AdminStates.entering_lb_min_turnover),
     }
     label, target_state = prompts[callback.data]
     await state.set_state(target_state)
@@ -2491,7 +2491,7 @@ async def adm_lb_prompt_value_callback(callback: CallbackQuery, state: FSMContex
         callback.message,
         f"{label}\n\nأرسل القيمة الجديدة بالليرة السورية (رقم صحيح، 0 للإلغاء/بدون):",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="❌ إلغاء", callback_data="adm_lb_menu")]
+            [InlineKeyboardButton(text="⛔ إلغاء", callback_data="adm_lb_menu")]
         ]),
         parse_mode="HTML"
     )
@@ -2506,44 +2506,44 @@ async def _process_lb_value(message: Message, state: FSMContext, apply_func, suc
         if value < 0:
             raise ValueError("negative")
     except (ValueError, TypeError):
-        await message.answer("⚠️ أدخل رقماً صحيحاً موجباً فقط. أعد المحاولة أو /cancel")
+        await message.answer("🚧 أدخل رقماً صحيحاً موجباً فقط. أعد المحاولة أو /cancel")
         return
     await asyncio.to_thread(apply_func, value)
     await state.clear()
-    await message.answer(f"✅ {success_label}: <code>{value:,}</code>", parse_mode="HTML")
+    await message.answer(f"✔️ {success_label}: <code>{value:,}</code>", parse_mode="HTML")
 
 
 @router.message(AdminStates.entering_lb_prize_1)
 async def process_lb_prize_1(message: Message, state: FSMContext):
-    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_1=v), "🥇 جائزة المركز الأول")
+    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_1=v), "🏆 جائزة المركز الأول")
 
 
 @router.message(AdminStates.entering_lb_prize_2)
 async def process_lb_prize_2(message: Message, state: FSMContext):
-    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_2=v), "🥈 جائزة المركز الثاني")
+    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_2=v), "🎖️ جائزة المركز الثاني")
 
 
 @router.message(AdminStates.entering_lb_prize_3)
 async def process_lb_prize_3(message: Message, state: FSMContext):
-    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_3=v), "🥉 جائزة المركز الثالث")
+    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(prize_3=v), "🏵️ جائزة المركز الثالث")
 
 
 @router.message(AdminStates.entering_lb_min_turnover)
 async def process_lb_min_turnover(message: Message, state: FSMContext):
-    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(min_weekly_turnover=v), "🎯 حد التأهل الأسبوعي")
+    await _process_lb_value(message, state, lambda v: repo.update_lb_settings(min_weekly_turnover=v), "🧿 حد التأهل الأسبوعي")
 
 
 @router.callback_query(F.data == "adm_lb_refresh_now")
 async def adm_lb_refresh_now_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
-    await safe_answer_callback(callback, "🔄 جاري جلب إحصائيات iChancy...")
+    await safe_answer_callback(callback, "🔁 جاري جلب إحصائيات iChancy...")
     from telegram_bot.main import refresh_turnover_leaderboard  # استيراد مؤجّل لتفادي الدورية
     updated = await refresh_turnover_leaderboard()
     await safe_edit_text(
         callback.message,
-        _lb_status_text() + f"\n\n✅ <b>آخر تحديث الآن:</b> <code>{updated}</code> سجل" if updated else
-        _lb_status_text() + "\n\n⚠️ <b>فشل التحديث الآن</b> — راجع الجلسة/السجلات",
+        _lb_status_text() + f"\n\n✔️ <b>آخر تحديث الآن:</b> <code>{updated}</code> سجل" if updated else
+        _lb_status_text() + "\n\n🚧 <b>فشل التحديث الآن</b> — راجع الجلسة/السجلات",
         reply_markup=_lb_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -2558,7 +2558,7 @@ async def adm_lb_settle_now_callback(callback: CallbackQuery):
     result = await settle_weekly_leaderboard(bot=callback.bot, manual=True)
     if result.get('ok'):
         note = (
-            f"✅ تمت التسوية — فائزون: {result.get('winners', 0)} | مدفوعات: {result.get('credited', 0)}"
+            f"✔️ تمت التسوية — فائزون: {result.get('winners', 0)} | مدفوعات: {result.get('credited', 0)}"
             if not result.get('skipped') else
             f"ℹ️ الأسبوع {result.get('week_start')} مُسوّى مسبقاً — لا شيء جديد."
         )
@@ -2567,7 +2567,7 @@ async def adm_lb_settle_now_callback(callback: CallbackQuery):
             'refresh_failed': 'تعذّر جلب الإحصائيات من iChancy (تحقق من الجلسة).',
             'no_participants': 'لا يوجد متتبَّعون في دورة الأسبوع الـمنصرم.',
         }
-        note = f"⚠️ لم تكتمل التسوية: {reasons.get(result.get('reason'), result.get('reason') or 'خطأ غير متوقع')}"
+        note = f"🚧 لم تكتمل التسوية: {reasons.get(result.get('reason'), result.get('reason') or 'خطأ غير متوقع')}"
     await safe_edit_text(
         callback.message,
         _lb_status_text() + f"\n\n<b>{note}</b>",
@@ -2580,23 +2580,23 @@ async def adm_lb_settle_now_callback(callback: CallbackQuery):
 async def adm_lb_history_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
-    rank_emoji = {1: '🥇', 2: '🥈', 3: '🥉'}
+    rank_emoji = {1: '🏆', 2: '🎖️', 3: '🏵️'}
     last = await asyncio.to_thread(repo.get_lb_last_results, limit=10)
     if not last.get('results'):
-        text = "📜 <b>أرشيف المتصدرين</b>\n\nلا توجد أسابيع مؤرشفة بعد."
+        text = "📃 <b>أرشيف المتصدرين</b>\n\nلا توجد أسابيع مؤرشفة بعد."
     else:
         wk = last['week_start']
         wk_txt = wk.strftime('%Y-%m-%d') if hasattr(wk, 'strftime') else str(wk)
-        text = f"📜 <b>آخر نتائج مؤرشفة — أسبوع {wk_txt}</b>\n\n"
+        text = f"📃 <b>آخر نتائج مؤرشفة — أسبوع {wk_txt}</b>\n\n"
         for r in last['results']:
             medal = rank_emoji.get(r['rank'], f"#{r['rank']}")
-            prize_txt = f" | 💰 {int(r['prize_syp']):,} SYP {'✅' if r.get('credited') else '⏳'}" if r.get('prize_syp') else ""
+            prize_txt = f" | 🪙 {int(r['prize_syp']):,} SYP {'✔️' if r.get('credited') else '⏳'}" if r.get('prize_syp') else ""
             text += f"{medal} {r['username']} — <code>{int(r['weekly_turnover']):,}</code>{prize_txt}\n"
     await safe_edit_text(
         callback.message,
         text,
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔙 قسم المتصدرين", callback_data="adm_lb_menu")]
+            [InlineKeyboardButton(text="↩️ قسم المتصدرين", callback_data="adm_lb_menu")]
         ]),
         parse_mode="HTML"
     )
