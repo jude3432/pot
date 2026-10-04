@@ -95,9 +95,11 @@ def _icon_for_text(text: object) -> str | None:
         return PREMIUM_EMOJI["syriatel"]
     if "sham cash" in lowered or "shamcash" in lowered or "شام كاش" in value:
         return PREMIUM_EMOJI["shamcash"]
-    # All generic charge labels use the supplied charge icon. Provider-specific
-    # icons above take priority; iChancy account/games keep the lightning icon.
+    # Provider-specific icons above take priority. Bot/game charge buttons use
+    # the supplied iChancy lightning custom emoji instead of a text ⚡ glyph.
     if "شحن" in value or "إيداع" in value:
+        if "البوت" in value or "اللعبة" in value or "ichancy" in lowered:
+            return PREMIUM_EMOJI["ichancy"]
         return PREMIUM_EMOJI["deposit"]
     if "حساب ichancy" in lowered or "ألعاب ichancy" in lowered:
         return PREMIUM_EMOJI["ichancy"]
