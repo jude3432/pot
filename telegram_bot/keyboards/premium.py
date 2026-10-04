@@ -27,8 +27,8 @@ PREMIUM_EMOJI = {
     "admin": "5341715473882955310",       # ⚙️
     "balance": "5287231198098117669",     # 💰 Finance
     "wallet": "5445221832074483553",      # 💼 Finance
-    "deposit": "5445355530111437729",    # 📤 Finance
-    "withdraw": "5443127283898405358",   # 📥 Finance
+    "deposit": "5949676517062613621",    # supplied charge emoji
+    "withdraw": "5949580468708973688",   # supplied withdrawal emoji
     "payment": "5445353829304387411",    # 💳 Finance
     "success": "5206607081334906820",    # ✔️
     "cancel": "5260293700088511294",     # ⛔
@@ -95,11 +95,10 @@ def _icon_for_text(text: object) -> str | None:
         return PREMIUM_EMOJI["syriatel"]
     if "sham cash" in lowered or "shamcash" in lowered or "شام كاش" in value:
         return PREMIUM_EMOJI["shamcash"]
-    # Lightning is used on bot/game deposits and the iChancy account/games entries.
+    # All generic charge labels use the supplied charge icon. Provider-specific
+    # icons above take priority; iChancy account/games keep the lightning icon.
     if "شحن" in value or "إيداع" in value:
-        if not any(provider in lowered for provider in ("usdt", "syriatel", "sham cash")) and "شام كاش" not in value:
-            if "اللعبة" in value or "ichancy" in lowered or "البوت" in value:
-                return PREMIUM_EMOJI["ichancy"]
+        return PREMIUM_EMOJI["deposit"]
     if "حساب ichancy" in lowered or "ألعاب ichancy" in lowered:
         return PREMIUM_EMOJI["ichancy"]
     # Meaning wins over a reused visible emoji (e.g. 📨 شحن vs 📨 تواصل).
