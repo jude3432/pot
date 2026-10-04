@@ -6,8 +6,16 @@ regular button when running against an older aiogram release or an ineligible
 bot account, so keyboard actions never break.
 """
 from __future__ import annotations
+import os
 import re
 from aiogram.types import InlineKeyboardButton
+
+# Telegram only renders button custom icons for eligible bot accounts. Keep
+# the familiar visible emoji by default; enable premium-only mode explicitly
+# after confirming the bot owner/account eligibility.
+CUSTOM_EMOJI_BUTTONS_ENABLED = os.getenv(
+    "TELEGRAM_CUSTOM_EMOJI_BUTTONS", "false"
+).strip().lower() in {"1", "true", "yes", "on"}
 
 # Curated semantic choices. Finance IDs are preferred for money actions;
 # NewsEmoji IDs are used for navigation/status/admin actions.
@@ -109,7 +117,8 @@ def _remove_icon_prefix(text: str) -> str:
 
 def premium_button(*, text: str, **kwargs):
     """Build a button with a premium icon when Telegram/aiogram supports it."""
-    icon_id = kwargs.pop("icon_custom_emoji_id", None) or _icon_for_text(text)
+    requested_icon = kwargs.pop("icon_custom_emoji_id", None) or _icon_for_text(text)
+    icon_id = requested_icon if CUSTOM_EMOJI_BUTTONS_ENABLED else None
     if icon_id:
         try:
             return InlineKeyboardButton(
