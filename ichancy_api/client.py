@@ -13,20 +13,8 @@ class IChancyClient:
     BASE_URL = getattr(settings, 'ICHANCY_AGENT_BASE_URL', 'https://agents.ichancy100.com')
 
     HEADERS = {
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Origin': 'https://agents.ichancy100.com',
-        'Referer': 'https://agents.ichancy100.com/'
+        "Accept": "application/json",
+        "Content-Type": "application/json",
     }
 
     def __init__(self):
@@ -39,42 +27,27 @@ class IChancyClient:
         self._official_access_token = None
         self._official_refresh_token = None
         self._official_access_token_expires_at = 0.0
-        self._official_api_base_url = self.BASE_URL
+        self._official_api_base_url = str(self.BASE_URL or "").rstrip("/")
         self._official_last_auth_error = None
-        self.update_headers_and_cookies()
-        self._load_official_tokens_from_db()
-        self.load_cookie_from_db()
-
-    def update_headers_and_cookies(self, new_cookie_string=None):
-        self.session.headers.clear()
         self.session.headers.update(self.HEADERS)
-        self.session.headers['User-Agent'] = settings.USER_AGENT
+        self.session.headers["User-Agent"] = settings.USER_AGENT
+        # The official API authenticates with Bearer tokens. Never retain or
+        # send browser cookies, including cookies returned by an API response.
+        self.session.cookies.clear()
+        self._load_official_tokens_from_db()
 
-        cookie_to_use = new_cookie_string if new_cookie_string else getattr(settings, 'COOKIE_STRING', '')
-        cookies_dict = self._parse_cookie_string(cookie_to_use)
-        self.session.cookies.update(cookies_dict)
-        logger.info(f"Loaded {len(cookies_dict)} cookies into Caesar_Bot iChancy session.")
-
-    @staticmethod
-    def _parse_cookie_string(cookie_string):
-        cookies = {}
-        if not cookie_string:
-            return cookies
-        for pair in cookie_string.split(';'):
-            pair = pair.strip()
-            if '=' in pair:
-                name, value = pair.split('=', 1)
-                cookies[name.strip()] = value.strip()
-        return cookies
-
-    @staticmethod
-    def _is_invalid_session_result(result_data):
-        if isinstance(result_data, str):
-            return result_data.lower() in {"unauthorized", "expired", "session_expired", "ex", "not_authorized"}
-        if isinstance(result_data, dict):
-            msg = str(result_data.get('message') or result_data.get('error') or '').lower()
-            return msg in {"unauthorized", "expired", "session_expired", "ex", "not_authorized"}
-        return False
+    def _post_json_without_cookies(self, url, payload, headers=None, timeout=30):
+        """POST JSON without ever sending or retaining a session cookie."""
+        self.session.cookies.clear()
+        try:
+            return self.session.post(
+                url,
+                json=payload,
+                headers=headers,
+                timeout=timeout,
+            )
+        finally:
+            self.session.cookies.clear()
 
     @staticmethod
     def _extract_balance_from_result(result_data):
@@ -108,8 +81,6 @@ class IChancyClient:
     # ------------------------------------------------------------------
     # Official Agent API integration
     # ------------------------------------------------------------------
-    # The legacy cookie/session implementation below is intentionally kept
-    # for endpoints not covered by the official documentation.
     OFFICIAL_API_PREFIX = "/global/api/UserApi"
 
     @staticmethod
@@ -149,7 +120,7 @@ class IChancyClient:
 
     @staticmethod
     def _extract_player_id(payload):
-        """Extract a player id from the documented and legacy response shapes."""
+        """Extract a player id from the official API response shapes."""
         if isinstance(payload, dict):
             for key in ("playerId", "playerID", "player_id", "playerIdValue"):
                 value = payload.get(key)
@@ -165,17 +136,6 @@ class IChancyClient:
                 if value:
                     return value
         return None
-
-    @staticmethod
-    def _is_player_registration_access_error(message):
-        text = str(message or "").strip().lower()
-        return any(marker in text for marker in (
-            "not access to add player",
-            "no access to add player",
-            "access to add player",
-            "ليس لديك صلاحية إضافة لاعب",
-            "لا تملك صلاحية إضافة لاعب",
-        ))
 
     def _load_official_tokens_from_db(self):
         """Load rotating official API tokens without changing existing settings."""
@@ -220,47 +180,52 @@ class IChancyClient:
             self._official_last_auth_error = "بيانات AGENT_USERNAME أو AGENT_PASSWORD غير مضبوطة في Render"
             logger.error("Official API sign-in skipped: AGENT_USERNAME/AGENT_PASSWORD is not configured")
             return False
-        bases = []
-        for base in (self._official_api_base_url, self.BASE_URL, "https://agents.ichancy.com"):
-            base = str(base or "").rstrip("/")
-            if base and base not in bases:
-                bases.append(base)
-        for base in bases:
-            url = f"{base}{self.OFFICIAL_API_PREFIX}/signIn"
-            try:
-                response = self.session.post(
-                    url,
-                    json={"username": username, "password": password},
-                    headers={"Accept-Encoding": "identity", "Content-Type": "application/json"},
-                    timeout=30,
+        base = str(self._official_api_base_url or self.BASE_URL).rstrip("/")
+        url = f"{base}{self.OFFICIAL_API_PREFIX}/signin"
+        try:
+            response = self._post_json_without_cookies(
+                url,
+                {"username": username, "password": password},
+                headers={"Accept-Encoding": "identity"},
+                timeout=30,
+            )
+            data = self._response_json(response, "official signIn")
+            raw_body = (response.text or "").lower()
+            if response.status_code == 403 and ("cloudflare" in raw_body or "you have been blocked" in raw_body):
+                self._official_last_auth_error = "Cloudflare يحظر اتصال Render بخدمة iChancy؛ يجب طلب whitelist لعنوان IP أو استخدام خادم مسموح من iChancy"
+            result = data.get("result") if isinstance(data, dict) else None
+            if response.status_code != 200 or not isinstance(result, dict):
+                logger.warning(
+                    "Official signIn failed on %s (HTTP %s): %s",
+                    base,
+                    response.status_code,
+                    self._notification_error(data, "endpoint unavailable or invalid credentials"),
                 )
-                data = self._response_json(response, f"official signIn ({base})")
-                raw_body = (response.text or "").lower()
-                if response.status_code == 403 and ("cloudflare" in raw_body or "you have been blocked" in raw_body):
-                    self._official_last_auth_error = "Cloudflare يحظر اتصال Render بخدمة iChancy؛ يجب طلب whitelist لعنوان IP أو استخدام خادم مسموح من iChancy"
-                result = data.get("result") if isinstance(data, dict) else None
-                if response.status_code != 200 or not isinstance(result, dict):
-                    logger.warning("Official signIn failed on %s (HTTP %s): %s", base, response.status_code, self._notification_error(data, "endpoint unavailable or invalid credentials"))
-                    continue
-                access_token = result.get("accessToken")
-                refresh_token = result.get("refreshToken")
-                if not access_token or not refresh_token:
-                    logger.warning("Official signIn on %s returned no token pair", base)
-                    continue
-                self._official_api_base_url = base
-                self._save_official_tokens(access_token, refresh_token, time.time() + 3600 - 30)
-                logger.info("Official iChancy API sign-in succeeded on %s", base)
-                return True
-            except requests.RequestException as exc:
-                logger.warning("Official signIn network error on %s: %s", base, exc)
-        return False
+                return False
+            access_token = result.get("accessToken")
+            refresh_token = result.get("refreshToken")
+            if not access_token or not refresh_token:
+                logger.warning("Official signIn on %s returned no token pair", base)
+                return False
+            self._official_api_base_url = base
+            self._save_official_tokens(access_token, refresh_token, time.time() + 3600 - 30)
+            logger.info("Official iChancy API sign-in succeeded on %s", base)
+            return True
+        except requests.RequestException as exc:
+            logger.warning("Official signIn network error on %s: %s", base, exc)
+            return False
 
     def _official_refresh(self):
         if not self._official_refresh_token:
             return False
-        url = f"{self._official_api_base_url}{self.OFFICIAL_API_PREFIX}/refreshToken"
+        base = str(self._official_api_base_url or self.BASE_URL).rstrip("/")
+        url = f"{base}{self.OFFICIAL_API_PREFIX}/refreshToken"
         try:
-            response = self.session.post(url, json={"refreshToken": self._official_refresh_token}, timeout=30)
+            response = self._post_json_without_cookies(
+                url,
+                {"refreshToken": self._official_refresh_token},
+                timeout=30,
+            )
             data = self._response_json(response, "official refreshToken")
             result = data.get("result") if isinstance(data, dict) else None
             if response.status_code != 200 or not isinstance(result, dict):
@@ -278,16 +243,15 @@ class IChancyClient:
             return False
 
     def _official_request(self, endpoint, payload, operation=None):
-        """Call a documented endpoint; return None only when unavailable.
+        """Call an API endpoint with Bearer auth and automatic token rotation.
 
-        A decoded API error is returned as a dict so callers do not silently
-        fall back after a real business/permission error. Legacy fallback is
-        used only for transport/non-JSON failures.
+        A decoded API error is returned as a dict; no request falls back to
+        browser cookies or a legacy session.
         """
         path = endpoint if endpoint.startswith("/") else f"/{endpoint}"
         if not path.startswith("/global/api/"):
             path = f"{self.OFFICIAL_API_PREFIX}{path}"
-        url = f"{self._official_api_base_url}{path}"
+        url = f"{str(self._official_api_base_url or self.BASE_URL).rstrip('/')}{path}"
         operation = operation or endpoint
         with self._official_lock:
             if not self._official_access_token or time.time() >= self._official_access_token_expires_at:
@@ -297,21 +261,16 @@ class IChancyClient:
                     return None
             for attempt in range(2):
                 try:
-                    response = self.session.post(
+                    response = self._post_json_without_cookies(
                         url,
-                        json=payload,
+                        payload,
                         headers={"Authorization": f"Bearer {self._official_access_token}", "Content-Type": "application/json"},
                         timeout=45,
                     )
                     data = self._response_json(response, operation)
-                    # ``ex`` may be a business-level registration response,
-                    # not an expired session. Retrying registerPlayer after
-                    # refreshing auth can submit the same registration twice
-                    # and hide the actual API error.
                     invalid = response.status_code == 401 or (
                         isinstance(data, dict)
                         and data.get("result") == "ex"
-                        and "registerplayer" not in operation.lower()
                     )
                     if invalid and attempt == 0:
                         if self._official_refresh() or self._official_sign_in():
@@ -327,16 +286,12 @@ class IChancyClient:
     def _official_player_id(self, target_username):
         payload = {
             "start": 0,
-            "limit": 100,
+            "limit": 20,
             "filter": {
-                "withoutTotalCount": {"action": "=", "value": True},
-                "userName": {"action": "like", "value": target_username, "valueLabel": target_username},
+                "userName": {"action": "=", "value": target_username, "valueLabel": target_username},
             },
-            "isNextPage": False,
         }
-        data = self._official_request("/global/api/Player/getPlayersForCurrentAgent", payload, "official player search")
-        if data is None:
-            data = self._official_request("/global/api/UserApi/getPlayersForCurrentAgent", payload, "official player search")
+        data = self._official_request("/global/api/UserApi/getPlayersForCurrentAgent", payload, "official player search")
         if not isinstance(data, dict):
             return None
         result = data.get("result")
@@ -363,124 +318,33 @@ class IChancyClient:
         match = re.search(r"(\d+)", text)
         return match.group(1) if match else None
 
-    def load_cookie_from_db(self):
-        try:
-            from database.connection import DatabaseManager
-            res = DatabaseManager.execute_query_dict("SELECT ichancy_cookie FROM bot_settings WHERE id = 1", fetch='one')
-            if res and res.get('ichancy_cookie'):
-                cookie_str = res['ichancy_cookie']
-                self.update_headers_and_cookies(cookie_str)
-                logger.info("Successfully synchronized active session cookie from database.")
-                return True
-        except Exception as e:
-            logger.error(f"Error loading cookie from database: {e}")
-        return False
-
     def _login_agent(self):
-        # Prefer the documented token API. Avoid duplicate signIn calls because
-        # iChancy invalidates the previous token pair after every new signIn.
-        if self._official_access_token and time.time() < self._official_access_token_expires_at:
-            return True
-        if self._official_refresh() or self._official_sign_in():
-            return True
-        # Keep the legacy cookie login below for unsupported administrative
-        # endpoints and emergency compatibility.
-        logger.info("[Caesar_Bot] [Auto-Login] Starting legacy session login...")
-        login_page_url = f"{self.BASE_URL}/login"
-        try:
-            self.session.get(login_page_url, timeout=30)
-
-            signin_url = f"{self.BASE_URL}/global/api/User/signIn"
-            payload = {
-                "username": settings.AGENT_USERNAME,
-                "login": settings.AGENT_USERNAME,
-                "password": settings.AGENT_PASSWORD
-            }
-            response_post = self.session.post(signin_url, json=payload, timeout=30)
-            if response_post.status_code != 200:
-                logger.error(f"Agent login failed: HTTP {response_post.status_code} - Response: {response_post.text}")
-                return False
-
-            response_json = self._response_json(response_post, "legacy signIn")
-            if response_json is None:
-                return False
-            result = response_json.get("result", {})
-            is_success = False
-            if isinstance(result, dict) and result.get("message") == "dashboard":
-                is_success = True
-            elif response_json.get("status") is True:
-                is_success = True
-
-            if not is_success:
-                logger.error(f"Agent login failed: {response_json}")
-                return False
-
-            init_apis = [
-                f"{self.BASE_URL}/global/api/core/getData",
-                f"{self.BASE_URL}/global/api/Agent/getAgentWallet",
-                f"{self.BASE_URL}/global/api/Message/getTotalUnreadMessagesCount",
-                f"{self.BASE_URL}/global/api/UserNotification/getAllUserNotifications"
-            ]
-            for api_url in init_apis:
-                try:
-                    self.session.post(api_url, json={}, timeout=15)
-                except Exception as init_err:
-                    logger.warning(f"Init endpoint failed: {api_url} -> {init_err}")
-
-            cookies_dict = self.session.cookies.get_dict()
-            cookie_str = "; ".join([f"{k}={v}" for k, v in cookies_dict.items()])
-            try:
-                from database.connection import DatabaseManager
-                DatabaseManager.execute_query("UPDATE bot_settings SET ichancy_cookie = %s, last_cookie_update = CURRENT_TIMESTAMP WHERE id = 1", (cookie_str,))
-            except Exception as db_err:
-                logger.warning(f"Failed to persist cookie to DB: {db_err}")
-            self.update_headers_and_cookies(cookie_str)
-            logger.info("[Caesar_Bot] Agent Login: SUCCESSFUL")
-            return True
-        except Exception as e:
-            logger.error(f"[Caesar_Bot] Agent Login exception: {e}")
-            return False
+        """Keep the official rotating access/refresh-token pair usable."""
+        with self._official_lock:
+            if self._official_access_token and time.time() < self._official_access_token_expires_at:
+                return True
+            return bool(self._official_refresh() or self._official_sign_in())
 
     def _check_session_validity(self):
-        # Validate official API auth first using a documented read endpoint.
-        if self._official_access_token or self._official_refresh_token:
-            probe = self._official_request(
-                "/global/api/UserApi/getPlayersForCurrentAgent",
-                {"start": 0, "limit": 1, "filter": {"withoutTotalCount": {"action": "=", "value": True}}, "isNextPage": False},
-                "official session check",
-            )
-            if probe is not None and probe.get("result") != "ex":
-                return bool(probe.get("status", True))
-        url = f"{self.BASE_URL}/global/api/Agent/getAgentWalletByAgentId"
-        payload = {
-            'affiliateId': int(settings.PARENT_ID) if settings.PARENT_ID else None,
-            'currencyCode': "NSP"
-        }
-        try:
-            response = self.session.post(url, json=payload, timeout=10)
-            if response.status_code != 200:
-                return False
-            data = self._response_json(response, "legacy agent transaction list")
-            if data is None:
-                return {'status': False, 'result': {'records': [], 'totalRecordsCount': 0}, 'error': 'Invalid JSON response'}
-            result_data = data.get('result')
-            if self._is_invalid_session_result(result_data):
-                return False
-            return bool(result_data)
-        except Exception:
-            return False
+        probe = self._official_request(
+            "/global/api/UserApi/getAgentAllWallets",
+            {},
+            "official session check",
+        )
+        return bool(
+            isinstance(probe, dict)
+            and probe.get("status") is not False
+            and probe.get("result") not in (None, False, "ex")
+        )
 
     def _fetch_player_statistics_page(self, payload):
-        url = f"{self.BASE_URL}/global/api/Statistics/getPlayersStatisticsPro"
-        response = self.session.post(url, json=payload, timeout=30)
-        if response.status_code in [401, 403]:
-            logger.warning("Session expired while fetching player statistics. Re-login...")
-            if self._login_agent():
-                response = self.session.post(url, json=payload, timeout=30)
-        response.raise_for_status()
-        data = self._response_json(response, "legacy statistics")
-        if data is None:
-            raise ValueError("Invalid response from legacy statistics endpoint")
+        data = self._official_request(
+            "/global/api/Statistics/getPlayersStatisticsPro",
+            payload,
+            "player statistics (Bearer API)",
+        )
+        if not isinstance(data, dict) or data.get("status") is False:
+            raise ValueError("Player statistics endpoint failed")
         return data
 
     def _extract_player_id_from_records(self, records, target_username):
@@ -570,177 +434,63 @@ class IChancyClient:
             self._normalize_agent_id(getattr(settings, "AGENT_ID", None)) or "<invalid>",
             self._normalize_agent_id(settings.PARENT_ID) or "<invalid>",
         )
-        official_payload = {"player": {"login": username, "email": email, "password": password, "parentId": registration_parent_id}}
+        official_payload = {
+            "player": {
+                "login": username,
+                "email": email,
+                "password": password,
+                "parentId": registration_parent_id,
+            }
+        }
         official = self._official_request("/global/api/UserApi/registerPlayer", official_payload, "official registerPlayer")
-        if official is not None:
-            result_data = official.get("result")
-            registration_player_id = self._extract_player_id(result_data)
-            if result_data == 1 or registration_player_id:
-                return {"success": True, "username": username, "password": password, "email": email, "player_id": registration_player_id, "response": official}
-            # A decoded response from the official endpoint is authoritative.
-            # Falling through to the legacy endpoint here can submit the same
-            # registration twice and turn a generic ``ex`` into a misleading
-            # duplicate-account message.
-            error_message = self._notification_error(official, "Registration rejected by iChancy")
-            logger.warning(
-                "[Caesar_Bot] Official registerPlayer rejected request: status=%s result=%r notification=%s",
-                official.get("status"),
-                result_data,
-                error_message,
-            )
-            # Some deployments expose registration through the legacy cookie
-            # endpoint while the official endpoint is read-only for the agent.
-            # Retry there only for an explicit permission denial; never retry
-            # ordinary validation or duplicate-account responses.
-            if not self._is_player_registration_access_error(error_message):
-                return {"success": False, "error": error_message, "response": official}
-            logger.warning("[Caesar_Bot] Official registration denied by role; trying legacy registration endpoint once")
-        try:
-            try:
-                logger.info("[Caesar_Bot] Pre-initializing session parameters via getData...")
-                self.session.post(f"{self.BASE_URL}/global/api/core/getData", json={}, timeout=15)
-            except Exception as e:
-                logger.warning(f"[Caesar_Bot] Failed pre-initializing via getData: {e}")
+        if not isinstance(official, dict):
+            return {"success": False, "error": "تعذر الاتصال بواجهة التسجيل الرسمية في iChancy."}
 
-            url = f"{self.BASE_URL}/global/api/Player/registerPlayer"
-            payload = {
-                "player": {
-                    "login": username,
-                    "email": email,
-                    "password": password,
-                    "parentId": int(registration_parent_id) if registration_parent_id else None
-                }
-            }
-            logger.info(
-                "[Caesar_Bot] Sending legacy registerPlayer request: endpoint=%s parent_id=%s",
-                url,
-                registration_parent_id or "<missing>",
-            )
-            response = self.session.post(url, json=payload, timeout=30)
-
-            if response.status_code in [401, 403]:
-                logger.warning("Session expired on registration. Re-login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-
-            response_json = self._response_json(response, "legacy registration")
-            if response_json is None:
-                return {
-                    "success": False,
-                    "error": f"iChancy أرسل ردًا غير صالح (HTTP {response.status_code})",
-                }
-            logger.info(
-                "[Caesar_Bot] Legacy registration response: http_status=%s result=%r notification=%s",
-                response.status_code,
-                response_json.get("result"),
-                self._notification_error(response_json, "none"),
-            )
-            result_data = response_json.get("result")
-
-            is_invalid_session = False
-            if self._is_invalid_session_result(result_data):
-                if not self._check_session_validity():
-                    is_invalid_session = True
-            elif not result_data:
-                if not self._check_session_validity():
-                    is_invalid_session = True
-
-            if is_invalid_session:
-                logger.warning("[Caesar_Bot] Session expired on registration. Retrying login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-                    response_json = self._response_json(response, "legacy registration retry")
-                    if response_json is None:
-                        return {"success": False, "error": "iChancy أرسل ردًا غير صالح بعد إعادة المحاولة"}
-                    logger.info(f"[Caesar_Bot] Raw registration response JSON after retry: {response_json}")
-                    result_data = response_json.get("result")
-
-            if not result_data or isinstance(result_data, str):
-                error_content = "Registration failed"
-                if result_data == "ex":
-                    error_content = "اسم المستخدم أو البريد الإلكتروني مسجل مسبقاً في المنصة!"
-                notifications = response_json.get("notification", [])
-                if notifications:
-                    error_content = notifications[0].get("content", error_content)
-                logger.error(
-                    "[Caesar_Bot] Registration failed after official+legacy attempts: result=%r error=%s",
-                    result_data,
-                    error_content,
-                )
-                return {'success': False, 'error': error_content}
-
-            # Registration success is independent from the eventual visibility of
-            # the player in the search endpoint. Resolve the id in the handler
-            # without blocking the registration response for up to 10 seconds.
-            player_id = self._extract_player_id(response_json.get("result"))
+        result_data = official.get("result")
+        registration_player_id = self._extract_player_id(result_data)
+        if result_data in (1, "1") or registration_player_id:
             return {
-                'success': True,
-                'username': username,
-                'password': password,
-                'email': email,
-                'player_id': player_id,
-                'response': response_json
+                "success": True,
+                "username": username,
+                "password": password,
+                "email": email,
+                "player_id": registration_player_id,
+                "response": official,
             }
-        except Exception as e:
-            logger.error(f"HTTP exception during registration: {e}")
-            return {'success': False, 'error': str(e)}
+
+        error_message = self._notification_error(official, "Registration rejected by iChancy")
+        logger.warning(
+            "Official registerPlayer rejected request: status=%s result=%r notification=%s",
+            official.get("status"),
+            result_data,
+            error_message,
+        )
+        return {"success": False, "error": error_message, "response": official}
 
     def _get_admin_balance(self):
-        aff_id = None
-        try:
-            val = settings.AGENT_ID or settings.PARENT_ID
-            if val:
-                aff_id = int(str(val).strip())
-        except Exception:
-            aff_id = None
-
-        urls_to_try = [
-            (f"{self.BASE_URL}/global/api/Agent/getAgentWalletByAgentId", {'affiliateId': aff_id, 'currencyCode': "NSP"}),
-            (f"{self.BASE_URL}/global/api/Agent/getAgentWallet", {'currencyCode': "NSP"})
-        ]
-
-        for url, payload in urls_to_try:
-            try:
-                response = self.session.post(url, json=payload, timeout=20)
-                if response.status_code in [401, 403]:
-                    logger.warning("Session expired! Triggering automatic self-healing login...")
-                    if self._login_agent():
-                        response = self.session.post(url, json=payload, timeout=20)
-                if response.status_code != 200:
-                    continue
-                data = self._response_json(response, "legacy admin balance")
-                if data is None:
-                    continue
-                result_data = data.get('result')
-                if self._is_invalid_session_result(result_data):
-                    logger.warning("Session invalid on admin balance! Retrying login...")
-                    if self._login_agent():
-                        response = self.session.post(url, json=payload, timeout=20)
-                        data = self._response_json(response, "legacy admin balance retry")
-                        if data is None:
-                            continue
-                        result_data = data.get('result')
-                if result_data is not None:
-                    if isinstance(result_data, (int, float)):
-                        return int(result_data)
-                    if isinstance(result_data, list) and len(result_data) > 0 and isinstance(result_data[0], dict):
-                        for k in ['balance', 'amount', 'walletBalance']:
-                            if k in result_data[0] and result_data[0][k] is not None:
-                                return int(float(result_data[0][k]))
-                    elif isinstance(result_data, dict):
-                        for k in ['balance', 'amount', 'walletBalance']:
-                            if k in result_data and result_data[k] is not None:
-                                return int(float(result_data[k]))
-            except Exception as e:
-                logger.warning(f"Error fetching admin balance from {url}: {e}")
+        data = self._official_request(
+            "/global/api/UserApi/getAgentAllWallets",
+            {},
+            "official getAgentAllWallets",
+        )
+        result = data.get("result") if isinstance(data, dict) else None
+        wallets = result if isinstance(result, list) else (
+            result.get("records", []) if isinstance(result, dict) else []
+        )
+        for wallet in wallets:
+            if not isinstance(wallet, dict):
                 continue
-
-        logger.warning("Admin balance could not be extracted from any endpoint.")
+            currency = str(wallet.get("currencyCode") or wallet.get("currency") or "").upper()
+            if currency and currency != "NSP":
+                continue
+            balance = self._extract_balance_from_result(wallet)
+            if balance is not None:
+                return int(balance)
+        logger.warning("Official agent-wallet response did not contain an NSP balance.")
         return None
 
     def _get_agent_transaction_list(self, from_date, to_date, limit=1000, start=0, is_to_me=False, affiliate_id=None):
         """جلب سجل حركات الكاشيرة/الوكيل من iChancy."""
-        url = f"{self.BASE_URL}/global/api/Agent/getAgentTransactionList"
         agent_id = affiliate_id or getattr(settings, 'AGENT_ID', None) or getattr(settings, 'PARENT_ID', None)
         try:
             agent_id_int = int(agent_id) if agent_id else None
@@ -774,167 +524,51 @@ class IChancyClient:
                 "value": agent_id_int,
                 "valueLabel": agent_id_int
             }
-        try:
-            response = self.session.post(url, json=payload, timeout=45)
-            if response.status_code in [401, 403]:
-                logger.warning("Session expired while fetching agent transaction list. Re-login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=45)
-            response.raise_for_status()
-            data = self._response_json(response, "legacy session check")
-            if data is None:
-                return False
-            result_data = data.get('result')
-            if self._is_invalid_session_result(result_data):
-                logger.warning("Session invalid on agent transaction list. Retrying login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=45)
-                    response.raise_for_status()
-                    data = self._response_json(response, "legacy agent transaction retry")
-                    if data is None:
-                        return {'status': False, 'result': {'records': [], 'totalRecordsCount': 0}, 'error': 'Invalid JSON response'}
-            return data
-        except Exception as e:
-            logger.error(f"Error fetching agent transaction list: {e}")
-            return {'status': False, 'result': {'records': [], 'totalRecordsCount': 0}, 'error': str(e)}
+        # This report endpoint is not listed in the supplied API PDF, but it
+        # remains part of the app. Use the official Bearer token; never fall
+        # back to a browser session or cookie.
+        data = self._official_request(
+            "/global/api/Agent/getAgentTransactionList",
+            payload,
+            "agent transaction report (Bearer API)",
+        )
+        if data is None:
+            return {"status": False, "result": {"records": [], "totalRecordsCount": 0}, "error": "API request failed"}
+        return data
 
     def _get_player_balance(self, player_id):
         official = self._official_request("/global/api/UserApi/getPlayerBalanceById", {"playerId": str(player_id)}, "official getPlayerBalanceById")
-        if official is not None:
-            result = official.get("result")
-            balance = self._extract_balance_from_result(result)
-            if balance is not None:
-                return int(balance)
-            if official.get("status") is False or isinstance(result, list):
-                return None
-        url = f"{self.BASE_URL}/global/api/Player/getPlayerBalanceById"
-        payload = {'playerId': player_id}
-        try:
-            response = self.session.post(url, json=payload, timeout=30)
-            if response.status_code in [401, 403]:
-                logger.warning("Session expired! Triggering automatic self-healing login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-            response.raise_for_status()
-            data = self._response_json(response, "legacy session check")
-            if data is None:
-                return False
-            result_data = data.get('result')
-            if self._is_invalid_session_result(result_data):
-                logger.warning("Session invalid on player balance! Retrying login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-                    data = self._response_json(response, "legacy API retry response")
-                    if data is None:
-                        return None
-                    result_data = data.get('result')
-            if self._is_invalid_session_result(result_data):
-                logger.warning(f"Invalid session result on player balance after retry: {result_data}")
-                return None
-            balance = self._extract_balance_from_result(result_data)
-            if balance is not None:
-                return int(balance)
-            logger.warning(f"Player balance response did not contain a balance field: {data}")
+        if not isinstance(official, dict) or official.get("status") is False:
             return None
-        except Exception as e:
-            logger.error(f"Error fetching player balance: {e}")
+        balance = self._extract_balance_from_result(official.get("result"))
+        if balance is None:
+            logger.warning("Official player-balance response did not contain a balance.")
             return None
+        return int(balance)
 
     def _transfer_money(self, player_id, amount, comment=None):
         official_payload = {"amount": amount, "comment": comment or "", "playerId": str(player_id), "currencyCode": "NSP", "currency": "NSP", "moneyStatus": 5}
         official = self._official_request("/global/api/UserApi/depositToPlayer", official_payload, "official depositToPlayer")
-        if official is not None:
-            if official.get("result") and official.get("status") is not False:
-                logger.info("Official API transferred +%s NSP to Player: %s", amount, player_id)
-                return True
-            logger.error("Official deposit failed: %s", self._notification_error(official))
-            return False
-        url = f"{self.BASE_URL}/global/api/Player/depositToPlayer"
-        payload = {
-            'amount': amount,
-            'comment': comment,
-            'playerId': player_id,
-            'currencyCode': "NSP",
-            'moneyStatus': 5
-        }
-        try:
-            response = self.session.post(url, json=payload, timeout=30)
-            if response.status_code in [401, 403]:
-                logger.warning("Session expired! Triggering automatic self-healing login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-            response.raise_for_status()
-            response_json = self._response_json(response, "legacy transfer response")
-            if response_json is None:
-                return False
-            result_data = response_json.get("result")
-            if self._is_invalid_session_result(result_data):
-                logger.warning("Session invalid on money transfer! Retrying login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-                    response_json = self._response_json(response, "legacy transfer retry response")
-                    if response_json is None:
-                        return False
-                    result_data = response_json.get("result")
-            if self._is_invalid_session_result(result_data):
-                logger.error(f"Transfer failed after re-login: invalid session result={result_data}")
-                return False
-            if result_data:
-                logger.info(f"Successfully transferred +{amount} NSP to Player: {player_id}")
-                return True
-            logger.error(f"Transfer failed: empty/false result response={response_json}")
-            return False
-        except Exception as e:
-            logger.error(f"Error transferring money: {e}")
-            return False
+        if isinstance(official, dict) and official.get("result") and official.get("status") is not False:
+            logger.info("Official API transferred +%s NSP to Player: %s", amount, player_id)
+            return True
+        logger.error(
+            "Official deposit failed: %s",
+            self._notification_error(official if isinstance(official, dict) else None),
+        )
+        return False
 
     def _withdraw_money(self, player_id, amount, comment=None):
         official_payload = {"amount": -abs(amount), "comment": comment or "", "playerId": str(player_id), "currencyCode": "NSP", "currency": "NSP", "moneyStatus": 5}
         official = self._official_request("/global/api/UserApi/withdrawFromPlayer", official_payload, "official withdrawFromPlayer")
-        if official is not None:
-            if official.get("result") and official.get("status") is not False:
-                logger.info("Official API withdrew -%s NSP from Player: %s", amount, player_id)
-                return True
-            logger.error("Official withdrawal failed: %s", self._notification_error(official))
-            return False
-        url = f"{self.BASE_URL}/global/api/Player/withdrawFromPlayer"
-        payload = {
-            'amount': -amount,
-            'comment': comment,
-            'playerId': player_id,
-            'currencyCode': "NSP",
-            'moneyStatus': 5
-        }
-        try:
-            response = self.session.post(url, json=payload, timeout=30)
-            if response.status_code in [401, 403]:
-                logger.warning("Session expired while withdrawing money. Re-login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-            response.raise_for_status()
-            response_json = self._response_json(response, "legacy transfer response")
-            if response_json is None:
-                return False
-            result_data = response_json.get("result")
-            if self._is_invalid_session_result(result_data):
-                logger.warning("Session invalid on money withdrawal! Retrying login...")
-                if self._login_agent():
-                    response = self.session.post(url, json=payload, timeout=30)
-                    response_json = self._response_json(response, "legacy transfer retry response")
-                    if response_json is None:
-                        return False
-                    result_data = response_json.get("result")
-            if self._is_invalid_session_result(result_data):
-                logger.error(f"Withdraw failed after re-login: invalid session result={result_data}")
-                return False
-            if result_data:
-                logger.info(f"Successfully withdrew -{amount} NSP from Player: {player_id}")
-                return True
-            logger.error(f"Withdraw failed: empty/false result response={response_json}")
-            return False
-        except Exception as e:
-            logger.error(f"Error withdrawing money: {e}")
-            return False
+        if isinstance(official, dict) and official.get("result") and official.get("status") is not False:
+            logger.info("Official API withdrew -%s NSP from Player: %s", amount, player_id)
+            return True
+        logger.error(
+            "Official withdrawal failed: %s",
+            self._notification_error(official if isinstance(official, dict) else None),
+        )
+        return False
 
     async def register_account(self, username, password, email):
         return await asyncio.to_thread(self._register_account, username, password, email)

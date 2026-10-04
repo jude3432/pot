@@ -285,7 +285,6 @@ class DatabaseManager:
             usd_buy_rate NUMERIC(15, 2) DEFAULT 14000,
             usd_sell_rate NUMERIC(15, 2) DEFAULT 15000,
             withdraw_commission NUMERIC(5, 2) DEFAULT 10,
-            ichancy_cookie TEXT,
             agent_balance BIGINT DEFAULT 0,
             game_min_deposit_syp BIGINT DEFAULT 20000,
             agent_revenue_percent NUMERIC(7, 2) DEFAULT 30,

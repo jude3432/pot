@@ -63,7 +63,7 @@ ICHANCY_AGENT_BASE_URL = os.getenv('ICHANCY_AGENT_BASE_URL', 'https://agents.ich
 ICHANCY_PROXY_URL = os.getenv('ICHANCY_PROXY_URL', '').strip()
 USER_AGENT = os.getenv('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
-# iChancy Agent Login Credentials (for automated dynamic cookie generation)
+# iChancy Agent credentials (used only to obtain/refresh official API tokens)
 AGENT_USERNAME = os.getenv('AGENT_USERNAME')
 AGENT_PASSWORD = os.getenv('AGENT_PASSWORD')
 
@@ -99,7 +99,7 @@ def validate_config():
     if not ADMIN_ID:
         raise ValueError("ADMIN_TELEGRAM_ID is not set in environment variables")
     if not AGENT_USERNAME or not AGENT_PASSWORD:
-        raise ValueError("AGENT_USERNAME or AGENT_PASSWORD is not set in environment variables for automatic login")
+        raise ValueError("AGENT_USERNAME or AGENT_PASSWORD is not set for official iChancy API authentication")
     
     # 🆕 جديد - تحذير للـ Log Channel (اختياري)
     if not LOG_CHANNEL_ID:

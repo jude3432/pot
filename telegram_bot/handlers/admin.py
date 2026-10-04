@@ -163,7 +163,6 @@ class AdminStates(StatesGroup):
     entering_buy_rate = State()
     entering_sell_rate = State()
     entering_commission = State()
-    entering_cookies = State()
     entering_bot_gift_amount = State()
     entering_bonus_title = State()
     entering_bonus_percent = State()
@@ -190,10 +189,7 @@ def get_admin_keyboard():
         ],
         [premium_button(text="🧹 تصفير شامل لكل الأرصدة والتاريخ (Beta Reset)", callback_data="adm_reset_all_db")],
         [premium_button(text="💹 تعديل أسعار الصرف", callback_data="adm_rates_menu")],
-        [
-            premium_button(text="🏷️ نسبة عمولة السحب", callback_data="adm_comm_menu"),
-            premium_button(text="🗝️ تحديث كوكيز الموقع", callback_data="adm_cookie_menu")
-        ],
+        [premium_button(text="🏷️ نسبة عمولة السحب", callback_data="adm_comm_menu")],
         [premium_button(text="🕹️ رصيد محفظة الوكيل الفعلي", callback_data="adm_agent_bal")],
         [premium_button(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses")],
         [
@@ -215,10 +211,7 @@ def get_admin_dashboard_keyboard(refresh_callback="caesar_control_panel"):
             premium_button(text="🔍 إدارة المستخدمين", callback_data="adm_users_menu"),
             premium_button(text="💹 أسعار الصرف", callback_data="adm_rates_menu")
         ],
-        [
-            premium_button(text="🕹️ رصيد الوكيل", callback_data="adm_agent_bal"),
-            premium_button(text="🗝️ الكوكيز", callback_data="adm_cookie_menu")
-        ],
+        [premium_button(text="🕹️ رصيد الوكيل", callback_data="adm_agent_bal")],
         [
             premium_button(text="💳 عناوين الإيداع", callback_data="adm_payment_addresses"),
             premium_button(text="📈 تحديث السيولة", callback_data="adm_sync_liquidity")
@@ -257,20 +250,7 @@ async def get_total_bot_balance() -> int:
             await asyncio.to_thread(DatabaseManager.put_connection, conn)
 
 
-def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance, pending, recent, total_users, new_users, today_tx, approved_volume):
-    cookie_status = "🔹 نشطة" if is_cookie_alive else "🔻 منتهية"
-    cookie_age = repo.get_cookie_age_minutes()
-    if cookie_age is None:
-        cookie_age_text = "—"
-    elif cookie_age < 60:
-        cookie_age_text = f"منذ {cookie_age} دقيقة"
-    elif cookie_age < 1440:
-        cookie_age_text = f"منذ {cookie_age // 60} ساعة"
-    else:
-        cookie_age_text = f"منذ {cookie_age // 1440} يوم 🚧"
-
-    cookie_warn = " 🔻 يلزم تحديث!" if (cookie_age and cookie_age >= 720) else ""
-
+def build_admin_dashboard_text(bot_settings, is_ichancy_api_alive, total_bot_balance, pending, recent, total_users, new_users, today_tx, approved_volume):
     agent_balance = bot_settings.get('agent_balance', 0)
     usd_buy_rate = float(bot_settings['usd_buy_rate'])
     usd_sell_rate = float(bot_settings['usd_sell_rate'])
@@ -296,9 +276,9 @@ def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance,
     text += f"🕹️ <b>سعر اللعبة (NSP):</b> <code>1 NSP = {exchange_rate:,} ل.س</code>\n"
     text += f"🏷️ <b>عمولة السحب:</b> <code>{withdraw_commission:,.2f}%</code>\n\n"
 
-    text += "🗝️ <b>══ حالة الجلسة ══</b>\n"
-    text += f"🍪 <b>كوكيز iChancy:</b> {cookie_status}{cookie_warn}\n"
-    text += f"🕐 <b>آخر تحديث:</b> {cookie_age_text}\n\n"
+    api_status = "🔹 متصل" if is_ichancy_api_alive else "🔻 غير متصل"
+    text += "🔐 <b>══ اتصال iChancy API ══</b>\n"
+    text += f"<b>الحالة:</b> {api_status} | <b>تجديد الرموز:</b> تلقائي\n\n"
 
     text += "🗒️ <b>══ الطلبات المعلّقة ══</b>\n"
     text += f"📨 إيداع: <code>{len(dep_pending)}</code> | 📬 سحب: <code>{len(wit_pending)}</code>\n"
@@ -429,7 +409,7 @@ async def _gather_dashboard_stats():
             pass
     return {
         'bot_settings': bot_settings,
-        'is_cookie_alive': await ichancy_api_client.check_session_validity(),
+        'is_ichancy_api_alive': await ichancy_api_client.check_session_validity(),
         'total_bot_balance': await get_total_bot_balance(),
         'pending': await asyncio.to_thread(repo.get_pending_requests),
         'recent': await asyncio.to_thread(repo.get_all_transactions, 10),
@@ -446,7 +426,7 @@ async def caesar_control_panel(callback: CallbackQuery):
         return
     s = await _gather_dashboard_stats()
     text = build_admin_dashboard_text(
-        s['bot_settings'], s['is_cookie_alive'], s['total_bot_balance'],
+        s['bot_settings'], s['is_ichancy_api_alive'], s['total_bot_balance'],
         s['pending'], s['recent'], s['total_users'], s['new_users'],
         s['today_tx'], s['approved_volume']
     )
@@ -747,7 +727,7 @@ async def admin_panel_cmd(message: Message):
         return
     s = await _gather_dashboard_stats()
     text = build_admin_dashboard_text(
-        s['bot_settings'], s['is_cookie_alive'], s['total_bot_balance'],
+        s['bot_settings'], s['is_ichancy_api_alive'], s['total_bot_balance'],
         s['pending'], s['recent'], s['total_users'], s['new_users'],
         s['today_tx'], s['approved_volume']
     )
@@ -1520,39 +1500,6 @@ async def process_new_commission(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data == "adm_cookie_menu")
-async def adm_cookie_menu_callback(callback: CallbackQuery, state: FSMContext):
-    if not await ensure_admin_callback(callback):
-        return
-    await safe_edit_text(
-        callback.message,
-        "🗝️ <b>تحديث كوكيز iChancy يدوياً:</b>\n\n"
-        "لضمان استقرار العمليات، يرجى تسجيل الدخول الفعلي من متصفحك ونسخ كوكيز الجلسة ولصقها بالكامل هنا ↘️:"
-    )
-    await state.set_state(AdminStates.entering_cookies)
-    await safe_answer_callback(callback)
-
-
-@router.message(AdminStates.entering_cookies)
-async def process_new_cookies(message: Message, state: FSMContext):
-    if not await ensure_admin_message(message, state):
-        return
-    cookie_str = message.text.strip()
-    await asyncio.to_thread(repo.update_bot_settings, ichancy_cookie=cookie_str)
-    await asyncio.to_thread(repo.update_cookie_timestamp)
-    ichancy_api_client.update_headers_and_cookies(cookie_str)
-    await message.answer("⏳ جاري فحص ومطابقة الكوكيز الجديدة مع المنصة...")
-    is_alive = await ichancy_api_client.check_session_validity()
-    if is_alive:
-        await message.answer("✔️ <b>رائع جداً! الكوكيز حية ونشطة 🔹</b>\nتم حفظ الجلسة الجديدة وتحديث النظام بالكامل بنجاح!\n🕐 سيتم تذكيرك تلقائياً بتحديثها كل 12 ساعة.")
-    else:
-        await message.answer(
-            "🚧 <b>تنبيه:</b> تم حفظ الكوكيز ولكن <b>فحص الاتصال مع المنصة فشل (EXPIRED 🔻)</b>!\n"
-            "يرجى التحقق من أنك قمت بنسخ الكوكيز بعد تسجيل الدخول الفعلي والكامل لشبكة الداشبورد."
-        )
-    await state.clear()
-
-
 @router.callback_query(F.data == "adm_agent_bal")
 async def adm_agent_bal_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
@@ -1573,7 +1520,7 @@ async def adm_agent_bal_callback(callback: CallbackQuery):
         await safe_edit_text(
             callback.message,
             "⛔ <b>فشل الاتصال بالداشبورد لجلب الرصيد!</b>\n"
-            "يرجى التحقق من كوكيز الجلسة عبر خيار تحديث الكوكيز يدوياً.",
+            "تحقّق من بيانات AGENT_USERNAME وAGENT_PASSWORD وصلاحيات الوكيل؛ يتم تجديد الرموز تلقائياً.",
             reply_markup=get_admin_keyboard(),
             parse_mode="HTML"
         )
