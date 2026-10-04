@@ -22,6 +22,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
 WEBAPP_DIR = os.path.join(project_root, "webapp")
+EMOJI_ASSETS_DIR = os.path.join(WEBAPP_DIR, "emoji_assets")
 
 # إعداد مجلد السجلات
 log_dir = os.path.join(project_root, "logs")
@@ -3520,6 +3521,8 @@ def main():
     app.router.add_get("/dashboard", serve_dashboard_html)
     app.router.add_get("/user-app", serve_user_app_html)
     app.router.add_get("/user-app-pingo", serve_user_app_pingo_html)
+    # Premium visual assets are read-only and additive; original routes/content remain unchanged.
+    app.router.add_static("/emoji-assets", EMOJI_ASSETS_DIR, show_index=False)
     app.router.add_get("/api/user/me", user_me_api_handler)
     app.router.add_post("/api/user/checkin", user_checkin_handler)
     app.router.add_post("/api/user/bonus-to-game", user_bonus_to_game_handler)

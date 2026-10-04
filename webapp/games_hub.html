@@ -16,6 +16,7 @@ h1{margin:0 0 10px;color:#ffd700;font-size:24px}p{color:#b7c1cc;line-height:1.8}
   @keyframes premiumIconFloat { 0%,100% { transform:translateY(0) scale(1); filter:drop-shadow(0 0 0 transparent); } 50% { transform:translateY(-2px) scale(1.045); filter:drop-shadow(0 3px 7px rgba(255,193,7,.22)); } }
   @media (prefers-reduced-motion: reduce) { .premium-icon { animation:none !important; } }
 </style>
+<link rel="stylesheet" href="/emoji-assets/premium-icons.css?v=1">
 </head>
 <body>
 <div class="card">
@@ -47,5 +48,6 @@ fetch(window.location.origin+'/api/public/links').then(r=>r.json()).then(d=>{con
   }
 })();
 </script>
+<script src="/emoji-assets/premium-icons.js?v=1" defer></script>
 </body>
 </html>

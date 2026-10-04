@@ -1,0 +1,172 @@
+{
+  "brand": {
+    "pack": "ton",
+    "png": "/emoji-assets/ton/CAACAgIAAxUAAWrAAAFKtlsCqa1fOb5VjT4uxLOErwACr2AAAtgfWUtTeYgEiFqGrT0E.png",
+    "lottie": "/emoji-assets/ton/CAACAgIAAxUAAWrAAAFKtlsCqa1fOb5VjT4uxLOErwACr2AAAtgfWUtTeYgEiFqGrT0E.json"
+  },
+  "welcome": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrAwNma64rmfQPcv9KxhEiSgzVkAAKYOgACcrtoSjzceQJjf1pCPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrAwNma64rmfQPcv9KxhEiSgzVkAAKYOgACcrtoSjzceQJjf1pCPQQ.json"
+  },
+  "admin_panel": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9m5u1BQ6EmJnOIGQeKcytrAAK3IgACWyqhS3tOCKJL8-zOPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9m5u1BQ6EmJnOIGQeKcytrAAK3IgACWyqhS3tOCKJL8-zOPQQ.json"
+  },
+  "settings": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9m5u1BQ6EmJnOIGQeKcytrAAK3IgACWyqhS3tOCKJL8-zOPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9m5u1BQ6EmJnOIGQeKcytrAAK3IgACWyqhS3tOCKJL8-zOPQQ.json"
+  },
+  "balance": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHw45GxYXAbY42dPV8Xa2TkkAAIhVAAC648YSyrscfoCYW0bPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHw45GxYXAbY42dPV8Xa2TkkAAIhVAAC648YSyrscfoCYW0bPQQ.json"
+  },
+  "wallet": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHysEVECDu3VNjSA-SFVqbqOAAJVWQAC84EYSTtOEp6Q18AfPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHysEVECDu3VNjSA-SFVqbqOAAJVWQAC84EYSTtOEp6Q18AfPQQ.json"
+  },
+  "deposit": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHwr789hY0blULt9Y78-af-pAAIfUwAC_FTwSh6441Hn_HwXPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHwr789hY0blULt9Y78-af-pAAIfUwAC_FTwSh6441Hn_HwXPQQ.json"
+  },
+  "withdraw": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHwtW0BDXhzuVOyM_FoNidrXAALnagACBzgJSHnqZNGsJx8qPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHwtW0BDXhzuVOyM_FoNidrXAALnagACBzgJSHnqZNGsJx8qPQQ.json"
+  },
+  "payment_success": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h4iOzYIkjjP32WhAHJQglAAI-WgACPOjJS3vT9YQDrW5RPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h4iOzYIkjjP32WhAHJQglAAI-WgACPOjJS3vT9YQDrW5RPQQ.json"
+  },
+  "payment_pending": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHy7alfaewHYxq0F4dNkKyqSAAK9VgACJIvxSo8n9M7wI67NPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHy7alfaewHYxq0F4dNkKyqSAAK9VgACJIvxSo8n9M7wI67NPQQ.json"
+  },
+  "payment_failed": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h6luDF4_cwJh0ubPY79k_AAL6IQACe4gYS2n3kOnQAuwMPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h6luDF4_cwJh0ubPY79k_AAL6IQACe4gYS2n3kOnQAuwMPQQ.json"
+  },
+  "warning": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OI-PBY-1cghqa10CBLHSKAALUOQACycvQSqRujJnnqkiEPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OI-PBY-1cghqa10CBLHSKAALUOQACycvQSqRujJnnqkiEPQQ.json"
+  },
+  "error": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OPh4jP5W-lPnzWgcnw2SgAAKzIwAC2aTIS3RPgmAxBZ8CPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OPh4jP5W-lPnzWgcnw2SgAAKzIwAC2aTIS3RPgmAxBZ8CPQQ.json"
+  },
+  "info": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8ikgFcUHqJCW3r110JoqlRAAKfOQACHUZ5SeqyF9gJ-7n_PQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8ikgFcUHqJCW3r110JoqlRAAKfOQACHUZ5SeqyF9gJ-7n_PQQ.json"
+  },
+  "gift": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHzzr0ySxdDQvi-hi-AI2KvmAAJTRwACdciRS7F4VeZ-8paiPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHzzr0ySxdDQvi-hi-AI2KvmAAJTRwACdciRS7F4VeZ-8paiPQQ.json"
+  },
+  "bonus": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT_mRsPjtUCEZmQYwuiLDiPjAAIOSgAC019AS12ep8yeSy1OPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT_mRsPjtUCEZmQYwuiLDiPjAAIOSgAC019AS12ep8yeSy1OPQQ.json"
+  },
+  "game": {
+    "pack": "ton",
+    "png": "/emoji-assets/ton/CAACAgIAAxUAAWrB4dS3KcHGW6Q59dbZ09g2McZHAAJeggACd1bxS6Ym5UR7OHCYPQQ.png",
+    "lottie": "/emoji-assets/ton/CAACAgIAAxUAAWrB4dS3KcHGW6Q59dbZ09g2McZHAAJeggACd1bxS6Ym5UR7OHCYPQQ.json"
+  },
+  "account": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHxvQgMAAZK1o5Q4pqb3PRUjKQACz1QAAjcIuUgTPY39I0ix8z0E.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHxvQgMAAZK1o5Q4pqb3PRUjKQACz1QAAjcIuUgTPY39I0ix8z0E.json"
+  },
+  "referrals": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHxi_9QDFBThw6PJwWOuQNviAAIYXAACbDcISaz_ULQ9AaygPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHxi_9QDFBThw6PJwWOuQNviAAIYXAACbDcISaz_ULQ9AaygPQQ.json"
+  },
+  "leaderboard": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHzPM9B6_xK_dE3rT8ah6asmAAJnVQAC28uoSgrQvWIa-WjQPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHzPM9B6_xK_dE3rT8ah6asmAAJnVQAC28uoSgrQvWIa-WjQPQQ.json"
+  },
+  "contest": {
+    "pack": "ton",
+    "png": "/emoji-assets/ton/CAACAgIAAxUAAWrB4dQd0pr2TwL3Dnv4agmzPGiXAALkVAACbZgxSD5uffOgOBeUPQQ.png",
+    "lottie": "/emoji-assets/ton/CAACAgIAAxUAAWrB4dQd0pr2TwL3Dnv4agmzPGiXAALkVAACbZgxSD5uffOgOBeUPQQ.json"
+  },
+  "support": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OkL6NrLRY82mklxpvUD1BAALEHwACjpVBSPcvC3O6zTVOPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OkL6NrLRY82mklxpvUD1BAALEHwACjpVBSPcvC3O6zTVOPQQ.json"
+  },
+  "contact": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9g5CyadoPYx1JKLuzYzfXnAAIFOAAC7_2BSIKlVeKPVXG6PQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9g5CyadoPYx1JKLuzYzfXnAAIFOAAC7_2BSIKlVeKPVXG6PQQ.json"
+  },
+  "guide": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8es-5tjt_WeQxuaRZ_J7nmAAK2KwACENmhS0VjHIyGnKklPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8es-5tjt_WeQxuaRZ_J7nmAAK2KwACENmhS0VjHIyGnKklPQQ.json"
+  },
+  "website": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OeonKcm3hRKSOQrNRNe7SAAIsRQACNvmxSthoap_LEeIxPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-OeonKcm3hRKSOQrNRNe7SAAIsRQACNvmxSthoap_LEeIxPQQ.json"
+  },
+  "download": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9xTOI6MCGuZ7pJt2AKH-3UAAJfOQACRUYoS9MKeWg5yePFPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9xTOI6MCGuZ7pJt2AKH-3UAAJfOQACRUYoS9MKeWg5yePFPQQ.json"
+  },
+  "back": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8GuKiyAaJTrKNWQ28Pq-OzAALGOQACvMAQSUxTb-tN3Q-9PQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT8GuKiyAaJTrKNWQ28Pq-OzAALGOQACvMAQSUxTb-tN3Q-9PQQ.json"
+  },
+  "home": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT_qUKBJ2r_7UkihRWmlirbKAAKSJwACM3jgSrGTnWln4adrPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT_qUKBJ2r_7UkihRWmlirbKAAKSJwACM3jgSrGTnWln4adrPQQ.json"
+  },
+  "close": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h6luDF4_cwJh0ubPY79k_AAL6IQACe4gYS2n3kOnQAuwMPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h6luDF4_cwJh0ubPY79k_AAL6IQACe4gYS2n3kOnQAuwMPQQ.json"
+  },
+  "confirm": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h4iOzYIkjjP32WhAHJQglAAI-WgACPOjJS3vT9YQDrW5RPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-h4iOzYIkjjP32WhAHJQglAAI-WgACPOjJS3vT9YQDrW5RPQQ.json"
+  },
+  "cancel": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-1VmJap2HNUOqXR_9Nt0k8AAJ-JgACJwlRSCn8jOsqtdnVPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT-1VmJap2HNUOqXR_9Nt0k8AAJ-JgACJwlRSCn8jOsqtdnVPQQ.json"
+  },
+  "loading": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9wYB-TuCRxrT7C24_UQlfnAALYVAACcnjgSo4YxNYdZkJxPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9wYB-TuCRxrT7C24_UQlfnAALYVAACcnjgSo4YxNYdZkJxPQQ.json"
+  },
+  "security": {
+    "pack": "finance",
+    "png": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHz_K4ZySmpX1MeGcnrgOoZ_AAKaRQACTx8wSCkEicH6OIDBPQQ.png",
+    "lottie": "/emoji-assets/finance/CAACAgIAAxUAAWq_rHz_K4ZySmpX1MeGcnrgOoZ_AAKaRQACTx8wSCkEicH6OIDBPQQ.json"
+  },
+  "maintenance": {
+    "pack": "news",
+    "png": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9rV0_wieaHy0BAUtzX4EhUAAJcUgACxaQpS1OP2qTvqMSVPQQ.png",
+    "lottie": "/emoji-assets/news/CAACAgIAAxUAAWrBbT9rV0_wieaHy0BAUtzX4EhUAAJcUgACxaQpS1OP2qTvqMSVPQQ.json"
+  }
+}

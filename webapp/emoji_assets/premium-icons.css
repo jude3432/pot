@@ -1,0 +1,6 @@
+/* Jude Robert premium visual layer: additive only, original labels/content remain intact. */
+.jude-premium-icon{display:inline-flex;align-items:center;justify-content:center;width:1.45em;height:1.45em;margin-inline-end:.28em;vertical-align:-.34em;animation:judePremiumFloat 3.6s ease-in-out infinite;filter:drop-shadow(0 2px 5px rgba(21,108,255,.22));}
+.jude-premium-icon img{width:100%;height:100%;object-fit:contain;display:block;}
+.jude-premium-icon.is-lottie{width:1.65em;height:1.65em;}
+@keyframes judePremiumFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.jude-premium-icon{animation:none!important}}
