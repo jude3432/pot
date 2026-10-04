@@ -1,8 +1,10 @@
-from telegram_bot.keyboards.premium import premium_button
+from telegram_bot.keyboards.premium import premium_button, PREMIUM_EMOJI
 import asyncio
+import html
 import logging
+from pathlib import Path
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandObject
 from config import settings
@@ -17,6 +19,7 @@ from telegram_bot.miniapp_shortcuts import resolve_miniapp_shortcut
 
 router = Router()
 logger = logging.getLogger(__name__)
+BANNER_PATH = Path(__file__).resolve().parents[2] / "webapp" / "welcome_banner.png"
 
 # 🛠️ إصلاح: قائمة الأدمن مع التسامح مع عدم وجود ADMIN_IDS في الإعدادات
 ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
@@ -47,16 +50,64 @@ async def send_log_message(bot, text, parse_mode="HTML"):
 # 🔹 دالة موحّدة لعرض القائمة الرئيسية الكاملة (15 زراً)
 # ================================================================
 async def show_main_menu(message: Message, user_id, edit: bool = False):
-    """تعرض القائمة الرئيسية الكاملة مع رصيد المستخدم."""
+    """تعرض بطاقة الحساب الحية والقائمة الرئيسية الكاملة."""
     user = await asyncio.to_thread(repo.get_user, str(user_id))
     bot_balance = int(user['bot_balance']) if user and user.get('bot_balance') is not None else 0
     game_balance = await asyncio.to_thread(repo.get_user_game_balance, str(user_id)) if user else 0
     bot_balance_new_str = format_new(bot_balance)
+    telegram_username = str((user or {}).get('telegram_username') or '').strip()
+    ichancy_username = str((user or {}).get('ichancy_username') or '').strip()
+    player_id = str((user or {}).get('player_id') or '').strip()
+    try:
+        history = await asyncio.to_thread(repo.get_user_transactions_history, str(user_id), 1)
+        last = history[0] if history else None
+    except Exception as exc:
+        logger.warning("Could not load last operation for welcome card: %s", exc)
+        last = None
+
+    type_labels = {
+        'deposit_bot': 'شحن رصيد البوت',
+        'withdraw_bot': 'سحب من رصيد البوت',
+        'deposit_game': 'شحن حساب iChancy',
+        'game_deposit': 'شحن حساب iChancy',
+        'withdraw_game': 'سحب من حساب iChancy',
+        'game_withdraw': 'سحب من حساب iChancy',
+        'gift_send': 'إهداء رصيد',
+        'gift_redeem': 'استرداد كود هدية',
+    }
+    status_labels = {'approved': 'مكتملة', 'pending': 'قيد المعالجة', 'rejected': 'مرفوضة', 'failed': 'فشلت'}
+    if last:
+        operation_name = type_labels.get(str(last.get('type') or ''), str(last.get('type') or 'عملية'))
+        operation_status = status_labels.get(str(last.get('status') or '').lower(), str(last.get('status') or 'غير معروف'))
+        operation_amount = last.get('converted_amount_syp') or last.get('amount') or 0
+        operation_date = last.get('created_at')
+        operation_date = operation_date.strftime('%Y-%m-%d %H:%M') if hasattr(operation_date, 'strftime') else ''
+        last_operation = f"{operation_name} — {int(operation_amount):,} ل.س — {operation_status}"
+        if operation_date:
+            last_operation += f" — {operation_date}"
+    else:
+        last_operation = "لا توجد عمليات مسجلة حتى الآن"
+
+    def ce(name: str, fallback: str) -> str:
+        return f'<tg-emoji emoji-id="{PREMIUM_EMOJI[name]}">{fallback}</tg-emoji>'
+
+    account_line = html.escape(f"@{telegram_username}" if telegram_username else "بدون اسم مستخدم")
+    ichancy_line = html.escape(ichancy_username if ichancy_username else "غير مربوط")
+    player_line = html.escape(player_id if player_id else "غير متوفر")
     text = (
-        f"✨ <b>أهلاً بك في Jude Robert</b>\n\n"
-        f"🔷 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س</code> <i>({bot_balance_new_str} ل.س جديدة)</i>\n"
-        f"🕹️ <b>رصيد اللعبة (iChancy):</b> <code>{game_balance:,} NSP</code>\n\n"
-        f"اختر الخدمة المطلوبة من الأزرار بالأسفل ↘️"
+        f"{ce('brand', '✨')} <b>أهلاً بك في Jude Robert</b>\n"
+        f"<i>بطاقة حسابك الرقمية — كل معلوماتك في مكان واحد</i>\n\n"
+        f"{ce('balance', '🔷')} <b>رصيد البوت</b>\n"
+        f"   <code>{bot_balance:,} ل.س</code>  <i>({bot_balance_new_str} ل.س جديدة)</i>\n\n"
+        f"{ce('game', '🕹️')} <b>رصيد اللعبة — iChancy</b>\n"
+        f"   <code>{game_balance:,} NSP</code>\n\n"
+        f"{ce('account', '🆔')} <b>Telegram ID:</b> <code>{user_id}</code>\n"
+        f"{ce('account', '👤')} <b>الحساب:</b> {account_line}\n"
+        f"{ce('game', '🎮')} <b>iChancy ID:</b> <code>{player_line}</code>\n"
+        f"{ce('account', '◈')} <b>اسم حساب iChancy:</b> <code>{ichancy_line}</code>\n\n"
+        f"{ce('history', '🕘')} <b>آخر عملية</b>\n"
+        f"   <i>{html.escape(last_operation)}</i>\n\n"
+        f"{ce('website', '↘️')} <b>اختر الخدمة المطلوبة من الأزرار بالأسفل</b>"
     )
 
     keyboard = get_user_menu_keyboard(user_id)
@@ -67,6 +118,11 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
             return
         except Exception:
             pass
+    if BANNER_PATH.exists():
+        try:
+            await message.answer_photo(photo=FSInputFile(str(BANNER_PATH)))
+        except Exception as exc:
+            logger.warning("Could not send welcome banner: %s", exc)
     await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
 
 
