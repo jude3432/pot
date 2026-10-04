@@ -327,7 +327,7 @@ async def generate_daily_report(bot: Bot):
             f"└─ 📤 سحوبات معلقة: <code>{pending_withdrawals.get('count', 0) if pending_withdrawals else 0}</code>\n\n"
 
             "━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "👑 <i>MEGA - التقرير التلقائي</i>\n"
+            "👑 <i>Jude Robert - التقرير التلقائي</i>\n"
             "━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -733,7 +733,7 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
     """تهيئة البوت عند بدء التشغيل."""
     global watchdog_task, ensure_webhook_task, daily_report_task, leaderboard_task, routers_registered
 
-    logger.info("🚀 MEGA is starting...")
+    logger.info("🚀 Jude Robert is starting...")
 
     # ✅ فحص الإعدادات بدون قتل العملية (المنفذ مربوط قبل هاد الكود)
     try:
@@ -2485,7 +2485,7 @@ async def admin_contests_handler(request):
             try:
                 reward_amount = int(result.get('reward_amount') or 0)
                 gift_code = result.get('gift_code')
-                text = "🎉 مبروك! تم اعتماد مشاركتك في مسابقة MEGA.\n\n"
+                text = "🎉 مبروك! تم اعتماد مشاركتك في مسابقة Jude Robert.\n\n"
                 if gift_code:
                     text += f"🎫 كود هديتك: <code>{gift_code}</code>\n💰 القيمة: <code>{reward_amount:,} SYP</code>"
                 else:
@@ -2764,7 +2764,7 @@ async def serve_user_app_pingo_html(request):
 
 
 def _collect_user_me_payload_sync(telegram_id, bot_username):
-    """جمع حمولة لوحة MEGA للمستخدم — يعمل بخيط جانبي، وبقراءة واحدة لكل كيان.
+    """جمع حمولة لوحة Jude Robert للمستخدم — يعمل بخيط جانبي، وبقراءة واحدة لكل كيان.
     🆕 (Update 20) كان user_me ينفذ ~25 استعلاماً بلا تزامن: get_user_features_settings
     4 مرات + get_user 3 مرات + get_me من تيليجرام. الآن كلها مرة واحدة (ومكاشنة)."""
     user = repo.get_user(telegram_id)
@@ -2986,7 +2986,7 @@ def _collect_user_me_payload_sync(telegram_id, bot_username):
 
 
 async def user_me_api_handler(request):
-    """🆕 API لوحة MEGA للمستخدم — جمع كامل بخيط جانبي واحد غير حاجز للبوت."""
+    """🆕 API لوحة Jude Robert للمستخدم — جمع كامل بخيط جانبي واحد غير حاجز للبوت."""
     user_obj = _verify_telegram_init_data(request.headers.get('X-Telegram-Init-Data', ''))
     if not user_obj:
         return web.json_response({'error': 'غير مصرّح'}, status=403)
@@ -3512,7 +3512,7 @@ def main():
     webhook_requests_handler.register(app, path=WEBHOOK_PATH)
 
     async def health_check(request):
-        return web.Response(text="MEGA Alive")
+        return web.Response(text="Jude Robert Alive")
 
     app.router.add_get("/", health_check)
     app.router.add_post("/oxapay/webhook", oxapay_webhook_handler)

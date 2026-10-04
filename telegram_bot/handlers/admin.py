@@ -279,7 +279,7 @@ def build_admin_dashboard_text(bot_settings, is_cookie_alive, total_bot_balance,
     dep_pending = [tx for tx in pending if tx['type'] == 'deposit_bot']
     wit_pending = [tx for tx in pending if tx['type'] == 'withdraw_bot']
 
-    text = "👑 <b>═══ لوحة تحكم MEGA ═══</b>\n\n"
+    text = "👑 <b>═══ لوحة تحكم Jude Robert ═══</b>\n\n"
     text += "📊 <b>══ الإحصائيات العامة ══</b>\n"
     text += f"👥 <b>إجمالي المستخدمين:</b> <code>{total_users:,}</code>\n"
     text += f"🆕 <b>جدد اليوم:</b> <code>{new_users}</code> | 🔄 <b>معاملات اليوم:</b> <code>{today_tx}</code>\n"
@@ -549,7 +549,7 @@ async def adm_sync_liquidity_callback(callback: CallbackQuery):
 async def adm_system_probe_callback(callback: CallbackQuery):
     if not await ensure_admin_callback(callback):
         return
-    await safe_answer_callback(callback, "⏳ جاري فحص النبض ومحاكاة عمليات MEGA...")
+    await safe_answer_callback(callback, "⏳ جاري فحص النبض ومحاكاة عمليات Jude Robert...")
     t0 = time.perf_counter()
     db_ok = False
     db_latency = 0
@@ -586,7 +586,7 @@ async def adm_system_probe_callback(callback: CallbackQuery):
         logger.warning(f"Probe Dry-Run error: {e}")
 
     report = (
-        "🩺 <b>تقرير فحص النبض والمحاكاة الشاملة للMEGA</b>\n"
+        "🩺 <b>تقرير فحص النبض والمحاكاة الشاملة الخاصة بـ Jude Robert</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"💾 <b>قاعدة بيانات Neon (PostgreSQL):</b>\n"
         f"└ الحالة: {'🟢 متصل بكفاءة' if db_ok else '🔴 تعذر الاتصال'}\n"
@@ -597,7 +597,7 @@ async def adm_system_probe_callback(callback: CallbackQuery):
         f"🧪 <b>محاكاة المعاملات الذرية (Dry-Run Test):</b>\n"
         f"└ فحص القفل الذري والتراجع: {'🟢 ناجح (بدون زيادة أرصدة)' if dry_run_ok else '🟡 يحتاج تحقق'}\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "💡 <i>تم فحص الاتصال والتزامن وحسابات MEGA بسلاسة وبون أي تضخم أو تغيير في الأرصدة الحقيقية!</i>"
+        "💡 <i>تم فحص الاتصال والتزامن وحسابات Jude Robert بسلاسة وبون أي تضخم أو تغيير في الأرصدة الحقيقية!</i>"
     )
     await safe_edit_text(callback.message, report, reply_markup=InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔄 إعادة الفحص الآن", callback_data="adm_system_probe")],
@@ -2111,7 +2111,7 @@ async def adm_close_panel_callback(callback: CallbackQuery):
 
 
 # ================================================================
-# 👑 مسابقات MEGA - أزرار القبول/الرفض من القناة
+# 👑 مسابقات Jude Robert - أزرار القبول/الرفض من القناة
 # ================================================================
 
 def get_contest_rejection_reason_keyboard(entry_id: int):

@@ -52,7 +52,7 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
     game_balance = await asyncio.to_thread(repo.get_user_game_balance, str(user_id)) if user else 0
     bot_balance_new_str = format_new(bot_balance)
     text = (
-        f"👑 <b>أهلاً بك في MEGA</b>\n\n"
+        f"👑 <b>أهلاً بك في Jude Robert</b>\n\n"
         f"💎 <b>رصيد البوت:</b> <code>{bot_balance:,} ل.س</code> <i>({bot_balance_new_str} ل.س جديدة)</i>\n"
         f"🎮 <b>رصيد اللعبة (iChancy):</b> <code>{game_balance:,} NSP</code>\n\n"
         f"اختر الخدمة المطلوبة من الأزرار بالأسفل 👇"

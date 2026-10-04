@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>👑 لوحة تحكم MEGA</title>
+<title>👑 لوحة تحكم Jude Robert</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:-apple-system,'Segoe UI',Tahoma,sans-serif}
@@ -306,7 +306,7 @@
 <!-- ===== الشريط العلوي ===== -->
 <div class="top-bar">
   <div class="top-bar-header">
-    <h1>👑 لوحة تحكم MEGA</h1>
+    <h1>👑 لوحة تحكم Jude Robert</h1>
     <span class="time" id="lastUpdate">جارٍ التحميل...</span>
   </div>
   <div class="search-bar">
@@ -1128,7 +1128,7 @@ async function contestsApi(payload){return apiPost(CONTESTS_API,payload);}
 async function loadContests(status='all'){currentTab='contests';setNavActive('more');document.getElementById('content').innerHTML='<div class="loader"><div class="spinner"></div>جارٍ تحميل المسابقات...</div>';try{const d=await contestsApi({action:'list',status});renderContestsList(d,status);}catch(e){document.getElementById('content').innerHTML=`<div class="error-box">${e.message}</div>`}}
 
 function renderContestsList(d,status='all'){const contests=d.contests||[];document.getElementById('content').innerHTML=`
-<div class="card"><div class="card-title">👑 مسابقات MEGA</div><div class="btn-row-3"><button class="btn outline" onclick="loadContests('open')">🟢 المفتوحة</button><button class="btn outline" onclick="loadContests('closed')">🔒 المغلقة</button><button class="btn outline" onclick="loadContests('all')">📋 الكل</button></div></div>
+<div class="card"><div class="card-title">👑 مسابقات Jude Robert</div><div class="btn-row-3"><button class="btn outline" onclick="loadContests('open')">🟢 المفتوحة</button><button class="btn outline" onclick="loadContests('closed')">🔒 المغلقة</button><button class="btn outline" onclick="loadContests('all')">📋 الكل</button></div></div>
 <div class="card"><div class="card-title">➕ إنشاء مسابقة</div><div class="field"><label>العنوان</label><input id="contest_title" placeholder="مثال: انشر البوت واربح"></div><div class="field"><label>الوصف</label><textarea id="contest_description" style="direction:rtl;text-align:right"></textarea></div><div class="field"><label>النوع</label><select id="contest_type"><option value="first_approved">أول المقبولين</option><option value="manual_review">مراجعة يدوية</option><option value="random_draw">سحب عشوائي</option></select></div><div class="field"><label>نوع الجائزة</label><select id="contest_reward_type"><option value="bonus_code">كود بونص للعب</option><option value="cash_code">كود كاش قابل للسحب</option></select><div class="hint">كود البونص يبدأ CAESAR-BONUS، وكود الكاش يبدأ CAESAR-CASH</div></div><div class="field"><label>قيمة الجائزة SYP</label><input id="contest_reward_amount" inputmode="numeric" value="0"></div><div class="field"><label>عدد الفائزين</label><input id="contest_winners_limit" inputmode="numeric" value="1"></div><div class="field"><label>يتطلب إثبات؟</label><select id="contest_requires_proof"><option value="true">نعم</option><option value="false">لا</option></select></div><button class="btn green" onclick="createContest()">✅ إنشاء</button></div>
 <div class="card"><div class="card-title">📋 المسابقات (${contests.length})</div>${contests.map(c=>`<div class="pending-item" style="border-right-color:${c.status==='open'?'var(--green)':'var(--red)'}"><b>#${c.id} ${c.title}</b><br>🏆 ${c.reward_type} | 💰 ${fmt(c.reward_amount)} SYP | 👥 ${fmt(c.winners_limit)}<br>${c.status==='open'?'🟢 مفتوحة':'🔒 مغلقة'}<button class="btn outline" onclick="loadContestDetail(${c.id})">👁️</button></div>`).join('')||'<div class="empty">لا توجد مسابقات</div>'}</div>
 <button class="btn outline" onclick="showTab('more')">🔙 رجوع</button>`;}
@@ -1237,7 +1237,7 @@ function renderFeatures(d){
         <div class="card-title">⚙️ حدود الطبقات والمكافآت</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
           ${vipTiers.map((t,i)=>{
-            const names=['🥉 مواطن','🥈 فارس','🥇 نبيل','👑 MEGA'];
+            const names=['🥉 مواطن','🥈 فارس','🥇 نبيل','👑 Jude Robert'];
             return `<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px">
               <div style="font-size:13px;font-weight:900;margin-bottom:8px">${names[i]||'طبقة '+i}</div>
               <div class="field" style="margin:0"><label style="font-size:10px">حد الإيداع (ل.س)</label><input id="vip_${i}_thresh" inputmode="numeric" value="${t[0]}" style="padding:8px;font-size:13px"></div>

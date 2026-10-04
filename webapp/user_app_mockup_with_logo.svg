@@ -135,7 +135,7 @@
     <!-- Logo Text -->
     <text x="52" y="34" font-family="'Segoe UI', 'Arial Black', sans-serif" 
           font-size="18" font-weight="900" fill="url(#goldGrad)" letter-spacing="0.5"
-          style="filter: url(#textGlow);">MEGA</text>
+          style="filter: url(#textGlow);">Jude Robert</text>
     
     <!-- Refresh Button (Right) -->
     <g transform="translate(306, 8)">
@@ -185,7 +185,7 @@
   <!-- ============================================================ -->
   <g transform="translate(16, 258)" filter="url(#cardShadow)">
     <rect width="358" height="95" rx="20" fill="url(#vipGold)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
-    <text x="24" y="30" font-size="16" font-weight="900" fill="url(#goldGrad)">👑 MEGA</text>
+    <text x="24" y="30" font-size="16" font-weight="900" fill="url(#goldGrad)">👑 Jude Robert</text>
     <text x="334" y="30" text-anchor="end" font-size="11" fill="rgba(255,215,0,0.3)"
           style="background:rgba(255,215,0,0.2);padding:3px 10px;border-radius:20px;">+15% بونص</text>
     <text x="24" y="50" font-size="11" fill="#7a8a9a">إجمالي إيداعاتك: <tspan fill="#f0f0f0" font-weight="700">3,500,000</tspan> ل.س</text>

@@ -29,7 +29,7 @@ def get_main_menu_keyboard(is_admin=False):
 
     # 🆕 (Update 10) الزر العريض المبهر: Mini App للمستخدم
     keyboard.append([
-        InlineKeyboardButton(text="◈ لوحة MEGA", web_app=WebAppInfo(url=get_user_app_url()))
+        InlineKeyboardButton(text="◈ لوحة Jude Robert", web_app=WebAppInfo(url=get_user_app_url()))
     ])
     if is_admin:
         keyboard.append([
@@ -59,7 +59,7 @@ def get_main_menu_keyboard(is_admin=False):
             InlineKeyboardButton(text="💭 الشروحات", web_app=WebAppInfo(url=get_guides_url()))
         ],
         [
-            InlineKeyboardButton(text="👑 مسابقات MEGA", callback_data="contests_menu"),
+            InlineKeyboardButton(text="👑 مسابقات Jude Robert", callback_data="contests_menu"),
             InlineKeyboardButton(text="🎮 ألعاب iChancy", web_app=WebAppInfo(url=repo.get_button_link('games_url')))
         ],
         [InlineKeyboardButton(text="🎁 العروض والبونصات", callback_data="offers_menu")],

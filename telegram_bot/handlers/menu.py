@@ -352,7 +352,7 @@ async def require_ichancy_registered(callback: CallbackQuery) -> bool:
     if not user or not user.get('player_id'):
         await safe_edit_text(
             callback.message,
-            "👑 <b>MEGA جديد في اللعبة!</b>\n\n"
+            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
             "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
@@ -403,7 +403,7 @@ async def start_deposit_flow(target_message, user_id, state: FSMContext, edit=Fa
     if not user or not user.get('player_id'):
         await _deliver_flow_message(
             target_message,
-            "👑 <b>MEGA جديد في اللعبة!</b>\n\n"
+            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
             "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(user_id),
@@ -446,7 +446,7 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
     if not user or not user.get('player_id'):
         await _deliver_flow_message(
             target_message,
-            "👑 <b>MEGA جديد في اللعبة!</b>\n\n"
+            "👑 <b>Jude Robert جديد في اللعبة!</b>\n\n"
             "يجب عليك تسجيل حساب iChancy أولاً لتحصل على Player ID الخاص بك.\n"
             "توجه إلى قسم ⚡️ <b>حساب iChancy</b> وأنشئ حسابك الآن.",
             reply_markup=get_user_menu_keyboard(user_id),
@@ -1381,11 +1381,11 @@ async def process_deposit_amount(message: Message, state: FSMContext):
                 await message.reply("❌ تعذر إنشاء طلب الشحن، حاول لاحقاً.")
                 await state.clear()
                 return
-            order_id = f"MEGA-{tx_id}"
+            order_id = f"JUDE-{tx_id}"
             try:
                 payment = await oxapay.create_white_label_payment(
                     amount_usdt=amount_usdt, network=gateway.replace('usdt_', ''),
-                    order_id=order_id, description=f"MEGA bot deposit #{tx_id}"
+                    order_id=order_id, description=f"Jude Robert bot deposit #{tx_id}"
                 )
                 await asyncio.to_thread(repo.set_oxapay_payment_details, tx_id, track_id=payment['track_id'], order_id=order_id,
                     network=payment.get('network') or gateway, address=payment['address'],
@@ -2348,7 +2348,7 @@ async def contests_menu_callback(callback: CallbackQuery):
     if not contests:
         await safe_edit_text(
             callback.message,
-            "👑 <b>مسابقات MEGA</b>\n\nلا توجد مسابقات مفتوحة حالياً. تابعنا قريباً ✨",
+            "👑 <b>مسابقات Jude Robert</b>\n\nلا توجد مسابقات مفتوحة حالياً. تابعنا قريباً ✨",
             reply_markup=get_user_menu_keyboard(callback.from_user.id),
             parse_mode="HTML"
         )
@@ -2356,7 +2356,7 @@ async def contests_menu_callback(callback: CallbackQuery):
         return
     await safe_edit_text(
         callback.message,
-        "👑 <b>مسابقات MEGA</b>\n\nاختر المسابقة التي تريد المشاركة فيها:",
+        "👑 <b>مسابقات Jude Robert</b>\n\nاختر المسابقة التي تريد المشاركة فيها:",
         reply_markup=get_contests_list_keyboard(contests),
         parse_mode="HTML"
     )
@@ -2528,7 +2528,7 @@ async def process_contest_proof(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "jackpot_menu")
 async def jackpot_menu_callback(callback: CallbackQuery):
-    await send_coming_soon(callback, "👑 مسابقات MEGA")
+    await send_coming_soon(callback, "👑 مسابقات Jude Robert")
 
 
 @router.callback_query(F.data == "offers_menu")
