@@ -116,26 +116,29 @@ def _remove_icon_prefix(text: str) -> str:
     return text
 
 def _button_style(text: object, kwargs: dict) -> str | None:
-    """Apply a cohesive Telegram-native palette by action semantics."""
+    """Apply a decorative, balanced Telegram-native palette by action family."""
     if kwargs.get("style"):
         return None
     value = str(text or "")
     callback = str(kwargs.get("callback_data") or "").lower()
-    if any(word in value for word in ("شحن", "إيداع", "تأكيد", "موافق", "إنشاء", "إهداء")):
+    if callback in {"history_menu", "message_admin", "contact_us", "show_terms_only", "back_to_main_menu"}:
+        return "default"
+    if callback in {"gift_redeem"}:
+        return "primary"
+    if any(word in value for word in ("شحن", "إيداع", "تأكيد", "موافق", "إنشاء", "إهداء", "العروض", "مسابقات", "تحميل")):
         return "success"
     if any(word in value for word in ("سحب", "إلغاء", "رفض", "حذف", "إغلاق")):
         return "danger"
-    if "deposit" in callback or any(word in callback for word in ("accept", "confirm", "create", "gift_send")):
+    if "deposit" in callback or any(word in callback for word in ("accept", "confirm", "create", "gift_send", "offer", "contest_submit")):
         return "success"
     if "withdraw" in callback or any(word in callback for word in ("cancel", "reject", "delete", "close")):
         return "danger"
     if any(word in value for word in (
-        "حساب", "لوحة", "إحالات", "السجل", "رسالة", "تواصل", "الشروط",
-        "الشروحات", "مسابقات", "ألعاب", "العروض", "المتصدرون", "بطاقات",
-        "الموقع", "تحميل", "Facebook", "دعم", "معلومات", "عودة", "بحث",
+        "حساب", "لوحة", "إحالات", "الشروحات", "ألعاب", "المتصدرون", "بطاقات",
+        "الموقع", "دعم", "معلومات", "عودة", "بحث",
     )) or any(word in callback for word in (
-        "menu", "account", "history", "referral", "contact", "support", "guide",
-        "contest", "game", "offer", "leaderboard", "prediction", "website", "back",
+        "menu", "account", "referral", "support", "guide", "game", "leaderboard",
+        "prediction", "website",
     )):
         return "primary"
     return "default"
