@@ -14,7 +14,7 @@ from aiogram.types import InlineKeyboardButton
 # the familiar visible emoji by default; enable premium-only mode explicitly
 # after confirming the bot owner/account eligibility.
 CUSTOM_EMOJI_BUTTONS_ENABLED = os.getenv(
-    "TELEGRAM_CUSTOM_EMOJI_BUTTONS", "false"
+    "TELEGRAM_CUSTOM_EMOJI_BUTTONS", "true"
 ).strip().lower() in {"1", "true", "yes", "on"}
 
 # Curated semantic choices. Finance IDs are preferred for money actions;
