@@ -37,7 +37,7 @@ PREMIUM_EMOJI = {
     "info": "5334544901428229844",       # ℹ️
     "gift": "5294167145079395967",       # 🛍 Finance
     "bonus": "5427168083074628963",      # 💎
-    "game": "5949437596621872513",       # ⚡ iChancy
+    "game": "5361741454685256344",       # 🎮 legacy game icon
     "ichancy": "5949437596621872513",    # ⚡ iChancy
     "usdt": "5949309318833642148",       # USDT
     "syriatel": "5949764774345579077",   # Syriatel Cash
@@ -95,8 +95,8 @@ def _icon_for_text(text: object) -> str | None:
         return PREMIUM_EMOJI["syriatel"]
     if "sham cash" in lowered or "shamcash" in lowered or "شام كاش" in value:
         return PREMIUM_EMOJI["shamcash"]
-    # The iChancy lightning mark is used consistently on every game label.
-    if "ichancy" in lowered or "اللعبة" in value or "حساب اللعبة" in value:
+    # The lightning mark is reserved for game charge/withdrawal actions.
+    if ("شحن" in value or "سحب" in value) and ("اللعبة" in value or "ichancy" in lowered):
         return PREMIUM_EMOJI["ichancy"]
     # Meaning wins over a reused visible emoji (e.g. 📨 شحن vs 📨 تواصل).
     if "شحن" in value or "إيداع" in value:
@@ -128,6 +128,15 @@ def _remove_icon_prefix(text: str) -> str:
             rest = value[len(prefix):].lstrip("\ufe0f\u200d\u20e3")
             return rest.lstrip()
     return text
+
+
+def _is_ichancy_transfer_label(text: str) -> bool:
+    value = str(text or "")
+    lowered = value.lower()
+    return (
+        ("شحن" in value or "سحب" in value)
+        and ("اللعبة" in value or "ichancy" in lowered)
+    )
 
 def _button_style(text: object, kwargs: dict) -> str | None:
     """Apply a decorative, balanced Telegram-native palette by action family."""
@@ -166,8 +175,11 @@ def premium_button(*, text: str, **kwargs):
         kwargs["style"] = style
     if icon_id:
         try:
+            # Keep the old visible emoji on these two game actions; Telegram
+            # adds the supplied lightning custom icon alongside it.
+            button_text = str(text) if _is_ichancy_transfer_label(str(text)) else _remove_icon_prefix(str(text))
             return InlineKeyboardButton(
-                text=_remove_icon_prefix(str(text)),
+                text=button_text,
                 icon_custom_emoji_id=icon_id,
                 **kwargs,
             )
