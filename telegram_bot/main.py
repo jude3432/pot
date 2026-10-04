@@ -52,7 +52,7 @@ from neon_metrics import get_neon_metrics
 from render_metrics import get_render_metrics
 from integrations import oxapay
 
-RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://ichancy100.onrender.com")
+RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://pot-production-e465.up.railway.app")
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{RENDER_EXTERNAL_URL}{WEBHOOK_PATH}"
 WEBAPP_HOST = "0.0.0.0"
