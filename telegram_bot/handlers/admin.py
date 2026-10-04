@@ -1874,8 +1874,8 @@ async def adm_create_bot_gift_callback(callback: CallbackQuery, state: FSMContex
         callback.message,
         "🎫 <b>إنشاء كود هدية من المشرف</b>\n\n"
         "اختر نوع الكود الذي تريد إنشاءه:\n\n"
-        "🎁 <b>كود بونص:</b> يبدأ بـ <code>CAESAR-BONUS-</code> ويضاف إلى رصيد مكافآت اللعب.\n"
-        "💵 <b>كود كاش:</b> يبدأ بـ <code>CAESAR-CASH-</code> ويضاف إلى رصيد البوت القابل للسحب.\n\n"
+        "🎁 <b>كود بونص:</b> يبدأ بـ <code>JUDE-BONUS-</code> ويضاف إلى رصيد مكافآت اللعب.\n"
+        "💵 <b>كود كاش:</b> يبدأ بـ <code>JUDE-CASH-</code> ويضاف إلى رصيد البوت القابل للسحب.\n\n"
         "ملاحظة: الكود يستخدم مرة واحدة فقط، ولا يتم خصم قيمته من رصيد الأدمن.",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🎁 كود بونص للعب", callback_data="adm_bot_gift_type_bonus")],
@@ -1896,7 +1896,7 @@ async def adm_bot_gift_type_callback(callback: CallbackQuery, state: FSMContext)
         await safe_answer_callback(callback, "نوع غير معروف", show_alert=True)
         return
     await state.update_data(bot_gift_type=gift_type)
-    prefix = "CAESAR-BONUS-" if gift_type == "bonus" else "CAESAR-CASH-"
+    prefix = "JUDE-BONUS-" if gift_type == "bonus" else "JUDE-CASH-"
     label = "بونص للعب" if gift_type == "bonus" else "كاش قابل للسحب"
     await safe_edit_text(
         callback.message,
@@ -1932,7 +1932,7 @@ async def process_bot_gift_amount(message: Message, state: FSMContext):
 
     data = await state.get_data()
     gift_type = data.get('bot_gift_type') or 'bonus'
-    prefix = "CAESAR-BONUS-" if gift_type == "bonus" else "CAESAR-CASH-"
+    prefix = "JUDE-BONUS-" if gift_type == "bonus" else "JUDE-CASH-"
     type_label = "بونص للعب" if gift_type == "bonus" else "كاش قابل للسحب"
     code = prefix + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 

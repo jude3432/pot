@@ -1533,7 +1533,7 @@ def create_gift_campaign(name, reward_type, code_mode, reward_amount, max_redemp
         )
         row = cursor.fetchone()
         campaign_id = int(row[0])
-        prefix = 'CAESAR-BONUS' if reward_type == 'bonus' else 'CAESAR-CASH'
+        prefix = 'JUDE-BONUS' if reward_type == 'bonus' else 'JUDE-CASH'
         code_count = max_uses if code_mode == 'unique' else 1
         per_code_limit = 1 if code_mode == 'unique' else max_uses
         codes = []
@@ -1766,7 +1766,7 @@ def redeem_gift(code, receiver_id):
         gift_id, sender_telegram_id, dedicated_receiver, amount, is_redeemed = gift
         amount_int = int(amount)
         code_upper = normalized_code.upper()
-        is_bonus_gift = code_upper.startswith('CAESAR-BONUS-')
+        is_bonus_gift = code_upper.startswith('JUDE-BONUS-') or code_upper.startswith('CAESAR-BONUS-')
 
         if is_redeemed:
             conn.rollback()
@@ -1785,7 +1785,7 @@ def redeem_gift(code, receiver_id):
                 SELECT id FROM gifts
                 WHERE receiver_telegram_id = %s
                   AND sender_telegram_id LIKE 'ADMIN:%%'
-                  AND UPPER(code) LIKE 'CAESAR-BONUS-%%'
+                  AND (UPPER(code) LIKE 'JUDE-BONUS-%%' OR UPPER(code) LIKE 'CAESAR-BONUS-%%')
                   AND redeemed_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
                 LIMIT 1
                 """,
@@ -3463,14 +3463,14 @@ def approve_contest_entry(entry_id, reviewed_by=None):
         reward_type = str(contest.get('reward_type') or 'bonus_code')
         if reward_type in ('bonus_code', 'gift_code'):
             import secrets
-            gift_code = f"CAESAR-BONUS-{secrets.token_hex(4).upper()}"
+            gift_code = f"JUDE-BONUS-{secrets.token_hex(4).upper()}"
             cursor.execute(
                 "INSERT INTO gifts (sender_telegram_id, receiver_telegram_id, code, amount, is_redeemed) VALUES (%s, %s, %s, %s, FALSE)",
                 (f"CONTEST:{contest.get('id')}:BONUS", str(entry.get('user_telegram_id')), gift_code, reward_amount)
             )
         elif reward_type == 'cash_code':
             import secrets
-            gift_code = f"CAESAR-CASH-{secrets.token_hex(4).upper()}"
+            gift_code = f"JUDE-CASH-{secrets.token_hex(4).upper()}"
             cursor.execute(
                 "INSERT INTO gifts (sender_telegram_id, receiver_telegram_id, code, amount, is_redeemed) VALUES (%s, %s, %s, %s, FALSE)",
                 (f"CONTEST:{contest.get('id')}:CASH", str(entry.get('user_telegram_id')), gift_code, reward_amount)

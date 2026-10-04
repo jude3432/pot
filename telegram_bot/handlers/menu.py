@@ -1535,7 +1535,7 @@ async def process_deposit_proof(message: Message, state: FSMContext):
     elif message.text:
         transfer_number = message.text.strip()
 
-    short_tx_code = "CAESAR-D-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    short_tx_code = "JUDE-D-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
     await state.update_data(
         photo_id=photo_id,
@@ -2022,7 +2022,7 @@ async def confirm_withdraw_callback(callback: CallbackQuery, state: FSMContext):
         await safe_answer_callback(callback, "⚠️ بيانات الطلب غير مكتملة.", show_alert=True)
         return
 
-    short_tx_code = "CAESAR-W-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    short_tx_code = "JUDE-W-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
     # خصم الرصيد وإنشاء طلب السحب داخل عملية ذرية واحدة في قاعدة البيانات.
     # هذا يمنع الضغط المزدوج ويضمن عدم خصم الرصيد بدون إنشاء طلب.
@@ -3298,7 +3298,7 @@ async def process_gift_amount(message: Message, state: FSMContext):
         await message.answer("❌ الحد الأدنى لكود الهدية هو 1,000 SYP:")
         return
 
-    code = "CAESAR-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    code = "JUDE-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
     success, msg = await asyncio.to_thread(repo.create_gift, str(message.from_user.id), amount, code)
     if not success:
         await message.answer(f"❌ {msg}", reply_markup=get_user_menu_keyboard(message.from_user.id))
@@ -3347,7 +3347,7 @@ async def process_gift_redeem(message: Message, state: FSMContext):
             gift_data = await asyncio.to_thread(repo.get_gift_by_code, code) or await asyncio.to_thread(repo.get_campaign_code_info, code) or {}
             sender_id = gift_data.get('sender_telegram_id', 'Unknown')
             amount = gift_data.get('amount', 0)
-            is_bonus = str(code).upper().startswith('CAESAR-BONUS-')
+            is_bonus = (str(code).upper().startswith('JUDE-BONUS-') or str(code).upper().startswith('CAESAR-BONUS-'))
             type_label = "🎁 بونص لعب" if is_bonus else "💵 كاش قابل للسحب"
             await send_log_message(
                 message.bot,
