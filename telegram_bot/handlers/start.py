@@ -2,9 +2,9 @@ from telegram_bot.keyboards.premium import premium_button, PREMIUM_EMOJI
 import asyncio
 import html
 import logging
-from pathlib import Path
+import re
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandObject
 from config import settings
@@ -19,7 +19,6 @@ from telegram_bot.miniapp_shortcuts import resolve_miniapp_shortcut
 
 router = Router()
 logger = logging.getLogger(__name__)
-BANNER_PATH = Path(__file__).resolve().parents[2] / "webapp" / "welcome_banner.png"
 
 # 🛠️ إصلاح: قائمة الأدمن مع التسامح مع عدم وجود ADMIN_IDS في الإعدادات
 ADMIN_IDS = [item.strip() for item in str(getattr(settings, "ADMIN_IDS", settings.ADMIN_ID)).split(",") if item.strip()]
@@ -117,13 +116,23 @@ async def show_main_menu(message: Message, user_id, edit: bool = False):
             await message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
             return
         except Exception:
-            pass
-    if BANNER_PATH.exists():
+            # Keep the account card visible if Telegram rejects a custom entity.
+            plain_text = re.sub(r'<tg-emoji[^>]*>.*?</tg-emoji>', '', text)
+            try:
+                await message.edit_text(plain_text, reply_markup=keyboard, parse_mode="HTML")
+                return
+            except Exception:
+                pass
+    try:
+        await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
+    except Exception as exc:
+        logger.warning("Premium welcome-card entities were rejected: %s", exc)
+        # No ordinary-emoji fallback: preserve the text card without an orphaned banner.
+        plain_text = re.sub(r'<tg-emoji[^>]*>.*?</tg-emoji>', '', text)
         try:
-            await message.answer_photo(photo=FSInputFile(str(BANNER_PATH)))
-        except Exception as exc:
-            logger.warning("Could not send welcome banner: %s", exc)
-    await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
+            await message.answer(plain_text, reply_markup=keyboard, parse_mode="HTML")
+        except Exception as fallback_exc:
+            logger.error("Welcome-card fallback failed: %s", fallback_exc)
 
 
 async def open_miniapp_shortcut_flow(message: Message, user_id, state: FSMContext, action: str):
