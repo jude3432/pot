@@ -4,6 +4,7 @@ import asyncio
 import time
 import random
 import string
+import html
 from datetime import datetime
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -172,6 +173,8 @@ class AdminStates(StatesGroup):
     # 🌟 إدارة المستخدمين
     searching_user = State()
     setting_balance = State()
+    user_amount = State()
+    user_message = State()
     # 🌟 (Update 18) لوحة المتصدرين الأسبوعية
     entering_lb_prize_1 = State()
     entering_lb_prize_2 = State()
@@ -1952,7 +1955,7 @@ async def process_user_search(message: Message, state: FSMContext):
     users = await asyncio.to_thread(repo.search_user, query)
     if not users:
         await message.answer(
-            f"⛔ لم يتم العثور على مستخدم بـ: <code>{query}</code>\n\nحاول مرة أخرى أو اضغط /admin للعودة.",
+            f"⛔ لم يتم العثور على مستخدم بـ: <code>{html.escape(query)}</code>\n\nحاول مرة أخرى أو اضغط /admin للعودة.",
             parse_mode="HTML"
         )
         return
@@ -1960,21 +1963,175 @@ async def process_user_search(message: Message, state: FSMContext):
     text = f"🔍 <b>نتائج البحث ({len(users)}):</b>\n\n"
     keyboard_rows = []
     for u in users:
-        tid = u['telegram_id']
-        uname = u.get('telegram_username') or 'بدون معرف'
-        bal = int(u.get('bot_balance', 0))
+        tid = str(u['telegram_id'])
+        uname = str(u.get('telegram_username') or 'بدون معرف')
+        bal = int(u.get('bot_balance') or 0)
+        status = '⛔ محظور' if u.get('is_banned') else '✔️ نشط'
         text += (
-            f"🧑‍💼 <code>{tid}</code> | {uname}\n"
-            f"   🔷 <code>{bal:,} SYP</code>"
-            f" | 🕹️ <code>{u.get('ichancy_username') or '—'}</code>\n\n"
+            f"🧑‍💼 <code>{html.escape(tid)}</code> | {html.escape(uname)}\n"
+            f"   🔷 <code>{bal:,} SYP</code> | 🕹️ <code>{html.escape(str(u.get('ichancy_username') or '—'))}</code> | {status}\n\n"
         )
         keyboard_rows.append([premium_button(
-            text=f"🖋️ تعديل {uname[:15]} ({bal:,})",
-            callback_data=f"setbal_{tid}"
+            text=f"👤 فتح ملف {uname[:18]}",
+            callback_data=f"admuser_view_{tid}"
         )])
 
     keyboard_rows.append([premium_button(text="↩️ رجوع", callback_data="adm_users_menu")])
     await message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard_rows), parse_mode="HTML")
+
+
+def _admin_user_keyboard(user):
+    tid = str(user.get('telegram_id'))
+    banned = bool(user.get('is_banned'))
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [premium_button(text="➕ إضافة رصيد", callback_data=f"admuser_add_{tid}"), premium_button(text="➖ حذف رصيد", callback_data=f"admuser_remove_{tid}")],
+        [premium_button(text="📨 إرسال رسالة", callback_data=f"admuser_msg_{tid}"), premium_button(text="🧾 سجل العمليات", callback_data=f"admuser_history_{tid}")],
+        [premium_button(text="⛔ حظر المستخدم" if not banned else "✅ فك الحظر", callback_data=f"admuser_{'ban' if not banned else 'unban'}_{tid}"), premium_button(text="🔄 تحديث الملف", callback_data=f"admuser_view_{tid}")],
+        [premium_button(text="🔍 بحث عن مستخدم آخر", callback_data="adm_users_menu"), premium_button(text="🏡 لوحة التحكم", callback_data="caesar_control_panel")],
+    ])
+
+
+def _admin_user_profile_text(user):
+    status = '⛔ محظور' if user.get('is_banned') else '✔️ نشط'
+    return (
+        f"🧑‍💼 <b>ملف المستخدم</b> — {status}\n\n"
+        f"🔖 <b>Telegram ID:</b> <code>{html.escape(str(user.get('telegram_id')))}</code>\n"
+        f"🏷️ <b>Username:</b> <code>{html.escape(str(user.get('telegram_username') or 'بدون معرف'))}</code>\n"
+        f"🕹️ <b>حساب iChancy:</b> <code>{html.escape(str(user.get('ichancy_username') or 'غير مرتبط'))}</code>\n"
+        f"🗝️ <b>Player ID:</b> <code>{html.escape(str(user.get('player_id') or 'غير متوفر'))}</code>\n"
+        f"🔷 <b>رصيد البوت:</b> <code>{int(user.get('bot_balance') or 0):,} SYP</code>\n"
+        f"🕹️ <b>رصيد اللعبة:</b> <code>{int(user.get('game_balance') or 0):,} NSP</code>\n"
+        f"📃 <b>الشروط:</b> {'نعم ✔️' if user.get('terms_accepted') else 'لا ⛔'}\n"
+        f"📅 <b>تاريخ التسجيل:</b> <code>{html.escape(str(user.get('created_at') or '—'))}</code>"
+    )
+
+
+@router.callback_query(F.data.startswith("admuser_view_"))
+async def admin_user_view_callback(callback: CallbackQuery, state: FSMContext):
+    if not await ensure_admin_callback(callback):
+        return
+    tid = callback.data.replace("admuser_view_", "", 1)
+    user = await asyncio.to_thread(repo.get_user, tid)
+    if not user:
+        await safe_answer_callback(callback, "🚧 المستخدم غير موجود.", show_alert=True)
+        return
+    await state.clear()
+    await safe_edit_text(callback.message, _admin_user_profile_text(user), reply_markup=_admin_user_keyboard(user))
+    await safe_answer_callback(callback)
+
+
+@router.callback_query(F.data.startswith("admuser_history_"))
+async def admin_user_history_callback(callback: CallbackQuery):
+    if not await ensure_admin_callback(callback):
+        return
+    tid = callback.data.replace("admuser_history_", "", 1)
+    user = await asyncio.to_thread(repo.get_user, tid)
+    if not user:
+        await safe_answer_callback(callback, "🚧 المستخدم غير موجود.", show_alert=True)
+        return
+    history = await asyncio.to_thread(repo.get_user_transactions_history, tid, 50)
+    lines = [f"🧾 <b>سجل عمليات المستخدم</b>\n👤 <code>{html.escape(str(user.get('telegram_username') or tid))}</code>\n"]
+    for tx in history:
+        lines.append(f"• <b>#{tx.get('id')}</b> {html.escape(str(tx.get('type') or 'عملية'))} | {html.escape(str(tx.get('status') or '—'))} | <code>{float(tx.get('amount') or 0):g}</code> | {html.escape(str(tx.get('created_at') or '—'))}")
+    if not history:
+        lines.append("لا يوجد سجل عمليات.")
+    await safe_edit_text(callback.message, '\n'.join(lines), reply_markup=_admin_user_keyboard(user))
+    await safe_answer_callback(callback)
+
+
+@router.callback_query(F.data.startswith("admuser_ban_") | F.data.startswith("admuser_unban_"))
+async def admin_user_ban_callback(callback: CallbackQuery):
+    if not await ensure_admin_callback(callback):
+        return
+    parts = callback.data.split('_', 2)
+    action, tid = parts[1], parts[2]
+    banned = action == 'ban'
+    if not await asyncio.to_thread(repo.set_user_banned, tid, banned):
+        await safe_answer_callback(callback, "المستخدم غير موجود.", show_alert=True)
+        return
+    try:
+        await callback.bot.send_message(chat_id=tid, text=('⛔ تم حظر حسابك من استخدام البوت.' if banned else '✅ تم فك الحظر عن حسابك ويمكنك استخدام البوت مجدداً.'))
+    except Exception:
+        pass
+    user = await asyncio.to_thread(repo.get_user, tid)
+    await safe_edit_text(callback.message, _admin_user_profile_text(user), reply_markup=_admin_user_keyboard(user))
+    await safe_answer_callback(callback, 'تم الحظر' if banned else 'تم فك الحظر')
+
+
+@router.callback_query(F.data.startswith("admuser_add_") | F.data.startswith("admuser_remove_"))
+async def admin_user_amount_callback(callback: CallbackQuery, state: FSMContext):
+    if not await ensure_admin_callback(callback):
+        return
+    action, tid = callback.data.split('_', 2)[1:]
+    user = await asyncio.to_thread(repo.get_user, tid)
+    if not user:
+        await safe_answer_callback(callback, "المستخدم غير موجود.", show_alert=True)
+        return
+    await state.update_data(target_user_id=tid, user_balance_action=action)
+    await safe_edit_text(callback.message, f"{'➕ إضافة' if action == 'add' else '➖ حذف'} رصيد\n\nالمستخدم: <code>{html.escape(tid)}</code>\nالرصيد الحالي: <code>{int(user.get('bot_balance') or 0):,} SYP</code>\n\nأرسل المبلغ رقمياً بالليرة السورية:", parse_mode='HTML')
+    await state.set_state(AdminStates.user_amount)
+    await safe_answer_callback(callback)
+
+
+@router.message(AdminStates.user_amount)
+async def admin_user_amount_message(message: Message, state: FSMContext):
+    if not await ensure_admin_message(message, state):
+        return
+    data = await state.get_data()
+    tid, action = data.get('target_user_id'), data.get('user_balance_action')
+    try:
+        amount = int((message.text or '').strip().replace(',', '').replace('+', ''))
+        if amount <= 0:
+            raise ValueError
+    except ValueError:
+        await message.answer('⛔ أرسل مبلغاً صحيحاً موجباً.')
+        return
+    delta = amount if action == 'add' else -amount
+    result = await asyncio.to_thread(repo.admin_adjust_user_balance, tid, delta, message.from_user.id)
+    if not result:
+        await message.answer('⛔ تعذر تعديل الرصيد. تحقق من وجود المستخدم أو أن الخصم لا يتجاوز رصيده.')
+        return
+    user = await asyncio.to_thread(repo.get_user, tid)
+    try:
+        await message.bot.send_message(chat_id=tid, text=f"🔷 تم {'إضافة' if delta > 0 else 'خصم'} {amount:,} SYP من رصيدك.\nرصيدك الحالي: {int(user.get('bot_balance') or 0):,} ل.س")
+    except Exception:
+        pass
+    await message.answer(f"✔️ تم {'إضافة' if delta > 0 else 'حذف'} <code>{amount:,} SYP</code> وتسجيل العملية.\nالرصيد الجديد: <code>{int(user.get('bot_balance') or 0):,} SYP</code>", reply_markup=_admin_user_keyboard(user), parse_mode='HTML')
+    await state.clear()
+
+
+@router.callback_query(F.data.startswith("admuser_msg_"))
+async def admin_user_message_callback(callback: CallbackQuery, state: FSMContext):
+    if not await ensure_admin_callback(callback):
+        return
+    tid = callback.data.replace('admuser_msg_', '', 1)
+    if not await asyncio.to_thread(repo.get_user, tid):
+        await safe_answer_callback(callback, 'المستخدم غير موجود.', show_alert=True)
+        return
+    await state.update_data(target_user_id=tid)
+    await safe_edit_text(callback.message, f"📨 أرسل الرسالة التي تريد توجيهها إلى المستخدم <code>{html.escape(tid)}</code>:", parse_mode='HTML')
+    await state.set_state(AdminStates.user_message)
+    await safe_answer_callback(callback)
+
+
+@router.message(AdminStates.user_message)
+async def admin_user_message_message(message: Message, state: FSMContext):
+    if not await ensure_admin_message(message, state):
+        return
+    data = await state.get_data()
+    tid, text = data.get('target_user_id'), (message.text or '').strip()
+    if not text or len(text) > 3500:
+        await message.answer('⛔ الرسالة فارغة أو أطول من الحد المسموح.')
+        return
+    try:
+        await message.bot.send_message(chat_id=tid, text=f'📨 رسالة من الإدارة\n\n{text}')
+    except Exception:
+        await message.answer('⛔ تعذر إرسال الرسالة. ربما قام المستخدم بحظر البوت.')
+        await state.clear()
+        return
+    user = await asyncio.to_thread(repo.get_user, tid)
+    await message.answer('✔️ تم إرسال الرسالة بنجاح.', reply_markup=_admin_user_keyboard(user))
+    await state.clear()
 
 
 @router.callback_query(F.data.startswith("setbal_"))
