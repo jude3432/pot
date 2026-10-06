@@ -98,30 +98,23 @@ async def show_main_menu(message: Message, user_id, edit: bool = False, user_rec
     else:
         last_operation = "لا توجد عمليات مسجلة حتى الآن"
 
-    def ce(name: str, fallback: str) -> str:
-        return f'<tg-emoji emoji-id="{PREMIUM_EMOJI[name]}">{fallback}</tg-emoji>'
-
-    account_line = html.escape(f"@{telegram_username}" if telegram_username else "بدون اسم مستخدم")
-    ichancy_line = html.escape(ichancy_username if ichancy_username else "غير مربوط")
-    player_line = html.escape(player_id if player_id else "غير متوفر")
-    card_rule = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    # نستخدم إيموجيات Unicode واضحة دائماً كي لا تختفي البطاقة عند رفض Telegram
+    # لوسوم الإيموجيات المخصصة.
     text = (
-        f"{card_rule}\n"
-        f"{ce('ichancy', '⚡')} <b>أهلاً بك في Jude Robert</b>\n"
-        f"<i>بطاقة حسابك الرقمية — كل معلوماتك في مكان واحد</i>\n"
-        f"{card_rule}\n\n"
-        f"{ce('balance', '🔷')} <b>رصيد البوت</b>\n"
+        f"⚡️ <b>أهلاً بك في Jude Robert</b> ⚡️\n"
+        f"<code>━━━━━━━━━━━━━━━━━━━━</code>\n\n"
+        f"💎 <b>رصيد البوت</b>\n"
         f"<code>{bot_balance:,} ل.س</code>  <i>({bot_balance_new_str} ل.س جديدة)</i>\n\n"
-        f"{ce('game', '🕹️')} <b>رصيد اللعبة — iChancy</b>\n"
+        f"🎮 <b>رصيد اللعبة — iChancy</b>\n"
         f"<code>{game_balance:,} NSP</code>\n\n"
-        f"{ce('account', '🆔')} <b>Telegram ID:</b> <code>{user_id}</code>\n"
-        f"{ce('account', '👤')} <b>الحساب:</b> {account_line}\n"
-        f"{ce('game', '🎮')} <b>iChancy ID:</b> <code>{player_line}</code>\n"
-        f"{ce('account', '🔗')} <b>اسم حساب iChancy:</b> <code>{ichancy_line}</code>\n\n"
-        f"{ce('history', '🕘')} <b>آخر عملية</b>\n"
-        f"<i>{html.escape(last_operation)}</i>\n\n"
-        f"{ce('website', '🌐')} <b>اختر الخدمة المطلوبة من الأزرار بالأسفل</b>\n"
-        f"{card_rule}"
+        f"🆔 <b>Telegram ID:</b> <code>{user_id}</code>\n"
+        f"👤 <b>الحساب:</b> {account_line}\n"
+        f"🎮 <b>iChancy ID:</b> <code>{player_line}</code>\n"
+        f"🔗 <b>اسم حساب iChancy:</b> <code>{ichancy_line}</code>\n\n"
+        f"🕘 <b>آخر عملية</b>\n"
+        f"└─ <i>{html.escape(last_operation)}</i>\n\n"
+        f"✨ <i>اختر الخدمة المطلوبة من الأزرار بالأسفل</i>\n"
+        f"<code>━━━━━━━━━━━━━━━━━━━━</code>"
     )
 
     keyboard = get_user_menu_keyboard(user_id)
