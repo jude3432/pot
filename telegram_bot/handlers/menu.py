@@ -2367,7 +2367,7 @@ async def process_admin_reply_to_user(message: Message, state: FSMContext):
 async def contact_us_callback(callback: CallbackQuery):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [premium_button(text="🗂️ رسالة للإدارة", callback_data="message_admin")],
-        [premium_button(text="☎️ فتح الدعم", url="https://t.me/Mega77_Support")],
+        [premium_button(text="☎️ فتح الدعم", url="https://t.me/JudeRobert")],
         [premium_button(text="↩️ رجوع", callback_data="back_to_main_menu")]
     ])
     await safe_edit_text(
