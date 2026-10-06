@@ -125,6 +125,23 @@ class TermsCheckMiddleware(BaseMiddleware):
         if _is_admin(user.id):
             return await handler(event, data)
 
+        telegram_id = str(user.id)
+        username = user.username
+
+        # الحظر أولوية مطلقة: يجب ألا يرى المحظور أي أزرار، حتى أزرار الاشتراك أو القائمة.
+        db_user = await asyncio.to_thread(repo.get_user, telegram_id)
+        if db_user and db_user.get('is_banned'):
+            blocked_text = '⛔ حسابك محظور حالياً. إذا كنت تظن أن هناك خطأ، تواصل مع الدعم.'
+            if isinstance(event, Message):
+                await event.answer(blocked_text)
+            elif isinstance(event, CallbackQuery):
+                try:
+                    await event.message.edit_text(blocked_text, reply_markup=None)
+                except Exception:
+                    pass
+                await event.answer('⛔ حسابك محظور حالياً.', show_alert=True)
+            return
+
         # Force subscription is checked before terms and database work.
         # The verification callback itself must reach its handler.
         if getattr(settings, 'FORCE_SUBSCRIPTION_CHAT_ID', '').strip():
@@ -140,21 +157,10 @@ class TermsCheckMiddleware(BaseMiddleware):
                         await event.answer('اشترك بالقناة أولاً ثم اضغط تحقق.', show_alert=True)
                     return
 
-        telegram_id = str(user.id)
-        username = user.username
-
-        # نجلب السجل قبل الكاش حتى يبقى الحظر فعالاً فوراً ولا يتجاوزه كاش قبول الشروط.
-        db_user = await asyncio.to_thread(repo.get_user, telegram_id)
+        # إنشاء سجل المستخدم بعد اجتياز فحص الحظر والاشتراك.
         if not db_user:
             await asyncio.to_thread(repo.create_user, telegram_id, username)
             db_user = await asyncio.to_thread(repo.get_user, telegram_id)
-
-        if db_user and db_user.get('is_banned'):
-            if isinstance(event, Message):
-                await event.answer('⛔ حسابك محظور حالياً. تواصل مع الإدارة إذا كنت تعتقد أن هذا خطأ.')
-            elif isinstance(event, CallbackQuery):
-                await event.answer('⛔ حسابك محظور حالياً.', show_alert=True)
-            return
 
         # 🌟 مسار الكاش السريع: مقبول مسبقاً خلال 60 ثانية.
         if _terms_accepted_cache.get(telegram_id, 0) > time.time():
