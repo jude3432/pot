@@ -35,12 +35,12 @@ def get_main_menu_keyboard(is_admin=False):
 
     keyboard.extend([
         [
-            premium_button(text="سحب من اللعبة", callback_data="withdraw_game_acc"),
-            premium_button(text="شحن اللعبة", callback_data="deposit_game_acc")
+            premium_button(text="سحب من iChancy", callback_data="withdraw_game_acc", icon_custom_emoji_id="5949437596621872513"),
+            premium_button(text="شحن iChancy", callback_data="deposit_game_acc", icon_custom_emoji_id="5949437596621872513")
         ],
         [
-            premium_button(text="سحب من البوت", callback_data="withdraw_bot"),
-            premium_button(text="شحن البوت", callback_data="deposit_bot")
+            premium_button(text="سحب من البوت", callback_data="withdraw_bot", icon_custom_emoji_id="5949580468708973688"),
+            premium_button(text="شحن البوت", callback_data="deposit_bot", icon_custom_emoji_id="5949676517062613621")
         ],
         [premium_button(text="🧭 حساب iChancy", callback_data="ichancy_menu")],
         [
