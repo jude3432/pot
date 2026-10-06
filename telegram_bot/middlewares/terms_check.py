@@ -143,14 +143,23 @@ class TermsCheckMiddleware(BaseMiddleware):
         telegram_id = str(user.id)
         username = user.username
 
-        # 🌟 مسار الكاش السريع: مقبول مسبقاً خلال 60 ثانية → صفر استعلام
-        if _terms_accepted_cache.get(telegram_id, 0) > time.time():
-            return await handler(event, data)
-
+        # نجلب السجل قبل الكاش حتى يبقى الحظر فعالاً فوراً ولا يتجاوزه كاش قبول الشروط.
         db_user = await asyncio.to_thread(repo.get_user, telegram_id)
         if not db_user:
             await asyncio.to_thread(repo.create_user, telegram_id, username)
             db_user = await asyncio.to_thread(repo.get_user, telegram_id)
+
+        if db_user and db_user.get('is_banned'):
+            if isinstance(event, Message):
+                await event.answer('⛔ حسابك محظور حالياً. تواصل مع الإدارة إذا كنت تعتقد أن هذا خطأ.')
+            elif isinstance(event, CallbackQuery):
+                await event.answer('⛔ حسابك محظور حالياً.', show_alert=True)
+            return
+
+        # 🌟 مسار الكاش السريع: مقبول مسبقاً خلال 60 ثانية.
+        if _terms_accepted_cache.get(telegram_id, 0) > time.time():
+            data['terms_user'] = db_user
+            return await handler(event, data)
 
         is_bypass = False
 

@@ -2541,7 +2541,7 @@ def search_user(query):
         int(q)
         sql = """
         SELECT telegram_id, telegram_username, ichancy_username, player_id,
-               bot_balance, game_balance, terms_accepted, created_at
+               bot_balance, game_balance, terms_accepted, is_banned, created_at
         FROM users
         WHERE telegram_id = %s
            OR player_id = %s
@@ -2554,7 +2554,7 @@ def search_user(query):
     except ValueError:
         sql = """
         SELECT telegram_id, telegram_username, ichancy_username, player_id,
-               bot_balance, game_balance, terms_accepted, created_at
+               bot_balance, game_balance, terms_accepted, is_banned, created_at
         FROM users
         WHERE telegram_username ILIKE %s
            OR ichancy_username ILIKE %s
@@ -2564,6 +2564,56 @@ def search_user(query):
         like = f"%{q}%"
         return DatabaseManager.execute_query_dict(sql, (like, like, like), fetch='all')
 
+
+
+def set_user_banned(telegram_id, banned=True):
+    """تفعيل/إلغاء حظر مستخدم بشكل ذري وإرجاع السجل المحدّث."""
+    tid = str(telegram_id).strip()
+    result = DatabaseManager.execute_query(
+        "UPDATE users SET is_banned = %s WHERE telegram_id = %s RETURNING telegram_id",
+        (bool(banned), tid), fetch='one'
+    )
+    return bool(result)
+
+
+def admin_adjust_user_balance(telegram_id, delta, admin_id):
+    """تعديل رصيد المستخدم وتسجيله كسجل تدقيق إداري ضمن نفس المعاملة."""
+    conn = cursor = None
+    tid = str(telegram_id).strip()
+    amount = int(delta)
+    if not tid or amount == 0:
+        return None
+    try:
+        conn = DatabaseManager.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT bot_balance FROM users WHERE telegram_id = %s FOR UPDATE", (tid,))
+        row = cursor.fetchone()
+        if not row or int(row[0] or 0) + amount < 0:
+            conn.rollback()
+            return None
+        cursor.execute(
+            "UPDATE users SET bot_balance = bot_balance + %s WHERE telegram_id = %s RETURNING bot_balance",
+            (amount, tid)
+        )
+        new_balance = int(cursor.fetchone()[0] or 0)
+        cursor.execute(
+            """INSERT INTO transactions
+               (user_telegram_id, type, payment_method, amount, transfer_number, status, reviewed_by, reviewed_at)
+               VALUES (%s, 'admin_balance_adjustment', 'admin', %s, %s, 'approved', %s, CURRENT_TIMESTAMP)""",
+            (tid, abs(amount), f"Admin balance adjustment: {'+' if amount > 0 else ''}{amount}", str(admin_id or 'admin'))
+        )
+        conn.commit()
+        return {'telegram_id': tid, 'delta': amount, 'new_balance': new_balance}
+    except Exception as exc:
+        if conn:
+            conn.rollback()
+        logger.error("admin_adjust_user_balance error: %s", exc)
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            DatabaseManager.put_connection(conn)
 
 def set_user_balance(telegram_id, new_balance):
     """تعيين رصيد مستخدم محدّد (للأدمن)."""

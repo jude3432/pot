@@ -1913,6 +1913,7 @@ def _user_to_json(user):
         'bot_balance': int(user.get('bot_balance') or 0),
         'game_balance': int(user.get('game_balance') or 0),
         'terms_accepted': bool(user.get('terms_accepted')),
+        'is_banned': bool(user.get('is_banned')),
         'created_at': user.get('created_at').strftime('%Y-%m-%d %H:%M') if user.get('created_at') else '',
     }
 
@@ -1960,13 +1961,15 @@ async def admin_users_handler(request):
             await bot.send_message(chat_id=telegram_id, text=f"📨 رسالة من الإدارة\n\n{text}")
             return web.json_response({'ok': True})
 
-        if action == 'adjust_balance':
+        if action in ('adjust_balance', 'add_balance', 'remove_balance'):
             telegram_id = str(payload.get('telegram_id') or '').strip()
-            delta = int(str(payload.get('delta') or '0').replace(',', ''))
+            raw_delta = int(str(payload.get('amount') if action != 'adjust_balance' else payload.get('delta') or '0').replace(',', ''))
+            delta = abs(raw_delta) if action == 'add_balance' else (-abs(raw_delta) if action == 'remove_balance' else raw_delta)
             if not telegram_id or delta == 0:
-                return web.json_response({'error': 'أدخل قيمة موجبة أو سالبة'}, status=400)
-            ok = await asyncio.to_thread(repo.adjust_user_bot_balance, telegram_id, delta)
-            if not ok:
+                return web.json_response({'error': 'أدخل قيمة موجبة'} if action != 'adjust_balance' else {'error': 'أدخل قيمة موجبة أو سالبة'}, status=400)
+            admin_obj = _verify_telegram_init_data(init_data_raw) or {}
+            result = await asyncio.to_thread(repo.admin_adjust_user_balance, telegram_id, delta, admin_obj.get('id'))
+            if not result:
                 return web.json_response({'error': 'فشل تعديل الرصيد. قد يصبح الرصيد سالباً أو المستخدم غير موجود.'}, status=400)
             user = await asyncio.to_thread(repo.get_user, telegram_id)
             try:
@@ -1974,7 +1977,29 @@ async def admin_users_handler(request):
                 await bot.send_message(chat_id=telegram_id, text=f"🔷 تم تحديث رصيدك في البوت: {sign}{delta:,} SYP\nرصيدك الحالي: {int(user.get('bot_balance') or 0):,} ل.س جديدة")
             except Exception:
                 pass
-            return web.json_response({'ok': True, 'user': _user_to_json(user)})
+            return web.json_response({'ok': True, 'user': _user_to_json(user), 'delta': delta})
+
+        if action in ('ban', 'unban'):
+            telegram_id = str(payload.get('telegram_id') or '').strip()
+            if not telegram_id:
+                return web.json_response({'error': 'معرف المستخدم ناقص'}, status=400)
+            banned = action == 'ban'
+            if not await asyncio.to_thread(repo.set_user_banned, telegram_id, banned):
+                return web.json_response({'error': 'المستخدم غير موجود'}, status=404)
+            try:
+                await bot.send_message(chat_id=telegram_id, text=('⛔ تم حظر حسابك من استخدام البوت.' if banned else '✅ تم فك الحظر عن حسابك ويمكنك استخدام البوت مجدداً.'))
+            except Exception:
+                pass
+            return web.json_response({'ok': True, 'is_banned': banned, 'user': _user_to_json(await asyncio.to_thread(repo.get_user, telegram_id))})
+
+        if action == 'history':
+            telegram_id = str(payload.get('telegram_id') or '').strip()
+            user = await asyncio.to_thread(repo.get_user, telegram_id)
+            if not user:
+                return web.json_response({'error': 'المستخدم غير موجود'}, status=404)
+            limit = min(max(int(payload.get('limit') or 100), 1), 200)
+            history = await asyncio.to_thread(repo.get_user_transactions_history, telegram_id, limit=limit)
+            return web.json_response({'user': _user_to_json(user), 'history': [_tx_to_json(tx) for tx in history]})
 
         if action == 'set_balance':
             telegram_id = str(payload.get('telegram_id') or '').strip()

@@ -252,6 +252,7 @@ class DatabaseManager:
             game_balance BIGINT DEFAULT 0,
             referred_by VARCHAR(50),
             terms_accepted BOOLEAN DEFAULT FALSE,
+            is_banned BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         """
@@ -653,6 +654,7 @@ class DatabaseManager:
         alter_settings_game_transfers_enabled = "ALTER TABLE bot_settings ADD COLUMN IF NOT EXISTS game_transfers_enabled BOOLEAN DEFAULT TRUE;"
 
         # 🆕 (Update 14) رصيد المكافآت للمستخدم (غير قابل للسحب)
+        alter_users_banned = "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT FALSE;"
         alter_users_bonus_balance = "ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_balance BIGINT DEFAULT 0;"
         # 🆕 مبلغ البونص المحوّل إلى اللعبة والذي يحتاج تدوير قبل السحب
         alter_users_game_bonus_amount = "ALTER TABLE users ADD COLUMN IF NOT EXISTS game_bonus_amount BIGINT DEFAULT 0;"
@@ -839,6 +841,7 @@ class DatabaseManager:
             alter_settings_deposits_enabled,
             alter_settings_withdrawals_enabled,
             alter_settings_game_transfers_enabled,
+            alter_users_banned,
             alter_users_bonus_balance,
             alter_users_game_bonus_amount,
             alter_users_bonus_base_balance,
