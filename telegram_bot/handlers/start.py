@@ -98,6 +98,10 @@ async def show_main_menu(message: Message, user_id, edit: bool = False, user_rec
     else:
         last_operation = "لا توجد عمليات مسجلة حتى الآن"
 
+    account_line = html.escape(f"@{telegram_username}" if telegram_username else "بدون اسم مستخدم")
+    ichancy_line = html.escape(ichancy_username if ichancy_username else "غير مربوط")
+    player_line = html.escape(player_id if player_id else "غير متوفر")
+
     # نستخدم إيموجيات Unicode واضحة دائماً كي لا تختفي البطاقة عند رفض Telegram
     # لوسوم الإيموجيات المخصصة.
     text = (
