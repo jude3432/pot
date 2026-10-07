@@ -20,11 +20,13 @@ LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
 # 🆕 قناة المسابقات والتوقعات
 CONTEST_CHANNEL_ID = os.getenv('CONTEST_CHANNEL_ID')
 
-# الاشتراك الإجباري بالقناة. القنوات الخاصة تحتاج Chat ID رقمي للفحص عبر Bot API.
-FORCE_SUBSCRIPTION_CHAT_ID = os.getenv('FORCE_SUBSCRIPTION_CHAT_ID', '').strip()
+# الاشتراك الإجباري بالقناة. القناة العامة يمكن فحصها عبر اسم المستخدم مباشرة.
+FORCE_SUBSCRIPTION_CHAT_ID = os.getenv(
+    'FORCE_SUBSCRIPTION_CHAT_ID', '@Jude_1Jude'
+).strip() or '@Jude_1Jude'
 FORCE_SUBSCRIPTION_INVITE_URL = os.getenv(
     'FORCE_SUBSCRIPTION_INVITE_URL',
-    'https://t.me/+0WYPXoqqbj1hNWI0'
+    'https://t.me/Jude_1Jude'
 ).strip()
 
 # 🆕 إعدادات التقرير المالي اليومي
