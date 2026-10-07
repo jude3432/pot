@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 # استيراد المكونات
 from config import settings
 from database.connection import DatabaseManager
-from telegram_bot.middlewares.terms_check import TermsCheckMiddleware
+from telegram_bot.middlewares.terms_check import TermsCheckMiddleware, invalidate_user_status_cache
 from telegram_bot.middlewares.performance import SlowUpdateMiddleware
 from telegram_bot.handlers import start, menu, admin
 from telegram_bot import leaderboard as lb_engine
@@ -211,9 +211,8 @@ async def official_api_watchdog_task(bot: Bot):
                         except Exception as e:
                             logger.warning(f"API auth failure notification failed for {admin_id}: {e}")
 
-            # ⏳ إغلاق الاتصالات الخاملة بـ Neon بعد 3 دقائق من الخمول للسماح للنظام بالسكون وتوفير الحساب المجاني
-            if hasattr(DatabaseManager, 'close_idle_pool_if_needed'):
-                await asyncio.to_thread(DatabaseManager.close_idle_pool_if_needed, idle_seconds=180)
+            # نُبقي Pool قاعدة البيانات دافئاً؛ إغلاقه بعد الخمول كان يجبر أول أمر
+            # لاحق على انتظار إيقاظ Neon وإنشاء اتصال جديد، ما يسبب تأخيراً محسوساً.
         except asyncio.CancelledError:
             logger.info("⛔ Watchdog task cancelled.")
             raise
@@ -1986,6 +1985,7 @@ async def admin_users_handler(request):
             banned = action == 'ban'
             if not await asyncio.to_thread(repo.set_user_banned, telegram_id, banned):
                 return web.json_response({'error': 'المستخدم غير موجود'}, status=404)
+            invalidate_user_status_cache(telegram_id)
             try:
                 await bot.send_message(chat_id=telegram_id, text=('⛔ تم حظر حسابك من استخدام البوت.' if banned else '✅ تم فك الحظر عن حسابك ويمكنك استخدام البوت مجدداً.'))
             except Exception:

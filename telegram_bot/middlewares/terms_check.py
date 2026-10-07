@@ -26,6 +26,8 @@ _SUBSCRIPTION_NEGATIVE_TTL = max(
     int(getattr(settings, 'FORCE_SUBSCRIPTION_NEGATIVE_CACHE_TTL_SECONDS', 8)),
 )
 _subscription_cache = {}  # telegram_id -> (subscribed, expires_at)
+_USER_STATUS_TTL = 30.0
+_user_status_cache = {}  # telegram_id -> (is_banned, terms_accepted, expires_at)
 
 
 def invalidate_terms_cache(telegram_id=None):
@@ -45,6 +47,14 @@ def invalidate_subscription_cache(telegram_id=None):
         _subscription_cache.clear()
     else:
         _subscription_cache.pop(str(telegram_id), None)
+
+
+def invalidate_user_status_cache(telegram_id=None):
+    """إبطال كاش حالة المستخدم فور تغييرات الإدارة."""
+    if telegram_id is None:
+        _user_status_cache.clear()
+    else:
+        _user_status_cache.pop(str(telegram_id), None)
 
 
 async def is_force_subscribed(bot, telegram_id) -> bool:
@@ -129,6 +139,23 @@ class TermsCheckMiddleware(BaseMiddleware):
         username = user.username
 
         # الحظر أولوية مطلقة: يجب ألا يرى المحظور أي أزرار، حتى أزرار الاشتراك أو القائمة.
+        cached_status = _user_status_cache.get(telegram_id)
+        if cached_status and cached_status[2] > time.time():
+            if cached_status[0]:
+                blocked_text = '⛔ حسابك محظور حالياً. إذا كنت تظن أن هناك خطأ، تواصل مع الدعم.'
+                if isinstance(event, Message):
+                    await event.answer(blocked_text)
+                elif isinstance(event, CallbackQuery):
+                    try:
+                        await event.message.edit_text(blocked_text, reply_markup=None)
+                    except Exception:
+                        pass
+                    await event.answer('⛔ حسابك محظور حالياً.', show_alert=True)
+                return
+            if cached_status[1] and _terms_accepted_cache.get(telegram_id, 0) > time.time():
+                data['terms_user'] = None
+                return await handler(event, data)
+
         db_user = await asyncio.to_thread(repo.get_user, telegram_id)
         if db_user and db_user.get('is_banned'):
             blocked_text = '⛔ حسابك محظور حالياً. إذا كنت تظن أن هناك خطأ، تواصل مع الدعم.'
@@ -141,6 +168,12 @@ class TermsCheckMiddleware(BaseMiddleware):
                     pass
                 await event.answer('⛔ حسابك محظور حالياً.', show_alert=True)
             return
+        if db_user:
+            _user_status_cache[telegram_id] = (
+                bool(db_user.get('is_banned')),
+                bool(db_user.get('terms_accepted')),
+                time.time() + _USER_STATUS_TTL,
+            )
 
         # Force subscription is checked before terms and database work.
         # The verification callback itself must reach its handler.

@@ -16,6 +16,7 @@ from config.currency import format_new
 import database.repository as repo
 from ichancy_api.client import ichancy_api_client
 from database.connection import DatabaseManager
+from telegram_bot.middlewares.terms_check import invalidate_user_status_cache
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -2049,6 +2050,7 @@ async def admin_user_ban_callback(callback: CallbackQuery):
     if not await asyncio.to_thread(repo.set_user_banned, tid, banned):
         await safe_answer_callback(callback, "المستخدم غير موجود.", show_alert=True)
         return
+    invalidate_user_status_cache(tid)
     try:
         await callback.bot.send_message(chat_id=tid, text=('⛔ تم حظر حسابك من استخدام البوت.' if banned else '✅ تم فك الحظر عن حسابك ويمكنك استخدام البوت مجدداً.'))
     except Exception:
