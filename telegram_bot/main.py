@@ -1366,11 +1366,22 @@ async def admin_settings_post_handler(request):
             referrals_enabled = str(referrals_enabled_raw).lower() in ('1', 'true', 'yes', 'on') if not isinstance(referrals_enabled_raw, bool) else referrals_enabled_raw
             if exchange_rate <= 0 or usd_buy_rate <= 0 or usd_sell_rate <= 0 or withdraw_commission < 0 or game_min_deposit_syp < 1 or agent_revenue_percent < 0 or game_bonus_apply_percent < 0 or min_deposit_syp < 1 or min_deposit_usd < 1 or min_withdraw_syp < 1 or min_withdraw_usd < 1:
                 return web.json_response({'error': 'قيم غير صالحة'}, status=400)
-            if game_bonus_apply_percent > withdraw_commission:
+            current_settings = await asyncio.to_thread(repo.get_bot_settings) or {}
+            current_buy_rate = float(current_settings.get('usd_buy_rate') or usd_buy_rate)
+            current_sell_rate = float(current_settings.get('usd_sell_rate') or usd_sell_rate)
+            current_bonus_percent = float(current_settings.get('game_bonus_apply_percent') or game_bonus_apply_percent)
+            current_commission = float(current_settings.get('withdraw_commission') or withdraw_commission)
+            rates_changed = (
+                usd_buy_rate != current_buy_rate or usd_sell_rate != current_sell_rate
+            )
+            bonus_rules_changed = (
+                game_bonus_apply_percent != current_bonus_percent or withdraw_commission != current_commission
+            )
+            if bonus_rules_changed and game_bonus_apply_percent > withdraw_commission:
                 return web.json_response({'error': f'🚧 نسبة إرفاق بونص اللعبة ({game_bonus_apply_percent}%) يجب ألا تتجاوز عمولة السحب ({withdraw_commission}%).'}, status=400)
             # 🔐 حماية السبريد (Update 9): سعر الإيداع يجب أن يكون أقل من سعر السحب
             # لمنع المراجحة المالية (المستخدم يودع دولار ثم يسحبه بربح).
-            if usd_buy_rate >= usd_sell_rate:
+            if rates_changed and usd_buy_rate >= usd_sell_rate:
                 return web.json_response({'error': '🚧 سعر الإيداع يجب أن يكون أقل من سعر السحب لتجنب المراجحة المالية. راجع الأسعار.'}, status=400)
             await asyncio.to_thread(repo.update_bot_settings, exchange_rate=exchange_rate,
                 usd_buy_rate=usd_buy_rate,
