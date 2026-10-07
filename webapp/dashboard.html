@@ -808,7 +808,7 @@ function renderSettings(d){
         <div class="field"><label>📬 أدنى سحب بالليرة السورية</label><input id="min_withdraw_syp" inputmode="numeric" value="${d.min_withdraw_syp||25000}"><div class="hint">المستخدم لا يستطيع سحب أقل من هذا المبلغ</div></div>
         <div class="field"><label>🪙 أدنى سحب بالدولار</label><input id="min_withdraw_usd" inputmode="numeric" value="${d.min_withdraw_usd||10}"><div class="hint">حد احتياطي (السحب بالدولار يُحسب من الليرة)</div></div>
         <div class="field"><label>🔁 نسخة الليرة ببوابات الدفع</label><select id="syp_version"><option value="old" ${d.syp_version==='old'?'selected':''}>🏛️ قديمة (25,000)</option><option value="new" ${d.syp_version==='new'?'selected':''}>🌟 جديدة (250)</option></select><div class="hint">يحدد أي قيمة تظهر للمشرف في أزرار النسخ عند تأكيد التحويلات</div></div>
-        <button class="btn green" onclick="saveRates()">✔️ حفظ حدود وبوابات الدفع</button>
+        <button class="btn green" onclick="savePaymentLimits()">✔️ حفظ حدود وبوابات الدفع</button>
       </div>`;
   } else if(currentSettingsSubTab === 'syriatel') {
     subContent = `
@@ -876,6 +876,23 @@ async function saveRates(){
       syp_version: document.getElementById('syp_version') ? document.getElementById('syp_version').value : (d.syp_version||'old')
     });
     setNotice('✔️ تم حفظ الإعدادات بنجاح');
+    loadSettings('settings');
+  }catch(e){setNotice('⛔ '+e.message,'error')}
+}
+
+async function savePaymentLimits(){
+  const d = window.lastSettingsData || {};
+  try{
+    await apiPost(SETTINGS_API,{
+      action:'update_payment_limits',
+      game_min_deposit_syp: valSet('game_min_deposit_syp', d.game_min_deposit_syp||20000),
+      min_deposit_syp: valSet('min_deposit_syp', d.min_deposit_syp||20000),
+      min_deposit_usd: valSet('min_deposit_usd', d.min_deposit_usd||5),
+      min_withdraw_syp: valSet('min_withdraw_syp', d.min_withdraw_syp||25000),
+      min_withdraw_usd: valSet('min_withdraw_usd', d.min_withdraw_usd||10),
+      syp_version: document.getElementById('syp_version') ? document.getElementById('syp_version').value : (d.syp_version||'old')
+    });
+    setNotice('✔️ تم حفظ حدود وبوابات الدفع بنجاح');
     loadSettings('settings');
   }catch(e){setNotice('⛔ '+e.message,'error')}
 }

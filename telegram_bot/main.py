@@ -1312,6 +1312,30 @@ async def admin_settings_post_handler(request):
             await asyncio.to_thread(repo.update_bot_settings, agent_balance_alert_threshold=thresh)
             return web.json_response({'ok': True})
 
+        if action == 'update_payment_limits':
+            # حفظ حدود الدفع بشكل مستقل عن أسعار شراء/بيع الدولار؛
+            # تعديل الحدود لا يجب أن يفشل بسبب شرط الـ spread الخاص بالأسعار.
+            game_min_deposit_syp = int(str(payload.get('game_min_deposit_syp', '')).replace(',', ''))
+            min_deposit_syp = int(str(payload.get('min_deposit_syp', '')).replace(',', ''))
+            min_deposit_usd = int(str(payload.get('min_deposit_usd', '')).replace(',', ''))
+            min_withdraw_syp = int(str(payload.get('min_withdraw_syp', '')).replace(',', ''))
+            min_withdraw_usd = int(str(payload.get('min_withdraw_usd', '')).replace(',', ''))
+            syp_version = str(payload.get('syp_version', 'old')).strip()
+            if syp_version not in ('old', 'new'):
+                syp_version = 'old'
+            if min_deposit_syp < 1 or min_deposit_usd < 1 or min_withdraw_syp < 1 or min_withdraw_usd < 1 or game_min_deposit_syp < 1:
+                return web.json_response({'error': 'يجب أن تكون الحدود أرقاماً موجبة'}, status=400)
+            await asyncio.to_thread(
+                repo.update_bot_settings,
+                game_min_deposit_syp=game_min_deposit_syp,
+                min_deposit_syp=min_deposit_syp,
+                min_deposit_usd=min_deposit_usd,
+                min_withdraw_syp=min_withdraw_syp,
+                min_withdraw_usd=min_withdraw_usd,
+                syp_version=syp_version,
+            )
+            return web.json_response({'ok': True})
+
         if action == 'update_rates':
             exchange_rate = int(str(payload.get('exchange_rate', '')).replace(',', ''))
             usd_buy_rate = float(str(payload.get('usd_buy_rate', '')).replace(',', ''))
