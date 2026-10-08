@@ -44,7 +44,7 @@
 يدعم الإيداع والسحب عبر:
 
 - Syriatel Cash
-- MTN Cash
+-
 - Sham Cash SYP
 - Sham Cash USD
 - USDT TRC20

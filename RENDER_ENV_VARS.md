@@ -79,7 +79,6 @@
 | المتغير | الوصف |
 |---|---|
 | `SYRIATEL_CASH_NUMBERS` | أرقام سيريتل كاش |
-| `MTN_CASH_NUMBER` | رقم MTN كاش |
 | `SHAM_CASH_SYP_ADDRESS` | شام كاش ليرة |
 | `SHAM_CASH_USD_ADDRESS` | شام كاش دولار |
 | `USDT_TRC20_ADDRESS` | USDT TRC-20 |

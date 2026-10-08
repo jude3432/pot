@@ -201,7 +201,7 @@
         <text x="280" y="40">✅ Referral System (multi-level %)</text>
         <text x="0" y="60">✅ Flash Bonus (time-limited offers)</text>
         <text x="280" y="60">✅ Contests &amp; Leaderboards</text>
-        <text x="0" y="80">✅ Deposit/Withdraw (Syriatel, MTN, Sham, USDT)</text>
+        <text x="0" y="80">✅ Deposit/Withdraw (Syriatel, Sham, USDT)</text>
         <text x="280" y="80">✅ Auto Syriatel Cash Verification API</text>
         <text x="0" y="100">✅ Admin Panel (stats, users, offers, contests)</text>
         <text x="280" y="100">✅ Neon/Render Monitoring in Dashboard</text>

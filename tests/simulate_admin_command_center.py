@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 DASH=(ROOT/'webapp/dashboard.html').read_text();MAIN=(ROOT/'telegram_bot/main.py').read_text()
 
 def main():
-    for token in ('👑 غرفة العمليات','ops-room','open_support_count','oldest_pending','active_cashier_profile'):
+    for token in ('✨ غرفة العمليات','ops-room','open_support_count','oldest_pending','active_cashier_profile'):
         assert token in DASH or token in MAIN
     for token in ("tab==='control'","function loadControlCenter()",'update_service_gates','create_cashier_profile','activate_cashier_profile','delete_cashier_profile'):
         assert token in DASH

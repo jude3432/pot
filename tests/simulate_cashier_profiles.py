@@ -22,14 +22,13 @@ def extract(names):
 def test_pure_routing():
     ns={};exec(compile(extract({'CASHIER_METHOD_COLUMNS','resolve_cashier_payment_route'}),str(REPO),'exec'),ns)
     resolve=ns['resolve_cashier_payment_route']
-    profile={'id':4,'name':'رأفت','is_enabled':True,'sham_syp_address':'SYP-R','sham_usd_address':'USD-R','syriatel_address':'SYR-R','mtn_address':'MTN-R'}
-    expected={'sham_syp':'SYP-R','sham_usd':'USD-R','syriatel':'SYR-R','mtn':'MTN-R'}
+    profile={'id':4,'name':'رأفت','is_enabled':True,'sham_syp_address':'SYP-R','sham_usd_address':'USD-R','syriatel_address':'SYR-R'}
+    expected={'sham_syp':'SYP-R','sham_usd':'USD-R','syriatel':'SYR-R'}
     for method,address in expected.items():
         route=resolve(method,profile,'LEGACY','database')
         assert route=={'address':address,'source':'cashier_profile','cashier_profile_id':4,'cashier_profile_name':'رأفت'}
     assert resolve('usdt_trc',profile,'TRC-LEGACY','render')['address']=='TRC-LEGACY'
     assert resolve('syriatel',{**profile,'is_enabled':False},'OLD','database')['address']=='OLD'
-    assert resolve('mtn',{**profile,'mtn_address':''},'OLD-MTN','render')['source']=='render'
 
 
 def test_atomic_switch():
@@ -39,7 +38,7 @@ def test_atomic_switch():
         def __init__(self):self.calls=[];self.step=0
         def execute(self,sql,params=None):self.calls.append((' '.join(sql.split()),params));self.step+=1
         def fetchone(self):
-            if self.step==1:return (8,'مشرف جديد','SYP','USD','SYR','MTN')
+            if self.step==1:return (8,'مشرف جديد','SYP','USD','SYR')
             if self.step==2:return (3,)
             return None
         def close(self):pass

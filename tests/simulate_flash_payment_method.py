@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 METHODS = {
     "all": "كل طرق الإيداع",
     "syriatel": "سيريتل كاش",
-    "mtn": "MTN كاش",
+    "usdt_polygon": "USDT (Polygon)",
     "sham_syp": "شام كاش (ليرة)",
     "sham_usd": "شام كاش (دولار)",
     "usdt_trc": "USDT (TRC20)",
@@ -72,7 +72,6 @@ def simulate_backend_payloads() -> None:
 
     aliases = {
         "syriatel_cash": "syriatel",
-        "mtn_cash": "mtn",
         "sham_cash_syp": "sham_syp",
         "sham_cash_usd": "sham_usd",
         "usdt_trc20": "usdt_trc",

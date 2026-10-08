@@ -87,7 +87,6 @@ SYP_VERSION = 'new'  # Canonical bot balances are always new SYP
 
 # Configurable Payment Addresses (Environment Variables with fallbacks)
 SYRIATEL_CASH_NUMBERS = os.getenv('SYRIATEL_CASH_NUMBERS', '83935571\n00229271')
-MTN_CASH_NUMBER = os.getenv('MTN_CASH_NUMBER', '098xxxxxxx')
 SHAM_CASH_SYP_ADDRESS = os.getenv('SHAM_CASH_SYP_ADDRESS', 'SHAM-SYP-1092')
 SHAM_CASH_USD_ADDRESS = os.getenv('SHAM_CASH_USD_ADDRESS', 'SHAM-USD-5093')
 USDT_TRC20_ADDRESS = os.getenv('USDT_TRC20_ADDRESS', 'TYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')

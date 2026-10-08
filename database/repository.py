@@ -463,6 +463,8 @@ def create_transaction(
     cashier_profile_name=None,
     payment_destination=None,
 ):
+    if str(payment_method or '').strip().lower() == 'mtn':
+        return None
     query = """
     INSERT INTO transactions (
         user_telegram_id, type, payment_method, amount, transfer_number, status,
@@ -628,6 +630,9 @@ def create_withdraw_transaction_atomic(telegram_id, amount, payment_method=None,
     cursor = None
     tid = str(telegram_id)
     amount_int = int(float(amount))
+
+    if str(payment_method or '').strip().lower() == 'mtn':
+        return {'success': False, 'reason': 'unsupported_payment_method', 'message': 'MTN Cash is no longer supported'}
 
     if amount_int <= 0:
         return {'success': False, 'reason': 'invalid_amount', 'message': 'Invalid withdraw amount'}
@@ -2392,7 +2397,6 @@ def calculate_best_deposit_bonus(amount_syp, payment_method):
     # قاموس التطبيع: يحوّل أي صيغة مفتاح للصيغة الموحدة القصيرة
     METHOD_NORMALIZE = {
         'syriatel_cash': 'syriatel',
-        'mtn_cash': 'mtn',
         'sham_cash_syp': 'sham_syp',
         'sham_cash_usd': 'sham_usd',
         'usdt_trc20': 'usdt_trc',
@@ -2408,6 +2412,8 @@ def calculate_best_deposit_bonus(amount_syp, payment_method):
 
     amount = float(amount_syp or 0)
     method = normalize(payment_method)
+    if method == 'mtn':
+        return None
     best = {
         'bonus_amount': 0,
         'rule': None,
@@ -2630,7 +2636,6 @@ def set_user_balance(telegram_id, new_balance):
 
 PAYMENT_ADDRESS_FALLBACKS = {
     'syriatel': lambda: __import__('config.settings', fromlist=['settings']).SYRIATEL_CASH_NUMBERS,
-    'mtn': lambda: __import__('config.settings', fromlist=['settings']).MTN_CASH_NUMBER,
     'sham_syp': lambda: __import__('config.settings', fromlist=['settings']).SHAM_CASH_SYP_ADDRESS,
     'sham_usd': lambda: __import__('config.settings', fromlist=['settings']).SHAM_CASH_USD_ADDRESS,
     'usdt_trc': lambda: __import__('config.settings', fromlist=['settings']).USDT_TRC20_ADDRESS,
@@ -2764,7 +2769,6 @@ def reset_button_link(key):
     return True
 PAYMENT_METHOD_LABELS = {
     'syriatel': '🟢 سيريتل كاش',
-    'mtn': '🟡 MTN كاش',
     'sham_syp': '📱 شام كاش SYP',
     'sham_usd': '💵 شام كاش USD',
     'usdt_trc': '🪙 USDT TRC20',
@@ -2784,7 +2788,6 @@ def get_payment_address_fallback(payment_method):
 
 CASHIER_METHOD_COLUMNS = {
     'syriatel': 'syriatel_address',
-    'mtn': 'mtn_address',
     'sham_syp': 'sham_syp_address',
     'sham_usd': 'sham_usd_address',
 }
@@ -2820,8 +2823,8 @@ def get_cashier_profile(profile_id):
     return _cashier_profile_to_dict(row)
 
 
-def create_cashier_profile(name, telegram_id, sham_syp_address, sham_usd_address, syriatel_address, mtn_address, created_by=None):
-    values = [str(v or '').strip() for v in (name, sham_syp_address, sham_usd_address, syriatel_address, mtn_address)]
+def create_cashier_profile(name, telegram_id, sham_syp_address, sham_usd_address, syriatel_address, created_by=None):
+    values = [str(v or '').strip() for v in (name, sham_syp_address, sham_usd_address, syriatel_address)]
     if any(not value for value in values):
         return None
     result = DatabaseManager.execute_query(
@@ -2829,12 +2832,12 @@ def create_cashier_profile(name, telegram_id, sham_syp_address, sham_usd_address
         INSERT INTO cashier_profiles (
             name, telegram_id, sham_syp_address, sham_usd_address,
             syriatel_address, mtn_address, created_by, updated_by
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ) VALUES (%s, %s, %s, %s, %s, '', %s, %s)
         RETURNING id
         """,
         (
             values[0], str(telegram_id or '').strip() or None,
-            values[1], values[2], values[3], values[4],
+            values[1], values[2], values[3],
             str(created_by or '').strip() or None,
             str(created_by or '').strip() or None,
         ), fetch='one'
@@ -2842,21 +2845,21 @@ def create_cashier_profile(name, telegram_id, sham_syp_address, sham_usd_address
     return int(result[0]) if result else None
 
 
-def update_cashier_profile(profile_id, name, telegram_id, sham_syp_address, sham_usd_address, syriatel_address, mtn_address, updated_by=None, is_enabled=True):
-    values = [str(v or '').strip() for v in (name, sham_syp_address, sham_usd_address, syriatel_address, mtn_address)]
+def update_cashier_profile(profile_id, name, telegram_id, sham_syp_address, sham_usd_address, syriatel_address, updated_by=None, is_enabled=True):
+    values = [str(v or '').strip() for v in (name, sham_syp_address, sham_usd_address, syriatel_address)]
     if any(not value for value in values):
         return False
     DatabaseManager.execute_query(
         """
         UPDATE cashier_profiles
         SET name=%s, telegram_id=%s, sham_syp_address=%s, sham_usd_address=%s,
-            syriatel_address=%s, mtn_address=%s, is_enabled=%s,
+            syriatel_address=%s, mtn_address='', is_enabled=%s,
             updated_by=%s, updated_at=CURRENT_TIMESTAMP
         WHERE id=%s
         """,
         (
             values[0], str(telegram_id or '').strip() or None,
-            values[1], values[2], values[3], values[4], bool(is_enabled),
+            values[1], values[2], values[3], bool(is_enabled),
             str(updated_by or '').strip() or None, int(profile_id),
         )
     )
@@ -2887,7 +2890,7 @@ def activate_cashier_profile(profile_id, switched_by):
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, name, sham_syp_address, sham_usd_address, syriatel_address, mtn_address
+            SELECT id, name, sham_syp_address, sham_usd_address, syriatel_address
             FROM cashier_profiles WHERE id = %s AND is_enabled = TRUE FOR UPDATE
             """,
             (int(profile_id),)
@@ -2973,6 +2976,8 @@ def _get_legacy_payment_route(payment_method):
 
 
 def get_payment_routing_context(payment_method):
+    if str(payment_method or '').strip().lower() == 'mtn':
+        return {'address': '', 'source': 'disabled', 'cashier_profile_id': None, 'cashier_profile_name': None}
     legacy_address, legacy_source = _get_legacy_payment_route(payment_method)
     return resolve_cashier_payment_route(
         payment_method,

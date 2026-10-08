@@ -76,7 +76,6 @@ last_agent_balance_db_value = None
 FLASH_PAYMENT_METHOD_LABELS = {
     'all': 'كل طرق الإيداع',
     'syriatel': 'سيريتل كاش',
-    'mtn': 'MTN كاش',
     'sham_syp': 'شام كاش (ليرة)',
     'sham_usd': 'شام كاش (دولار)',
     'usdt_polygon': 'USDT (Polygon)',
@@ -86,7 +85,6 @@ FLASH_PAYMENT_METHOD_LABELS = {
 FLASH_PAYMENT_METHODS = frozenset(FLASH_PAYMENT_METHOD_LABELS)
 FLASH_PAYMENT_METHOD_ALIASES = {
     'syriatel_cash': 'syriatel',
-    'mtn_cash': 'mtn',
     'sham_cash_syp': 'sham_syp',
     'sham_cash_usd': 'sham_usd',
     'usdt_polygon20': 'usdt_polygon',
@@ -1145,7 +1143,6 @@ def _cashier_profile_json(profile):
         'sham_syp_address': profile.get('sham_syp_address') or '',
         'sham_usd_address': profile.get('sham_usd_address') or '',
         'syriatel_address': profile.get('syriatel_address') or '',
-        'mtn_address': profile.get('mtn_address') or '',
         'is_enabled': bool(profile.get('is_enabled')),
         'created_at': profile.get('created_at').strftime('%Y-%m-%d %H:%M') if profile.get('created_at') else '',
         'updated_at': profile.get('updated_at').strftime('%Y-%m-%d %H:%M') if profile.get('updated_at') else '',
@@ -1179,13 +1176,12 @@ def _parse_cashier_profile_payload(payload):
         'sham_syp_address': str(payload.get('sham_syp_address') or '').strip(),
         'sham_usd_address': str(payload.get('sham_usd_address') or '').strip(),
         'syriatel_address': str(payload.get('syriatel_address') or '').strip(),
-        'mtn_address': str(payload.get('mtn_address') or '').strip(),
     }
     if not data['name'] or len(data['name']) > 120:
         return None, 'اسم المشرف غير صالح'
-    for key in ('sham_syp_address', 'sham_usd_address', 'syriatel_address', 'mtn_address'):
+    for key in ('sham_syp_address', 'sham_usd_address', 'syriatel_address'):
         if not data[key] or len(data[key]) > 900:
-            return None, 'يجب إدخال العناوين الأربعة بصورة صحيحة'
+            return None, 'يجب إدخال عناوين شام وسيريتل بصورة صحيحة'
     if data['telegram_id'] and (not data['telegram_id'].lstrip('-').isdigit() or len(data['telegram_id']) > 30):
         return None, 'Telegram ID غير صالح'
     return data, None
@@ -2289,7 +2285,7 @@ async def admin_bonuses_handler(request):
                 return web.json_response({'error': 'اسم العرض قصير جداً'}, status=400)
             if percent <= 0 or percent > 100:
                 return web.json_response({'error': 'نسبة البونص غير صالحة'}, status=400)
-            if payment_method not in {'all','syriatel','mtn','sham_syp','sham_usd','usdt_trc','usdt_bep'}:
+            if payment_method not in {'all','syriatel','sham_syp','sham_usd','usdt_trc','usdt_bep'}:
                 return web.json_response({'error': 'طريقة دفع غير معروفة'}, status=400)
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
@@ -2326,7 +2322,7 @@ async def admin_bonuses_handler(request):
                 return web.json_response({'error': 'اسم العرض قصير جداً'}, status=400)
             if percent <= 0 or percent > 100:
                 return web.json_response({'error': 'نسبة البونص غير صالحة'}, status=400)
-            if payment_method not in {'all','syriatel','mtn','sham_syp','sham_usd','usdt_trc','usdt_bep'}:
+            if payment_method not in {'all','syriatel','sham_syp','sham_usd','usdt_trc','usdt_bep'}:
                 return web.json_response({'error': 'طريقة دفع غير معروفة'}, status=400)
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
@@ -2878,7 +2874,7 @@ def _collect_user_me_payload_sync(telegram_id, bot_username):
 
     active_offers = []
     try:
-        method_labels = {'all':'كل الطرق','syriatel':'سيريتل','mtn':'MTN','sham_syp':'شام SYP','sham_usd':'شام USD','usdt_trc':'USDT','usdt_bep':'USDT BEP'}
+        method_labels = {'all':'كل الطرق','syriatel':'سيريتل','sham_syp':'شام SYP','sham_usd':'شام USD','usdt_trc':'USDT','usdt_bep':'USDT BEP'}
         for rule in repo.get_active_bonus_rules()[:5]:
             active_offers.append({
                 'title': rule.get('title'),

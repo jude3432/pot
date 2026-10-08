@@ -279,7 +279,7 @@ def is_valid_usdt_address(value: str) -> bool:
 
 
 def validate_recipient_by_gateway(gateway: str, recipient: str):
-    if gateway in ['syriatel', 'mtn'] and not is_valid_phone_number(recipient):
+    if gateway == 'syriatel' and not is_valid_phone_number(recipient):
         return False, "⛔ رقم الهاتف غير صالح. يرجى إدخال رقم صحيح."
     if gateway in ['sham_syp', 'sham_usd'] and not is_valid_sham_account(recipient):
         return False, "⛔ معرف أو رقم حساب شام كاش غير صالح."
@@ -480,7 +480,6 @@ async def start_withdraw_flow(target_message, user_id, state: FSMContext, edit=F
         await state.update_data(withdraw_currency='syp')
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [premium_button(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [premium_button(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
             [premium_button(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
             [premium_button(text="↩️ القائمة الرئيسية", callback_data="back_to_main_menu")]
         ])
@@ -568,7 +567,7 @@ def format_deposit_admin_message(tx_id, telegram_id, username, amount, currency,
 def format_withdraw_admin_message(tx_id, telegram_id, username, entered_syp, gateway, recipient, gross_label, commission_label, net_label, user_balance_before, player_id=None, ichancy_username=None):
     username_text = f"@{username}" if username else "بدون معرف"
     gateway_labels = {
-        'syriatel': 'سيريتل كاش', 'mtn': 'MTN كاش',
+        'syriatel': 'سيريتل كاش',
         'sham_syp': 'شام كاش (ليرة)', 'sham_usd': 'شام كاش (دولار)',
         'usdt_polygon': 'USDT Polygon', 'usdt_trc': 'USDT TRC20', 'usdt_bep': 'USDT BEP20',
     }
@@ -1275,7 +1274,6 @@ async def process_deposit_currency(callback: CallbackQuery, state: FSMContext):
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [premium_button(text="🔹 Syriatel Cash", callback_data="dep_gate_syriatel")],
-            [premium_button(text="🔸 MTN Cash", callback_data="dep_gate_mtn")],
             [premium_button(text="📲 Sham Cash (SYP)", callback_data="dep_gate_sham_syp")],
             [premium_button(text="↩️ عودة", callback_data="deposit_bot")]
         ])
@@ -1297,6 +1295,9 @@ async def process_deposit_currency(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.startswith("dep_gate_"), BotStates.selecting_deposit_gateway)
 async def process_deposit_gateway(callback: CallbackQuery, state: FSMContext):
     gateway = callback.data.replace("dep_gate_", "")
+    if gateway == 'mtn':
+        await callback.answer("طريقة MTN Cash غير متاحة حالياً.", show_alert=True)
+        return
     if gateway in ('usdt_polygon', 'usdt_trc', 'usdt_bep'):
         if not oxapay.is_configured():
             await callback.answer("الدفع الإلكتروني غير مفعّل حالياً", show_alert=True)
@@ -1330,7 +1331,6 @@ async def process_deposit_gateway(callback: CallbackQuery, state: FSMContext):
     min_dep_syp_new_str = format_new(min_dep_syp)
     instructions = {
         'syriatel': f"🔹 <b>إيداع سيريتل كاش:</b>\n\nيرجى تحويل الرصيد إلى أحد الأرقام التالية:\n📲 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
-        'mtn': f"🔸 <b>إيداع MTN كاش:</b>\n\nيرجى تحويل الرصيد إلى الرقم التالي:\n📲 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
         'sham_syp': f"📲 <b>إيداع شام كاش (ليرة):</b>\n\nيرجى تحويل الرصيد إلى:\n🔖 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {format_new(min_dep_syp)} ل.س جديدة",
         'sham_usd': f"📲 <b>إيداع شام كاش (دولار):</b>\n\nيرجى تحويل الرصيد إلى:\n🔖 <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {_get_min_deposit_usd()} دولار",
         'usdt_trc': f"🪙 <b>إيداع USDT (TRC-20):</b>\n\nيرجى إرسال الـ USDT إلى:\n🗝️ <code>{payment_address}</code>\n\n🚧 الحد الأدنى: {_get_min_deposit_usd()} USDT",
@@ -1864,7 +1864,6 @@ async def process_withdraw_currency(callback: CallbackQuery, state: FSMContext):
     if currency == 'syp':
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [premium_button(text="🔹 Syriatel Cash", callback_data="wit_gate_syriatel")],
-            [premium_button(text="🔸 MTN Cash", callback_data="wit_gate_mtn")],
             [premium_button(text="📲 Sham Cash (SYP)", callback_data="wit_gate_sham_syp")],
             [premium_button(text="↩️ القائمة", callback_data="withdraw_bot")]
         ])
@@ -1885,11 +1884,13 @@ async def process_withdraw_currency(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data.startswith("wit_gate_"), BotStates.selecting_withdraw_gateway)
 async def process_withdraw_gateway(callback: CallbackQuery, state: FSMContext):
     gateway = callback.data.replace("wit_gate_", "")
+    if gateway == 'mtn':
+        await callback.answer("طريقة MTN Cash غير متاحة حالياً.", show_alert=True)
+        return
     await state.update_data(withdraw_gateway=gateway)
 
     prompt = {
         'syriatel': "🔹 <b>سحب سيريتل كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
-        'mtn': "🔸 <b>سحب MTN كاش:</b>\n\nيرجى إدخال رقم الهاتف المستلم:",
         'sham_syp': "📲 <b>سحب شام كاش (ليرة):</b>\n\nيرجى إدخال رقم حساب شام كاش المستلم:",
         'sham_usd': "📲 <b>سحب شام كاش (دولار):</b>\n\nيرجى إدخال رقم حساب شام كاش بالدولار المستلم:",
         'usdt_trc': "🪙 <b>سحب USDT (TRC-20):</b>\n\nيرجى إدخال عنوان المحفظة بدقة:",
@@ -2589,7 +2590,6 @@ async def offers_menu_callback(callback: CallbackQuery):
         method_labels = {
             'all': 'كل طرق الإيداع',
             'syriatel': 'Syriatel Cash',
-            'mtn': 'MTN Cash',
             'sham_syp': 'Sham Cash SYP',
             'sham_usd': 'Sham Cash USD',
             'usdt_trc': 'USDT TRC20',

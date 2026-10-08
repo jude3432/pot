@@ -61,7 +61,7 @@ DatabaseManager.execute_query("""
     INSERT INTO transactions (user_telegram_id, type, payment_method, amount, transfer_number, status, created_at)
     SELECT 'u' || (1 + floor(random()*8000))::int,
            (ARRAY['deposit_bot','withdraw_bot','deposit_to_game','withdraw_from_game'])[1+floor(random()*4)::int],
-           (ARRAY['syriatel','mtn','usdt_trc'])[1+floor(random()*3)::int],
+           (ARRAY['syriatel','sham_syp','usdt_trc'])[1+floor(random()*3)::int],
            (random()*100000)::numeric,
            CASE WHEN random() < 0.2 THEN 'Bonus-'||g ELSE 'TX-'||g END,
            (ARRAY['pending','approved','rejected','completed'])[1+floor(random()*4)::int],

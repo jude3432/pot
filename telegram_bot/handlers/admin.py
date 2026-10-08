@@ -1587,7 +1587,6 @@ async def adm_referrals_disable_callback(callback: CallbackQuery):
 BONUS_PAYMENT_METHOD_LABELS = {
     'all': 'كل طرق الإيداع',
     'syriatel': 'Syriatel Cash',
-    'mtn': 'MTN Cash',
     'sham_syp': 'Sham Cash SYP',
     'sham_usd': 'Sham Cash USD',
     'usdt_trc': 'USDT TRC20',
