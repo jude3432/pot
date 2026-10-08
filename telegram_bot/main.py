@@ -1001,7 +1001,8 @@ def _collect_dashboard_payload_sync():
     estimated_revenue = estimated_burn * (agent_rev_pct / 100.0)
     net_profit = dep_total - wd_total - bonus_paid + estimated_revenue
 
-    withdraw_comm_pct = float(bot_settings.get('withdraw_commission') or 10)
+    withdraw_raw = bot_settings.get('withdraw_commission')
+    withdraw_comm_pct = float(withdraw_raw if withdraw_raw is not None else 10)
     chart_data = DatabaseManager.execute_query_dict(
         """SELECT
             d::date as date,
@@ -1218,11 +1219,11 @@ async def admin_settings_get_handler(request):
             'exchange_rate': int(bot_settings.get('exchange_rate') or 1000),
             'usd_buy_rate': float(bot_settings.get('usd_buy_rate') or 0),
             'usd_sell_rate': float(bot_settings.get('usd_sell_rate') or 0),
-            'withdraw_commission': float(bot_settings.get('withdraw_commission') or 0),
+            'withdraw_commission': float(bot_settings.get('withdraw_commission') if bot_settings.get('withdraw_commission') is not None else 0),
             'game_min_deposit_syp': int(bot_settings.get('game_min_deposit_syp') or 20000),
             'agent_revenue_percent': float(bot_settings.get('agent_revenue_percent') or 30),
             'game_bonus_enabled': bool(bot_settings.get('game_bonus_enabled', True)),
-            'game_bonus_apply_percent': float(bot_settings.get('game_bonus_apply_percent') or 10),
+            'game_bonus_apply_percent': float(bot_settings.get('game_bonus_apply_percent') if bot_settings.get('game_bonus_apply_percent') is not None else 10),
             'syriatel_auto_mode': str(bot_settings.get('syriatel_auto_mode') or getattr(settings, 'SYRIATEL_AUTO_MODE', 'off') or 'off'),
             'syriatel_auto_channel_id': str(bot_settings.get('syriatel_auto_channel_id') or getattr(settings, 'SYRIATEL_AUTO_CHANNEL_ID', '') or ''),
             'shamcash_auto_mode': str(bot_settings.get('shamcash_auto_mode') or getattr(settings, 'SHAM_CASH_AUTO_MODE', 'off') or 'off'),
@@ -1365,8 +1366,10 @@ async def admin_settings_post_handler(request):
             current_settings = await asyncio.to_thread(repo.get_bot_settings) or {}
             current_buy_rate = float(current_settings.get('usd_buy_rate') or usd_buy_rate)
             current_sell_rate = float(current_settings.get('usd_sell_rate') or usd_sell_rate)
-            current_bonus_percent = float(current_settings.get('game_bonus_apply_percent') or game_bonus_apply_percent)
-            current_commission = float(current_settings.get('withdraw_commission') or withdraw_commission)
+            current_bonus_raw = current_settings.get('game_bonus_apply_percent')
+            current_commission_raw = current_settings.get('withdraw_commission')
+            current_bonus_percent = float(current_bonus_raw if current_bonus_raw is not None else game_bonus_apply_percent)
+            current_commission = float(current_commission_raw if current_commission_raw is not None else withdraw_commission)
             rates_changed = (
                 usd_buy_rate != current_buy_rate or usd_sell_rate != current_sell_rate
             )
@@ -2290,7 +2293,9 @@ async def admin_bonuses_handler(request):
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
             # 🔐 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
-            withdraw_commission = float(await asyncio.to_thread(repo.get_bot_settings).get('withdraw_commission') or 0)
+            settings_for_bonus = await asyncio.to_thread(repo.get_bot_settings)
+            commission_raw = settings_for_bonus.get('withdraw_commission')
+            withdraw_commission = float(commission_raw if commission_raw is not None else 0)
             if percent > withdraw_commission:
                 return web.json_response({'error': f'🚧 نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
             rule_id = await asyncio.to_thread(repo.create_bonus_rule, title, percent, payment_method, min_amount_syp, max_bonus_syp, created_by='miniapp')
@@ -2327,7 +2332,9 @@ async def admin_bonuses_handler(request):
             if min_amount_syp < 0 or max_bonus_syp < 0:
                 return web.json_response({'error': 'القيم المالية غير صالحة'}, status=400)
             # 🔐 حماية المراجحة (Update 9): البونص يجب ألا يتجاوز عمولة السحب
-            withdraw_commission = float(await asyncio.to_thread(repo.get_bot_settings).get('withdraw_commission') or 0)
+            settings_for_bonus = await asyncio.to_thread(repo.get_bot_settings)
+            commission_raw = settings_for_bonus.get('withdraw_commission')
+            withdraw_commission = float(commission_raw if commission_raw is not None else 0)
             if percent > withdraw_commission:
                 return web.json_response({'error': f'🚧 نسبة البونص ({percent}%) أعلى من عمولة السحب ({withdraw_commission}%). يمكن للمستخدم الإيداع والسحب فوراً ليربح! يجب أن يكون البونص أقل من العمولة.'}, status=400)
             await asyncio.to_thread(repo.update_bonus_rule, rule_id, title=title, percent=percent, payment_method=payment_method, min_amount_syp=min_amount_syp, max_bonus_syp=max_bonus_syp)
@@ -3242,7 +3249,9 @@ async def admin_flash_handler(request):
             payment_method = _normalize_flash_payment_method(payload.get('payment_method'))
             if not payment_method:
                 return web.json_response({'error': 'طريقة الدفع غير صالحة لفلاش البونص'}, status=400)
-            withdraw_commission = float(await asyncio.to_thread(repo.get_bot_settings).get('withdraw_commission') or 0)
+            settings_for_bonus = await asyncio.to_thread(repo.get_bot_settings)
+            commission_raw = settings_for_bonus.get('withdraw_commission')
+            withdraw_commission = float(commission_raw if commission_raw is not None else 0)
             if percent <= 0 or percent > withdraw_commission:
                 return web.json_response({'error': f'النسبة يجب أن تكون أقل من عمولة السحب ({withdraw_commission}%)'}, status=400)
             if duration < 1 or duration > 1440:
