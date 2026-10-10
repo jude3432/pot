@@ -1030,7 +1030,11 @@ async def auto_approve_cash_deposit(bot, tx_id, external_ref=None, provider_labe
         f"🧧 البونص: <code>{bonus_amount:,} ل.س جديدة</code>"
     )
     await send_log_message(bot, auto_log_text)
-    await send_syriatel_auto_message(bot, auto_log_text)
+    # إرسال إشعار القبول النهائي إلى قناة مزود الدفع نفسه، وليس دائماً إلى قناة Syriatel.
+    if str(provider_label).strip().lower() == 'shamcash':
+        await send_shamcash_auto_message(bot, auto_log_text)
+    else:
+        await send_syriatel_auto_message(bot, auto_log_text)
     return {'ok': True, 'bonus_amount': bonus_amount, 'new_balance': safe_balance(user)}
 
 
